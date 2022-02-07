@@ -1,10 +1,6 @@
 #ifndef __SIMD__H__
 #define __SIMD__H__
 
-
-// positive infinity float hexadecimal value
-#define simd_float_p_infinity (0x7F800000)
-
 //----------------------------------------------------------------------------------------------------------------------
 // Neon
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,38 +43,36 @@ static inline simd_vector simd_reverse(simd_vector a) {return vrev64q_f32(a);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
 
-static inline simd_vector simd_load(const float* array, int index) {return vld1q_f32(array + simd_vector_width * index);}
-static inline void simd_store(float* array, int index, simd_vector a) {vst1q_f32(array + simd_vector_width * index, a);}
-static inline simd_vector simd_load_partial(const float* array, int index, int count, uint32_t unload_value)
+static inline simd_vector simd_load(const float* array) {return vld1q_f32(array);}
+static inline void simd_store(float* array, simd_vector a) {vst1q_f32(array, a);}
+static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
-    int array_index = simd_vector_width * index;
     if (count == simd_vector_width)
-        return vld1q_f32(array + array_index);
+        return vld1q_f32(array);
     
-    float32x4_t result = vsetq_lane_f32(array[array_index], vmovq_n_f32(*(float*)&unload_value), 0);
+    float32x4_t result = vsetq_lane_f32(array[0], vmovq_n_f32(unload_value), 0);
     
     if (count > 1)
-        result = vsetq_lane_f32(array[array_index + 1], result, 1);
+        result = vsetq_lane_f32(array[1], result, 1);
     
     if (count > 2)
-        result = vsetq_lane_f32(array[array_index + 2], result, 2);
+        result = vsetq_lane_f32(array[2], result, 2);
     
     return result;
 }
 
-static inline void simd_store_partial(float* array, int index, simd_vector a, int count)
+static inline void simd_store_partial(float* array, simd_vector a, int count)
 {   
-    int array_index = simd_vector_width * index;
-    if (count == simd_vector_width)
-        vst1q_f32(array + array_index, a);
+    if (count >= simd_vector_width)
+        vst1q_f32(array, a);
     else
     {
-        array[array_index] = vgetq_lane_f32(a, 0);
+        array[0] = vgetq_lane_f32(a, 0);
         if (count > 1)
-            array[array_index+1] = vgetq_lane_f32(a, 1);
+            array[1] = vgetq_lane_f32(a, 1);
         
         if (count > 2)
-            array[array_index+2] = vgetq_lane_f32(a, 2);
+            array[2] = vgetq_lane_f32(a, 2);
     }
 }
 
@@ -151,8 +145,8 @@ static inline simd_vector simd_abs(simd_vector a)
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
 static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c) {return _mm256_fmadd_ps(a, b, c);}
 static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
-static inline simd_vector simd_load(const float* array, int index) {return _mm256_loadu_ps(array + simd_vector_width * index);}
-static inline void simd_store(float* array, int index, simd_vector a) {_mm256_storeu_ps(array + simd_vector_width * index, a);}
+static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
+static inline void simd_store(float* array, simd_vector a) {_mm256_storeu_ps(array, a);}
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
 static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
@@ -175,34 +169,43 @@ static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
 
 
-static inline simd_vector simd_load_partial(const float* array, int index, int count, uint32_t unload_value)
+static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
     if (count >= simd_vector_width)
-        return simd_load(array, index);
+        return simd_load(array);
     
-    __m256 inf_mask = _mm256_cvtepi32_ps(
-                        _mm256_set_epi32(unload_value, (count>6) ? 0 : unload_value, (count>5) ? 0 : unload_value, (count>4) ? 0 : unload_value,
-                                         (count>3) ? 0 : unload_value, (count>2) ? 0 : unload_value, (count>1) ? 0 : unload_value, (count>0) ? 0 : unload_value));
+    __m256 inf_mask = _mm256_set_ps(unload_value, (count>6) ? 0.f : unload_value, (count>5) ? 0.f : unload_value, (count>4) ? 0.f : unload_value,
+                                    (count>3) ? 0.f : unload_value, (count>2) ? 0.f : unload_value, (count>1) ? 0.f : unload_value, (count>0) ? 0.f : unload_value);
     
-    __m256 a = _mm256_maskload_ps(array + simd_vector_width * index, loadstore_mask(count));
+    __m256 a = _mm256_maskload_ps(array, loadstore_mask(count));
     return _mm256_or_ps(a, inf_mask);
 }
 
-static inline void simd_store_partial(float* array, int index, simd_vector a, int count)
+static inline void simd_store_partial(float* array, simd_vector a, int count)
 {
     if (count >= simd_vector_width)
-        simd_store(array, index, a);
+        simd_store(array, a);
     else
-        _mm256_maskstore_ps(array + simd_vector_width * index, loadstore_mask(count), a);
+        _mm256_maskstore_ps(array, loadstore_mask(count), a);
 }
 
 static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
 {
-    simd_vector a = simd_load(array, 0);
-    simd_vector b = simd_load(array, 1);
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
 
     *x = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(2, 0, 2, 0));
     *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
+}
+
+static inline void simd_load_xyz(const float* array, simd_sector* x, simd_sector* y, simd_sector* z)
+{
+
+}
+
+static inline void simd_load_xyzw(const float* array, simd_sector* x, simd_sector* y, simd_sector* z, simd_sector* w)
+{
+    
 }
 
 static inline simd_vector simd_sort(simd_vector input)
