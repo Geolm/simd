@@ -50,3 +50,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# MacOS
+*.DS_Store
+
+# XCode
+xcuserdata/
+xcshareddata/
+
+# visual studio code
+*.code-workspace
+*.vscode
