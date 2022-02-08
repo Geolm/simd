@@ -45,16 +45,34 @@ simd_vector simd_splat_zero(void);
 ## arithmetic 
 
 ```C
-
+// returns a+b
 simd_vector simd_add(simd_vector a, simd_vector b);
+
+// returns a-b
 simd_vector simd_sub(simd_vector a, simd_vector b);
+
+// returns a*b
 simd_vector simd_mul(simd_vector a, simd_vector b);
+
+// returns a/b
 simd_vector simd_div(simd_vector a, simd_vector b);
+
+// returns 1/b
 simd_vector simd_rcp(simd_vector a);
+
+// returns 1/sqrt(a)
 simd_vector simd_rsqrt(simd_vector a);
+
+// returns sqrt(a)
 simd_vector simd_sqrt(simd_vector a);
+
+// returns the absolute value of a
 simd_vector simd_abs(simd_vector a);
+
+// returns a*b+c (fused multiply-add)
 simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c);
+
+// returns -a
 simd_vector simd_neg(simd_vector a);
 
 ```
