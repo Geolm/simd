@@ -87,9 +87,25 @@ simd_vector simd_cmp_lt(simd_vector a, simd_vector b);
 simd_vector simd_cmp_le(simd_vector a, simd_vector b); 
 simd_vector simd_cmp_eq(simd_vector a, simd_vector b); 
 
+// returns a vector with value from a or b depending of the mask
+// mask can be obtain by a comparison
+simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask)
+
 ```
 
 ## logical
+
+```C
+// returns a logical or b (based on bits)
+simd_vector simd_or(simd_vector a, simd_vector b);
+
+// returns a logical and b (based on bits)
+simd_vector simd_and(simd_vector a, simd_vector b);
+
+// returns a logical and not b (based on bits)
+simd_vector simd_andnot(simd_vector a, simd_vector b);
+
+```
 
 ## misc
 
@@ -100,5 +116,20 @@ simd_vector simd_sort(simd_vector input);
 
 // reverses the order of the vector
 simd_vector simd_reverse(simd_vector a);
+
+// returns a vector with minimum values from a and b
+simd_vector simd_min(simd_vector a, simd_vector b);
+
+// returns a vector with maximum values from a and b
+simd_vector simd_max(simd_vector a, simd_vector b);
+
+// returns a vector with values clamped between [range_min] and [range_max]
+simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max);
+
+// returns a vector with values in [0;1]
+simd_vector simd_saturate(simd_vector a);
+
+// returns a linear interpolated vector based on [a] and [b] with [t] values in [0;1] range
+simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t);
 
 ```
