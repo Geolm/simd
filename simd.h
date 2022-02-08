@@ -215,9 +215,13 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
 
     tmp = _mm256_blend_ps(a, b, 0x24);
     *y = _mm256_blend_ps(tmp, c, 0x49);     // 10010010b = 0x49 (intel reverse order)
+    *y = _mm256_permute_ps(*y, _MM_SHUFFLE(2, 3, 0, 1));
+    *y = _mm256_blend_ps(*y, _mm256_swap(*y), 0x66);   // 01100110b = 0x66
 
     tmp = _mm256_blend_ps(a, b, 0x49);
     *z = _mm256_blend_ps(tmp, c, 0x92);
+    *z = _mm256_permute_ps(*z, _MM_SHUFFLE(3, 0, 1, 2));
+    *z = _mm256_blend_ps(*z, _mm256_swap(*z), 0x22);   // 01000100b = 0x22 (intel reverse order)
 }
 
 static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)

@@ -39,7 +39,7 @@ int test_load_xyz(void)
     
     for(int i=0; i<3; ++i)
         for(int j=0; j<simd_vector_width; ++j)
-            if (array[i*simd_vector_width + j] != (float)(i+1))
+            if (array[i*simd_vector_width + j] != (float)(i+(j*3)))
                 return 0;
     
     printf(" ok\n");
