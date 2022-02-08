@@ -204,11 +204,11 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
     simd_vector b = simd_load(array + simd_vector_width);
     simd_vector c = simd_load(array + simd_vector_width * 2);
 
-    simd_vector tmp = _mm256_blend_ps(a, b, 0x92);  // 01001001b = (reverse because intel) 0x92
-    *x = _mm256_blend_ps(tmp, c, 0x24); // 00100100b
+    simd_vector tmp = _mm256_blend_ps(a, b, 0x92);  // 01001001b = 0x92 (intel reverse order)
+    *x = _mm256_blend_ps(tmp, c, 0x24); // 00100100b = 0x24
 
     tmp = _mm256_blend_ps(a, b, 0x24);
-    *y = _mm256_blend_ps(tmp, c, 0x49);     // 10010010b = 0x49 (thanks intel)
+    *y = _mm256_blend_ps(tmp, c, 0x49);     // 10010010b = 0x49 (intel reverse order)
 
     tmp = _mm256_blend_ps(a, b, 0x49);
     *z = _mm256_blend_ps(tmp, c, 0x92);
