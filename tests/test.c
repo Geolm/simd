@@ -3,7 +3,9 @@
 
 int test_load_xy(void)
 {
-    float array[16] = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i;
     
     printf("simd_load_xy :");
     
@@ -15,7 +17,7 @@ int test_load_xy(void)
     
     for(int i=0; i<2; ++i)
         for(int j=0; j<simd_vector_width; ++j)
-            if (array[i*simd_vector_width + j] != (float)(i))
+            if (array[i*simd_vector_width + j] != (float)(i+(j*2)))
                 return 0;
     
     printf(" ok\n");
@@ -25,7 +27,6 @@ int test_load_xy(void)
 int test_load_xyz(void)
 {
     float array[simd_vector_width*3];
-    
     for(int i=0; i<simd_vector_width*3; ++i)
         array[i] = (float) i;
     

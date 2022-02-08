@@ -197,9 +197,17 @@ static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector*
 {
     simd_vector a = simd_load(array);
     simd_vector b = simd_load(array + simd_vector_width);
+    simd_vector tmp;
 
     *x = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(2, 0, 2, 0));
+    tmp = _mm256_swap(*x);
+    tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
+    *x = _mm256_blend_ps(*x, tmp, 0x3C);   // 00111100b = 0x3C
+    
     *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
+    tmp = _mm256_swap(*y);
+    tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
+    *y = _mm256_blend_ps(*y, tmp, 0x3C);   // 00111100b = 0x3C
 }
 
 static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
