@@ -129,9 +129,7 @@ static inline __m256i loadstore_mask(int element_count)
 
 static inline __m256 _mm256_swap(__m256 a)
 {
-    __m128 lo = _mm256_extractf128_ps(a, 0);
-    __m128 hi = _mm256_extractf128_ps(a, 1);
-    return _mm256_setr_m128(hi, lo);
+    return _mm256_permute2f128_ps(a, a, _MM_SHUFFLE(0, 0, 1, 1));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
