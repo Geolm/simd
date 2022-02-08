@@ -24,7 +24,10 @@ int test_load_xy(void)
 
 int test_load_xyz(void)
 {
-    float array[24] = {1,2,3, 1,2,3, 1,2,3, 1,2,3, 1,2,3, 1,2,3, 1,2,3, 1,2,3 };
+    float array[simd_vector_width*3];
+    
+    for(int i=0; i<simd_vector_width*3; ++i)
+        array[i] = (float) i;
     
     printf("simd_load_xyz :");
     
