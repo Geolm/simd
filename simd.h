@@ -198,12 +198,23 @@ static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector*
     *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
 }
 
-static inline void simd_load_xyz(const float* array, simd_sector* x, simd_sector* y, simd_sector* z)
+static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
 {
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+    simd_vector c = simd_load(array + simd_vector_width * 2);
 
+    simd_vector tmp = _mm256_blend_ps(a, b, 0x92);  // 01001001b = (reverse because intel) 0x92
+    *x = _mm256_blend_ps(tmp, c, 0x24); // 00100100b
+
+    tmp = _mm256_blend_ps(a, b, 0x24);
+    *y = _mm256_blend_ps(tmp, c, 0x49);     // 10010010b = 0x49 (thanks intel)
+
+    tmp = _mm256_blend_ps(a, b, 0x49);
+    *z = _mm256_blend_ps(tmp, c, 0x92);
 }
 
-static inline void simd_load_xyzw(const float* array, simd_sector* x, simd_sector* y, simd_sector* z, simd_sector* w)
+static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
     
 }
