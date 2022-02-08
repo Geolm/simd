@@ -10,37 +10,75 @@ The idea of the libray is to not assume a specific simd vector width (4 for SSE/
 simd_vector is typedef to the native simd vector of the platform (avx or neon).
 
 
-## load/store functions
+## load/store/set
 
 ```C
 
 // returns a vector loaded for the pointer [array] of floats
-simd_vector simd_load(const float* array) : 
+simd_vector simd_load(const float* array);
 
-// load a partial array of [count] floats, fill the rest with [unload_value]
-simd_vector simd_load_partial(const float* array, int count, float unload_value)
+// loads a partial array of [count] floats, fills the rest with [unload_value]
+simd_vector simd_load_partial(const float* array, int count, float unload_value);
 
-// store a vector [a] at the pointer [array] 
-void simd_store(float* array, simd_vector a)
+// stores a vector [a] at the pointer [array] 
+void simd_store(float* array, simd_vector a);
 
-// store [count] floats from vector [a] at pointer [array]
-void simd_store_partial(float* array, simd_vector a, int count)
+// stores [count] floats from vector [a] at pointer [array]
+void simd_store_partial(float* array, simd_vector a, int count);
 
-// load 2 channels data from [array] and deinterleave data in [x] and [y]. Read simd_vector_width*2 floats
-void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
+// loads 2 channels data from [array] and deinterleave data in [x] and [y]. Reads simd_vector_width*2 floats
+void simd_load_xy(const float* array, simd_vector* x, simd_vector* y);
 
-// load 3 channels data from [array] and deinterleave data in [x], [y] and [z]. Read simd_vector_width*3 floats
-void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
+// loads 3 channels data from [array] and deinterleave data in [x], [y] and [z]. Reads simd_vector_width*3 floats
+void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z);
 
+// returns a vector with all lanes set to [value] 
+simd_vector simd_splat(float value);
+
+// returns a vector with all lanes set zero
+simd_vector simd_splat_zero(void);
 
 ```
 
-## arithmetic functions
-* simd_add(a, b) : returns a simd_vector a + b
-* 
+## arithmetic 
 
-## logical functions
+```C
 
-## other functions
-* simd_sort : sort lanes
-* 
+simd_vector simd_add(simd_vector a, simd_vector b);
+simd_vector simd_sub(simd_vector a, simd_vector b);
+simd_vector simd_mul(simd_vector a, simd_vector b);
+simd_vector simd_div(simd_vector a, simd_vector b);
+simd_vector simd_rcp(simd_vector a);
+simd_vector simd_rsqrt(simd_vector a);
+simd_vector simd_sqrt(simd_vector a);
+simd_vector simd_abs(simd_vector a);
+simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c);
+simd_vector simd_neg(simd_vector a);
+
+```
+
+## comparison
+
+```C
+
+simd_vector simd_cmp_gt(simd_vector a, simd_vector b);
+simd_vector simd_cmp_ge(simd_vector a, simd_vector b); 
+simd_vector simd_cmp_lt(simd_vector a, simd_vector b); 
+simd_vector simd_cmp_le(simd_vector a, simd_vector b); 
+simd_vector simd_cmp_eq(simd_vector a, simd_vector b); 
+
+```
+
+## logical
+
+## misc
+
+```C
+
+// returns a sorted vector in ascending order
+simd_vector simd_sort(simd_vector input);
+
+// reverses the order of the vector
+simd_vector simd_reverse(simd_vector a);
+
+```
