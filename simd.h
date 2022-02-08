@@ -76,14 +76,14 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
     }
 }
 
-static inline void simd_load_xy(const float* array, simd_sector* x, simd_sector* y)
+static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
 {
-    float32x4x3_t data = vld2q_f32(array);
+    float32x4x2_t data = vld2q_f32(array);
     *x = data.val[0];
     *y = data.val[1];
 }
 
-static inline void simd_load_xyz(const float* array, simd_sector* x, simd_sector* y, simd_sector* z)
+static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
 {
     float32x4x3_t data = vld3q_f32(array);
     *x = data.val[0];
@@ -91,9 +91,9 @@ static inline void simd_load_xyz(const float* array, simd_sector* x, simd_sector
     *z = data.val[2];
 }
 
-static inline void simd_load_xyzw(const float* array, simd_sector* x, simd_sector* y, simd_sector* z, simd_sector* w)
+static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
-    float32x4x3_t data = vld4q_f32(array);
+    float32x4x4_t data = vld4q_f32(array);
     *x = data.val[0];
     *y = data.val[1];
     *z = data.val[2];
