@@ -26,10 +26,10 @@ void simd_store(float* array, simd_vector a);
 // stores [count] floats from vector [a] at pointer [array]
 void simd_store_partial(float* array, simd_vector a, int count);
 
-// loads 2 channels data from [array] and deinterleave data in [x] and [y]. Reads simd_vector_width*2 floats
+// loads 2 channels data from [array] and deinterleave data in [x] and [y]. Reads simd_vector_width*2 floats. Preserves order.
 void simd_load_xy(const float* array, simd_vector* x, simd_vector* y);
 
-// loads 3 channels data from [array] and deinterleave data in [x], [y] and [z]. Reads simd_vector_width*3 floats
+// loads 3 channels data from [array] and deinterleave data in [x], [y] and [z]. Reads simd_vector_width*3 floats. Preserves order.
 void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z);
 
 // returns a vector with all lanes set to [value] 
