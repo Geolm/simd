@@ -127,6 +127,13 @@ static inline __m256i loadstore_mask(int element_count)
                             (element_count>0) ? 0xffffffff : 0);
 }
 
+static inline __m256 _mm256_swap(__m256 a)
+{
+    __m128 lo = _mm256_extractf128_ps(a, 0);
+    __m128 hi = _mm256_extractf128_ps(a, 1);
+    return _mm256_setr_m128(hi, lo);
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 // simd public functions
 //----------------------------------------------------------------------------------------------------------------------
@@ -160,10 +167,7 @@ static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return _mm2
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return _mm256_blendv_ps(a, b, mask);}
 static inline simd_vector simd_reverse(simd_vector a)
 {
-    __m128 lo = _mm256_extractf128_ps(a, 0);
-    __m128 hi = _mm256_extractf128_ps(a, 1);
-    __m256 swap = _mm256_setr_m128(hi, lo);
-     return _mm256_permute_ps(swap, _MM_SHUFFLE(0, 1, 2, 3));
+     return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));
 }
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
@@ -206,6 +210,8 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
 
     simd_vector tmp = _mm256_blend_ps(a, b, 0x92);  // 01001001b = 0x92 (intel reverse order)
     *x = _mm256_blend_ps(tmp, c, 0x24); // 00100100b = 0x24
+    *x = _mm256_permute_ps(*x, _MM_SHUFFLE(1, 2, 3, 0));
+    *x = _mm256_blend_ps(*x, _mm256_swap(*x), 0x44);   // 00100010b = 0x44 (intel reverse order)
 
     tmp = _mm256_blend_ps(a, b, 0x24);
     *y = _mm256_blend_ps(tmp, c, 0x49);     // 10010010b = 0x49 (intel reverse order)
