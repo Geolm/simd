@@ -1,12 +1,12 @@
 # simd
 Neon/AVX simd library
 
-This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library.
+This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. The idea behind this library is simple : with the same code I want to use 256 bits AVX on my intel-based computer and 128 bits Neon on my M1 Mac. 
 
 
 # documentation
 
-The idea of the libray is to not assume a specific simd vector width (4 for SSE/Neon, 8 for AVX and so on) but use **simd_vector_width** variable instead. As a result the library does not contains function to shuffle lanes, horizontal operation (which are not optimal anyway). The API is based on AVX and Neon, some functions are composed of multiple simd instructions.
+The idea of the libray is to not assume a specific simd vector width (4 for SSE/Neon, 8 for AVX and so on) but use **simd_vector_width** variable instead. As a result the library does not contains function to shuffle lanes, horizontal operation (which are not optimal anyway). The API is based on AVX and Neon, this is not a direct AVX to Neon translation or vice versa.
 
 
 simd_vector is typedef to the native simd vector of the platform (avx or neon).
