@@ -1,7 +1,11 @@
 # simd
 Neon/AVX simd library
 
-This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library.
+This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics [SSE2Neon](https://github.com/DLTcollab/sse2neon) which helps but my goals are :
+* to write code once for all platforms
+* the code should use the largest available simd registers on each platforms (128/256/512 bits)
+* the API should be a best of native instrinsic, not a "one-way translation"
+
 
 
 # documentation
