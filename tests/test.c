@@ -47,6 +47,27 @@ int test_load_xyz(void)
     return 1;
 }
 
+int test_sort(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (simd_vector_width-i);
+    
+    printf("simd_sort :");
+
+    simd_vector a = simd_load(array);
+    a = simd_sort(a);
+
+    simd_store(array, a);
+    
+    for(int i=0; i<simd_vector_width-1; ++i)
+        if (array[i] > array[i+1])
+            return 0;
+
+    printf(" ok\n");
+    return 1;
+}
+
 
 int main(int argc, const char * argv[])
 {
@@ -54,6 +75,9 @@ int main(int argc, const char * argv[])
         return -1;
     
     if (!test_load_xyz())
+        return -1;
+    
+    if (!test_sort())
         return -1;
     
     return 0;

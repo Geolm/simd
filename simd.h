@@ -100,6 +100,33 @@ static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vecto
     *w = data.val[3];
 }
 
+#define vblendq_f32(a, b, mask) vbslq_f32(vld1q_u32(mask), b, a)
+static const uint32_t mask_0xA[4] = {0, UINT32_MAX, 0, UINT32_MAX};
+static const uint32_t mask_0xC[4] = {0, 0, UINT32_MAX, UINT32_MAX};
+
+static inline simd_vector simd_sort(simd_vector input)
+{
+    {
+        float32x4_t perm_neigh = vrev64q_f32(input);
+        float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
+        float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
+        input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xA);
+    }
+    {
+        float32x4_t perm_neigh = __builtin_shufflevector(input, input, 3, 2, 1, 0);
+        float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
+        float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
+        input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xC);
+    }
+    {
+        float32x4_t perm_neigh = vrev64q_f32(input);
+        float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
+        float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
+        input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xA);
+    }
+    return input;
+}
+
 #else // NEON
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -127,10 +154,8 @@ static inline __m256i loadstore_mask(int element_count)
                             (element_count>0) ? 0xffffffff : 0);
 }
 
-static inline __m256 _mm256_swap(__m256 a)
-{
-    return _mm256_permute2f128_ps(a, a, _MM_SHUFFLE(0, 0, 1, 1));
-}
+// swap the two 128 bits part of the __m256
+static inline __m256 _mm256_swap(__m256 a) {return _mm256_permute2f128_ps(a, a, _MM_SHUFFLE(0, 0, 1, 1));}
 
 //----------------------------------------------------------------------------------------------------------------------
 // simd public functions
@@ -150,8 +175,7 @@ static inline simd_vector simd_abs(simd_vector a)
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
 static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c) {return _mm256_fmadd_ps(a, b, c);}
 static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
-static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
-static inline void simd_store(float* array, simd_vector a) {_mm256_storeu_ps(array, a);}
+
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
 static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
@@ -169,8 +193,12 @@ static inline simd_vector simd_reverse(simd_vector a)
 }
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
+static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_round_ps(a, _MM_FROUND_TRUNC));}
+static inline simd_vector simd_floor(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_FLOOR);}
+static inline simd_vector simd_ceil(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_CEIL);}
 
-
+static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
+static inline void simd_store(float* array, simd_vector a) {_mm256_storeu_ps(array, a);}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
     if (count >= simd_vector_width)
@@ -274,6 +302,44 @@ static inline simd_vector simd_sort(simd_vector input)
         input = _mm256_blend_ps(perm_neigh_min, perm_neigh_max, 0xAA);
     }
     return input;
+}
+
+static inline simd_vector simd_sin(simd_vector a)
+{
+    /*
+
+    // Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
+	inline n128 _hlslpp_sin_ps(n128 x)
+	{
+		static const n128 sin_c1 = f4_1;
+		static const n128 sin_c3 = _hlslpp_set1_ps(-1.6665578e-1f);
+		static const n128 sin_c5 = _hlslpp_set1_ps(8.3109378e-3f);
+		static const n128 sin_c7 = _hlslpp_set1_ps(-1.84477486e-4f);
+
+		// Range reduction (into [-pi, pi] range)
+		// Formula is x = x - round(x / 2pi) * 2pi
+
+		x = _hlslpp_subm_ps(x, _hlslpp_round_ps(_hlslpp_mul_ps(x, f4_inv2pi)), f4_2pi);
+
+		n128 gtpi2 = _hlslpp_cmpgt_ps(x, f4_pi2);
+		n128 ltminusPi2 = _hlslpp_cmplt_ps(x, f4_minusPi2);
+
+		n128 ox = x;
+
+		// Use identities/mirroring to remap into the range of the minimax polynomial
+		x = _hlslpp_sel_ps(x, _hlslpp_sub_ps(f4_pi, ox), gtpi2);
+		x = _hlslpp_sel_ps(x, _hlslpp_sub_ps(f4_minusPi, ox), ltminusPi2);
+
+		n128 x2 = _hlslpp_mul_ps(x, x);
+		n128 result;
+		result = _hlslpp_madd_ps(x2, sin_c7, sin_c5);
+		result = _hlslpp_madd_ps(x2, result, sin_c3);
+		result = _hlslpp_madd_ps(x2, result, sin_c1);
+		result = _hlslpp_mul_ps(result, x);
+		return result;
+	}
+
+    */
 }
 
 #endif
