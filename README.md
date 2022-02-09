@@ -1,10 +1,12 @@
 # simd
-Neon/AVX simd library, vector size agnostic
+Neon/AVX simd library
+
+This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library.
 
 
 # documentation
 
-The idea of the libray is to not assume a specific simd vector width (4 for SSE/Neon, 8 for AVX and so on) but use **simd_vector_width** variable instead. As a result the library does not contains function to get lanes value, nor do shuffle based on the width of the vector. The API is based on AVX and Neon, some functions are composed of multiple simd instructions.
+The idea of the libray is to not assume a specific simd vector width (4 for SSE/Neon, 8 for AVX and so on) but use **simd_vector_width** variable instead. As a result the library does not contains function to shuffle lanes, horizontal operation (which are not optimal anyway). The API is based on AVX and Neon, some functions are composed of multiple simd instructions.
 
 
 simd_vector is typedef to the native simd vector of the platform (avx or neon).
