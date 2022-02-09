@@ -328,9 +328,15 @@ static inline simd_vector simd_sort(simd_vector input)
 static inline float simd_get_lane(simd_vector a, int lane_index)
 {
     assert(lane_index>=0 && lane_index<simd_vector_width);
-    static float buffer[simd_vector_width];
-    simd_store(buffer, a);
-    return buffer[lane_index];
+
+    union __mm256tofloat 
+    {
+        __m256 v;
+        float f[8];
+    };
+
+    const union __mm256tofloat u = { a };
+    return u.f[lane_index];
 }
 
 /*
