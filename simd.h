@@ -1,6 +1,8 @@
 #ifndef __SIMD__H__
 #define __SIMD__H__
 
+#include <assert.h>
+
 //----------------------------------------------------------------------------------------------------------------------
 // Neon
 //----------------------------------------------------------------------------------------------------------------------
@@ -42,7 +44,9 @@ static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector 
 static inline simd_vector simd_reverse(simd_vector a) {return vrev64q_f32(a);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
-
+//static inline simd_vector simd_fract(simd_vector a) 
+//static inline simd_vector simd_floor(simd_vector a) 
+//static inline simd_vector simd_ceil(simd_vector a) 
 static inline simd_vector simd_load(const float* array) {return vld1q_f32(array);}
 static inline void simd_store(float* array, simd_vector a) {vst1q_f32(array, a);}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
@@ -127,7 +131,7 @@ static inline simd_vector simd_sort(simd_vector input)
     return input;
 }
 
-#else // NEON
+#else
 
 //----------------------------------------------------------------------------------------------------------------------
 // AVX
@@ -167,15 +171,10 @@ static inline simd_vector simd_div(simd_vector a, simd_vector b) {return _mm256_
 static inline simd_vector simd_rcp(simd_vector a) {return _mm256_rcp_ps(a);}
 static inline simd_vector simd_rsqrt(simd_vector a) {return _mm256_rsqrt_ps(a);}
 static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
-static inline simd_vector simd_abs(simd_vector a)
-{
-    const __m256i minus1 = _mm256_set1_epi32(-1);
-    return _mm256_and_ps(a, _mm256_cvtepi32_ps(minus1));
-}
+static inline simd_vector simd_abs(simd_vector a) {return _mm256_and_ps(a, _mm256_cvtepi32_ps(_mm256_set1_epi32(-1)));}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
 static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c) {return _mm256_fmadd_ps(a, b, c);}
 static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
-
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
 static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
@@ -187,20 +186,17 @@ static inline simd_vector simd_cmp_lt(simd_vector a, simd_vector b) {return _mm2
 static inline simd_vector simd_cmp_le(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_LE_OQ);}
 static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_EQ_OQ);}
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return _mm256_blendv_ps(a, b, mask);}
-static inline simd_vector simd_reverse(simd_vector a)
-{
-     return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));
-}
+static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));}
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_round_ps(a, _MM_FROUND_TRUNC));}
 static inline simd_vector simd_floor(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_FLOOR);}
 static inline simd_vector simd_ceil(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_CEIL);}
-
 static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
 static inline void simd_store(float* array, simd_vector a) {_mm256_storeu_ps(array, a);}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
+    assert(count>0);
     if (count >= simd_vector_width)
         return simd_load(array);
     
@@ -213,6 +209,7 @@ static inline simd_vector simd_load_partial(const float* array, int count, float
 
 static inline void simd_store_partial(float* array, simd_vector a, int count)
 {
+    assert(count>0);
     if (count >= simd_vector_width)
         simd_store(array, a);
     else
@@ -304,9 +301,10 @@ static inline simd_vector simd_sort(simd_vector input)
     return input;
 }
 
+/*
 static inline simd_vector simd_sin(simd_vector a)
 {
-    /*
+    
 
     // Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
 	inline n128 _hlslpp_sin_ps(n128 x)
@@ -339,8 +337,9 @@ static inline simd_vector simd_sin(simd_vector a)
 		return result;
 	}
 
-    */
+    
 }
+ */
 
 #endif
 
@@ -351,5 +350,12 @@ static inline simd_vector simd_sin(simd_vector a)
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
+static inline float simd_get_lane(simd_vector a, int lane_index)
+{
+    assert(lane_index>=0 && lane_index<simd_vector_width);
+    static float buffer[simd_vector_width];
+    simd_store(buffer, a);
+    return buffer[lane_index];
+}
 
 #endif // __SIMD__H__

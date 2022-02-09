@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FBC2F5B527B401F700800DE3 /* aabb.c in Sources */ = {isa = PBXBuildFile; fileRef = FBC2F5B427B401F700800DE3 /* aabb.c */; };
 		FBE8607027B1B8B900A7294A /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = FBE8606F27B1B8B900A7294A /* test.c */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +25,7 @@
 
 /* Begin PBXFileReference section */
 		FBB4AA2127B1B881005F0430 /* test_simd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_simd; sourceTree = BUILT_PRODUCTS_DIR; };
+		FBC2F5B427B401F700800DE3 /* aabb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aabb.c; sourceTree = "<group>"; };
 		FBE8606F27B1B8B900A7294A /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -41,6 +43,7 @@
 		FBB4AA1827B1B881005F0430 = {
 			isa = PBXGroup;
 			children = (
+				FBC2F5B427B401F700800DE3 /* aabb.c */,
 				FBE8606F27B1B8B900A7294A /* test.c */,
 				FBB4AA2227B1B881005F0430 /* Products */,
 			);
@@ -111,6 +114,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FBE8607027B1B8B900A7294A /* test.c in Sources */,
+				FBC2F5B527B401F700800DE3 /* aabb.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

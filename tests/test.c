@@ -64,6 +64,12 @@ int test_sort(void)
         if (array[i] > array[i+1])
             return 0;
 
+    simd_store(array, simd_reverse(a));
+
+    for(int i=0; i<simd_vector_width-1; ++i)
+        if (array[i] < array[i+1])
+            return 0;
+
     printf(" ok\n");
     return 1;
 }
