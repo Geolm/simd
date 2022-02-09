@@ -93,6 +93,21 @@ simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask)
 
 ```
 
+## rounding
+
+```C
+
+// returns the fractionnal part of [a]
+simd_vector simd_fract(simd_vector a);
+
+// returns the largest integer not greater than [a]
+simd_vector simd_floor(simd_vector a);
+
+// returns the smallest integer less than [a]
+simd_vector simd_ceil(simd_vector a);
+
+```
+
 ## logical
 
 ```C
