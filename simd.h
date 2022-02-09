@@ -87,6 +87,8 @@ static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector*
     *y = data.val[1];
 }
 
+static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y) {simd_load_xy(array, x, y);}
+
 static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
 {
     float32x4x3_t data = vld3q_f32(array);
@@ -94,6 +96,8 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
     *y = data.val[1];
     *z = data.val[2];
 }
+
+static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y) {simd_load_xyz(array, x, y, z);}
 
 static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
@@ -129,6 +133,12 @@ static inline simd_vector simd_sort(simd_vector input)
         input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xA);
     }
     return input;
+}
+
+static inline float simd_get_lane(simd_vector a, int lane_index)
+{
+    assert(lane_index>=0 && lane_index<simd_vector_width);
+    return vgetq_lane_f32(a, lane_index);
 }
 
 #else
@@ -216,24 +226,31 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
         _mm256_maskstore_ps(array, loadstore_mask(count), a);
 }
 
-static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
+static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y)
 {
     simd_vector a = simd_load(array);
     simd_vector b = simd_load(array + simd_vector_width);
-    simd_vector tmp;
-
+    
     *x = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(2, 0, 2, 0));
+    *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
+}
+
+static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
+{
+    simd_load_xy_unorder(array, x, y);
+
+    // do additionnal shuffle to preserve order
+    simd_vector tmp;
     tmp = _mm256_swap(*x);
     tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
     *x = _mm256_blend_ps(*x, tmp, 0x3C);   // 00111100b = 0x3C
     
-    *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
     tmp = _mm256_swap(*y);
     tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
     *y = _mm256_blend_ps(*y, tmp, 0x3C);   // 00111100b = 0x3C
 }
 
-static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
+static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
 {
     simd_vector a = simd_load(array);
     simd_vector b = simd_load(array + simd_vector_width);
@@ -241,16 +258,23 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
 
     simd_vector tmp = _mm256_blend_ps(a, b, 0x92);  // 01001001b = 0x92 (intel reverse order)
     *x = _mm256_blend_ps(tmp, c, 0x24); // 00100100b = 0x24
-    *x = _mm256_permute_ps(*x, _MM_SHUFFLE(1, 2, 3, 0));
-    *x = _mm256_blend_ps(*x, _mm256_swap(*x), 0x44);   // 00100010b = 0x44 (intel reverse order)
 
     tmp = _mm256_blend_ps(a, b, 0x24);
     *y = _mm256_blend_ps(tmp, c, 0x49);     // 10010010b = 0x49 (intel reverse order)
-    *y = _mm256_permute_ps(*y, _MM_SHUFFLE(2, 3, 0, 1));
-    *y = _mm256_blend_ps(*y, _mm256_swap(*y), 0x66);   // 01100110b = 0x66
 
     tmp = _mm256_blend_ps(a, b, 0x49);
     *z = _mm256_blend_ps(tmp, c, 0x92);
+}
+
+static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
+{
+    simd_load_xyz_unorder(array, x, y, z);
+    
+    // do additionnal shuffle to preserve order
+    *x = _mm256_permute_ps(*x, _MM_SHUFFLE(1, 2, 3, 0));
+    *x = _mm256_blend_ps(*x, _mm256_swap(*x), 0x44);   // 00100010b = 0x44 (intel reverse order)
+    *y = _mm256_permute_ps(*y, _MM_SHUFFLE(2, 3, 0, 1));
+    *y = _mm256_blend_ps(*y, _mm256_swap(*y), 0x66);   // 01100110b = 0x66
     *z = _mm256_permute_ps(*z, _MM_SHUFFLE(3, 0, 1, 2));
     *z = _mm256_blend_ps(*z, _mm256_swap(*z), 0x22);   // 01000100b = 0x22 (intel reverse order)
 }
@@ -299,6 +323,14 @@ static inline simd_vector simd_sort(simd_vector input)
         input = _mm256_blend_ps(perm_neigh_min, perm_neigh_max, 0xAA);
     }
     return input;
+}
+
+static inline float simd_get_lane(simd_vector a, int lane_index)
+{
+    assert(lane_index>=0 && lane_index<simd_vector_width);
+    static float buffer[simd_vector_width];
+    simd_store(buffer, a);
+    return buffer[lane_index];
 }
 
 /*
@@ -350,12 +382,6 @@ static inline simd_vector simd_sin(simd_vector a)
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
-static inline float simd_get_lane(simd_vector a, int lane_index)
-{
-    assert(lane_index>=0 && lane_index<simd_vector_width);
-    static float buffer[simd_vector_width];
-    simd_store(buffer, a);
-    return buffer[lane_index];
-}
+
 
 #endif // __SIMD__H__
