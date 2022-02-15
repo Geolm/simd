@@ -44,9 +44,9 @@ static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector 
 static inline simd_vector simd_reverse(simd_vector a) {return vrev64q_f32(a);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
-//static inline simd_vector simd_fract(simd_vector a) 
-//static inline simd_vector simd_floor(simd_vector a) 
-//static inline simd_vector simd_ceil(simd_vector a) 
+static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, vrndq_f32(a));}
+static inline simd_vector simd_floor(simd_vector a) {return vrndmq_f32(a);}
+static inline simd_vector simd_ceil(simd_vector a) {return vrndpq_f32(a);}
 static inline simd_vector simd_load(const float* array) {return vld1q_f32(array);}
 static inline void simd_store(float* array, simd_vector a) {vst1q_f32(array, a);}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
@@ -200,8 +200,8 @@ static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_round_ps(a, _MM_FROUND_TRUNC));}
-static inline simd_vector simd_floor(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_FLOOR);}
-static inline simd_vector simd_ceil(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_CEIL);}
+static inline simd_vector simd_floor(simd_vector a) {return _mm256_floor_ps(a);}
+static inline simd_vector simd_ceil(simd_vector a) {return _mm256_ceil_ps(a);}
 static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
 static inline void simd_store(float* array, simd_vector a) {_mm256_storeu_ps(array, a);}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
