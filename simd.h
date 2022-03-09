@@ -391,6 +391,8 @@ static inline simd_vector simd_sin(simd_vector a)
 // common public functions
 //----------------------------------------------------------------------------------------------------------------------
 
+#define simd_last_lane (simd_vector_width-1)
+
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
