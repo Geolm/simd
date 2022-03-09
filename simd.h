@@ -97,7 +97,7 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
     *z = data.val[2];
 }
 
-static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y) {simd_load_xyz(array, x, y, z);}
+static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z) {simd_load_xyz(array, x, y, z);}
 
 static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
@@ -138,7 +138,13 @@ static inline simd_vector simd_sort(simd_vector input)
 static inline float simd_get_lane(simd_vector a, int lane_index)
 {
     assert(lane_index>=0 && lane_index<simd_vector_width);
-    return vgetq_lane_f32(a, lane_index);
+    switch(lane_index)
+    {
+    case 0 : return vgetq_lane_f32(a, 0);
+    case 1 : return vgetq_lane_f32(a, 1);
+    case 2 : return vgetq_lane_f32(a, 2);
+    default : return vgetq_lane_f32(a, 3);
+    }
 }
 
 #else
