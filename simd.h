@@ -41,7 +41,7 @@ static inline simd_vector simd_cmp_lt(simd_vector a, simd_vector b) {return vclt
 static inline simd_vector simd_cmp_le(simd_vector a, simd_vector b) {return vcleq_f32(a, b);}
 static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return vceqq_f32(a, b);}
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return vbslq_f32(mask, b, a);}
-static inline simd_vector simd_reverse(simd_vector a) {return vrev64q_f32(a);}
+static inline simd_vector simd_reverse(simd_vector a) {return __builtin_shufflevector(a, a, 3, 2, 1, 0);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, vrndq_f32(a));}
