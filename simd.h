@@ -121,7 +121,7 @@ static inline simd_vector simd_sort(simd_vector input)
         input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xA);
     }
     {
-        float32x4_t perm_neigh = __builtin_shufflevector(input, input, 3, 2, 1, 0);
+        float32x4_t perm_neigh = simd_reverse(input);
         float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
         float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
         input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xC);

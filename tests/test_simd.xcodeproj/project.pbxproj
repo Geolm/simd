@@ -85,7 +85,7 @@
 		FBB4AA1927B1B881005F0430 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					FBB4AA2027B1B881005F0430 = {
 						CreatedOnToolsVersion = 12.4;
@@ -237,6 +237,7 @@
 		FBB4AA2927B1B881005F0430 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				"OTHER_CFLAGS[arch=*]" = (
 					"-mavx",
@@ -249,6 +250,7 @@
 		FBB4AA2A27B1B881005F0430 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				"OTHER_CFLAGS[arch=*]" = (

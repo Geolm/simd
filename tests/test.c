@@ -74,6 +74,24 @@ int test_sort(void)
     return 1;
 }
 
+int test_get_lane(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (simd_vector_width-i);
+
+    printf("simd_get_lane :");
+
+    simd_vector a = simd_load(array);
+
+    for(int i=0; i<simd_vector_width; ++i)
+        if (simd_get_lane(a, i) != array[i])
+            return 0;
+
+    printf(" ok\n");
+    return 1;
+}
+
 
 int main(int argc, const char * argv[])
 {
@@ -84,6 +102,9 @@ int main(int argc, const char * argv[])
         return -1;
     
     if (!test_sort())
+        return -1;
+
+    if (!test_get_lane())
         return -1;
     
     return 0;
