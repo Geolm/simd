@@ -43,12 +43,12 @@ void simd_compute_aabb(const point* points, int num_points, point* aabb_min, poi
     
     for(int i=0; i<remaining_points; ++i)
     {
-        aabb_min->x = _min(aabb_min->x, points[i].x);
-        aabb_min->y = _min(aabb_min->y, points[i].y);
-        aabb_min->z = _min(aabb_min->z, points[i].z);
-        aabb_max->x = _max(aabb_max->x, points[i].x);
-        aabb_max->y = _max(aabb_max->y, points[i].y);
-        aabb_max->z = _max(aabb_max->z, points[i].z);
+        aabb_min->x = min(aabb_min->x, points[i].x);
+        aabb_min->y = min(aabb_min->y, points[i].y);
+        aabb_min->z = min(aabb_min->z, points[i].z);
+        aabb_max->x = max(aabb_max->x, points[i].x);
+        aabb_max->y = max(aabb_max->y, points[i].y);
+        aabb_max->z = max(aabb_max->z, points[i].z);
     }
 }
 
