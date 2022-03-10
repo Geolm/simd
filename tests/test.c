@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include "../simd.h"
 
+#define SOKOL_IMPL
+#include "sokol_time.h"
+
+#include "test_aabb.h"
+
 int test_load_xy(void)
 {
     float array[simd_vector_width*2];
@@ -95,6 +100,8 @@ int test_get_lane(void)
 
 int main(int argc, const char * argv[])
 {
+    stm_setup();
+
     if (!test_load_xy())
         return -1;
     
@@ -105,6 +112,9 @@ int main(int argc, const char * argv[])
         return -1;
 
     if (!test_get_lane())
+        return -1;
+    
+    if (!test_aabb())
         return -1;
     
     return 0;

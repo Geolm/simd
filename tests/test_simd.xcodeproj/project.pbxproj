@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FBC2F5B527B401F700800DE3 /* aabb.c in Sources */ = {isa = PBXBuildFile; fileRef = FBC2F5B427B401F700800DE3 /* aabb.c */; };
+		FB6747E127D98A2C00F25138 /* fast_obj.c in Sources */ = {isa = PBXBuildFile; fileRef = FB6747DE27D98A2C00F25138 /* fast_obj.c */; };
+		FBC2F5B527B401F700800DE3 /* test_aabb.c in Sources */ = {isa = PBXBuildFile; fileRef = FBC2F5B427B401F700800DE3 /* test_aabb.c */; };
 		FBE8607027B1B8B900A7294A /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = FBE8606F27B1B8B900A7294A /* test.c */; };
 /* End PBXBuildFile section */
 
@@ -24,8 +25,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FB6747DE27D98A2C00F25138 /* fast_obj.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fast_obj.c; sourceTree = "<group>"; };
+		FB6747DF27D98A2C00F25138 /* sokol_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sokol_time.h; sourceTree = "<group>"; };
+		FB6747E027D98A2C00F25138 /* fast_obj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fast_obj.h; sourceTree = "<group>"; };
+		FB6747E427D98AA000F25138 /* test_aabb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_aabb.h; sourceTree = "<group>"; };
 		FBB4AA2127B1B881005F0430 /* test_simd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_simd; sourceTree = BUILT_PRODUCTS_DIR; };
-		FBC2F5B427B401F700800DE3 /* aabb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aabb.c; sourceTree = "<group>"; };
+		FBC2F5B427B401F700800DE3 /* test_aabb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test_aabb.c; sourceTree = "<group>"; };
 		FBC55FED27BC52E80003CC87 /* simd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../simd.h; sourceTree = "<group>"; };
 		FBE8606F27B1B8B900A7294A /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -44,8 +49,12 @@
 		FBB4AA1827B1B881005F0430 = {
 			isa = PBXGroup;
 			children = (
+				FB6747E427D98AA000F25138 /* test_aabb.h */,
+				FB6747DE27D98A2C00F25138 /* fast_obj.c */,
+				FB6747E027D98A2C00F25138 /* fast_obj.h */,
+				FB6747DF27D98A2C00F25138 /* sokol_time.h */,
 				FBC55FED27BC52E80003CC87 /* simd.h */,
-				FBC2F5B427B401F700800DE3 /* aabb.c */,
+				FBC2F5B427B401F700800DE3 /* test_aabb.c */,
 				FBE8606F27B1B8B900A7294A /* test.c */,
 				FBB4AA2227B1B881005F0430 /* Products */,
 			);
@@ -115,8 +124,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB6747E127D98A2C00F25138 /* fast_obj.c in Sources */,
 				FBE8607027B1B8B900A7294A /* test.c in Sources */,
-				FBC2F5B527B401F700800DE3 /* aabb.c in Sources */,
+				FBC2F5B527B401F700800DE3 /* test_aabb.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
