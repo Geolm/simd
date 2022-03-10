@@ -10,7 +10,7 @@ Simple function to compute aabb from a list of points. Not the most optimal func
 ```C
 typedef struct {float x, y, z;} point;
 
-void compute_aabb(const point* points, int num_points, point* aabb_min, point* aabb_max)
+void simd_compute_aabb(const point* points, int num_points, point* aabb_min, point* aabb_max)
 {
     int num_vec = num_points / simd_vector_width;
     int remaining_points = num_points - (num_vec * simd_vector_width);
@@ -33,32 +33,24 @@ void compute_aabb(const point* points, int num_points, point* aabb_min, point* a
         points += simd_vector_width;
     }
     
-    min_x = simd_sort(min_x); aabb_min->x = simd_get_lane(min_x, 0);
-    min_y = simd_sort(min_y); aabb_min->y = simd_get_lane(min_y, 0);
-    min_z = simd_sort(min_z); aabb_min->z = simd_get_lane(min_z, 0);
+    min_x = simd_hmin(min_x); aabb_min->x = simd_get_first_lane(min_x);
+    min_y = simd_hmin(min_y); aabb_min->y = simd_get_first_lane(min_y);
+    min_z = simd_hmin(min_z); aabb_min->z = simd_get_first_lane(min_z);
     
-    max_x = simd_sort(max_x); aabb_max->x = simd_get_lane(max_x, simd_vector_width-1);
-    max_y = simd_sort(max_y); aabb_max->y = simd_get_lane(max_y, simd_vector_width-1);
-    max_z = simd_sort(max_z); aabb_max->z = simd_get_lane(max_z, simd_vector_width-1);
+    max_x = simd_hmax(max_x); aabb_max->x = simd_get_first_lane(max_x);
+    max_y = simd_hmax(max_y); aabb_max->y = simd_get_first_lane(max_y);
+    max_z = simd_hmax(max_z); aabb_max->z = simd_get_first_lane(max_z);
     
     for(int i=0; i<remaining_points; ++i)
     {
-        if (points[i].x<aabb_min->x)
-            aabb_min->x = points[i].x;
-        if (points[i].y<aabb_min->y)
-            aabb_min->y = points[i].y;
-        if (points[i].z<aabb_min->z)
-            aabb_min->z = points[i].z;
-        
-        if (points[i].x>aabb_max->x)
-            aabb_max->x = points[i].x;
-        if (points[i].y>aabb_max->y)
-            aabb_max->y = points[i].y;
-        if (points[i].z>aabb_max->z)
-            aabb_max->z = points[i].z;
+        aabb_min->x = _min(aabb_min->x, points[i].x);
+        aabb_min->y = _min(aabb_min->y, points[i].y);
+        aabb_min->z = _min(aabb_min->z, points[i].z);
+        aabb_max->x = _max(aabb_max->x, points[i].x);
+        aabb_max->y = _max(aabb_max->y, points[i].y);
+        aabb_max->z = _max(aabb_max->z, points[i].z);
     }
 }
-
 
 ```
 
