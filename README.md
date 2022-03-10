@@ -33,13 +33,13 @@ void simd_compute_aabb(const point* points, int num_points, point* aabb_min, poi
         points += simd_vector_width;
     }
     
-    min_x = simd_hmin(min_x); aabb_min->x = simd_get_first_lane(min_x);
-    min_y = simd_hmin(min_y); aabb_min->y = simd_get_first_lane(min_y);
-    min_z = simd_hmin(min_z); aabb_min->z = simd_get_first_lane(min_z);
+    aabb_min->x = simd_hmin(min_x);
+    aabb_min->y = simd_hmin(min_y);
+    aabb_min->z = simd_hmin(min_z);
     
-    max_x = simd_hmax(max_x); aabb_max->x = simd_get_first_lane(max_x);
-    max_y = simd_hmax(max_y); aabb_max->y = simd_get_first_lane(max_y);
-    max_z = simd_hmax(max_z); aabb_max->z = simd_get_first_lane(max_z);
+    aabb_max->x = simd_hmax(max_x);
+    aabb_max->y = simd_hmax(max_y);
+    aabb_max->z = simd_hmax(max_z);
     
     for(int i=0; i<remaining_points; ++i)
     {
