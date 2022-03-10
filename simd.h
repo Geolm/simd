@@ -147,6 +147,22 @@ static inline float simd_get_lane(simd_vector a, int lane_index)
     }
 }
 
+static inline float simd_get_first_lane(simd_vector a) {return vgetq_lane_f32(a, 0);}
+
+static inline simd_vector simd_hmin(simd_vector a)
+{
+    a = simd_min(a, __builtin_shufflevector(a, a, 3, 0, 1, 2));
+    a = simd_min(a, __builtin_shufflevector(a, a, 2, 3, 0, 1));
+    return a;
+}
+
+static inline simd_vector simd_hmax(simd_vector a)
+{
+    a = simd_max(a, __builtin_shufflevector(a, a, 3, 0, 1, 2));
+    a = simd_max(a, __builtin_shufflevector(a, a, 2, 3, 0, 1));
+    return a;
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -343,6 +359,24 @@ static inline float simd_get_lane(simd_vector a, int lane_index)
 
     const union __mm256tofloat u = { a };
     return u.f[lane_index];
+}
+
+static inline float simd_get_first_lane(simd_vector a) {return _mm256_cvtss_f32(a);}
+
+static inline simd_vector simd_hmin(simd_vector a)
+{
+    a = simd_min(a, _mm256_permute_ps(a, _MM_SHUFFLE(2, 1, 0, 3)));
+    a = simd_min(a, _mm256_permute_ps(a, _MM_SHUFFLE(1, 0, 3, 2)));
+    a = simd_min(a, _mm256_swap(a));
+    return a;
+}
+
+static inline simd_vector simd_hmax(simd_vector a)
+{
+    a = simd_max(a, _mm256_permute_ps(a, _MM_SHUFFLE(2, 1, 0, 3)));
+    a = simd_max(a, _mm256_permute_ps(a, _MM_SHUFFLE(1, 0, 3, 2)));
+    a = simd_max(a, _mm256_swap(a));
+    return a;
 }
 
 /*
