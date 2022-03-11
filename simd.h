@@ -306,9 +306,37 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
     *z = _mm256_blend_ps(*z, _mm256_swap(*z), 0x22);   // 01000100b = 0x22 (intel reverse order)
 }
 
+static inline void simd_load_xyzw_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
+{
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+    simd_vector c = simd_load(array + simd_vector_width * 2);
+    simd_vector d = simd_load(array + simd_vector_width * 3);
+
+    b = _mm256_permute_ps(b, _MM_SHUFFLE(2, 1, 0, 3));
+    c = _mm256_permute_ps(c, _MM_SHUFFLE(1, 0, 3, 2));
+    d = _mm256_permute_ps(d, _MM_SHUFFLE(0, 3, 2, 1));
+
+    *x = _mm256_blend_ps(a, b, 0x22);    // 01000100b = 0x22 (intel reverse order)
+    *x = _mm256_blend_ps(*x, c, 0x44);   // 00100010b = 0x44 (intel reverse order)
+    *x = _mm256_blend_ps(*x, d, 0x88);   // 00010001b = 0x88 (intel reverse order)
+
+    *y = _mm256_blend_ps(d, a, 0x22);
+    *y = _mm256_blend_ps(*y, b, 0x44);
+    *y = _mm256_blend_ps(*y, c, 0x88);
+
+    *z = _mm256_blend_ps(c, d, 0x22);
+    *z = _mm256_blend_ps(*z, a, 0x44);
+    *z = _mm256_blend_ps(*z, b, 0x88);
+
+    *w = _mm256_blend_ps(b, c, 0x22);
+    *w = _mm256_blend_ps(*w, d, 0x44);
+    *w = _mm256_blend_ps(*w, a, 0x88);
+}
+
 static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
-    
+    simd_load_xyzw_unorder(array, x, y, z, w);
 }
 
 static inline simd_vector simd_sort(simd_vector input)
