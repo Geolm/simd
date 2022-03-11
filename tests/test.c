@@ -126,6 +126,30 @@ int test_horizontal(void)
     return 1;
 }
 
+int test_load_xyzw(void)
+{
+    float array[simd_vector_width*4];
+    for(int i=0; i<simd_vector_width*4; ++i)
+        array[i] = (float) i;
+    
+    printf("simd_load_xyzw :");
+    
+    simd_vector x, y, z, w;
+    simd_load_xyzw(array, &x, &y, &z, &w);
+    simd_store(array, x);
+    simd_store(array+simd_vector_width, y);
+    simd_store(array+simd_vector_width*2, z);
+    simd_store(array+simd_vector_width*3, w);
+    
+    for(int i=0; i<4; ++i)
+        for(int j=0; j<simd_vector_width; ++j)
+            if (array[i*simd_vector_width + j] != (float)(i+(j*4)))
+                return 0;
+    
+    printf(" ok\n");
+    return 1;
+}
+
 
 int main(int argc, const char * argv[])
 {
@@ -135,6 +159,9 @@ int main(int argc, const char * argv[])
         return -1;
     
     if (!test_load_xyz())
+        return -1;
+
+    if (!test_load_xyzw())
         return -1;
     
     if (!test_sort())
