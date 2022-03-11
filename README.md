@@ -174,6 +174,21 @@ simd_vector simd_andnot(simd_vector a, simd_vector b);
 
 ```
 
+## horizontal operation
+
+```C
+
+// returns the minimum value of all lanes in the vector
+static inline float simd_hmin(simd_vector a);
+
+// returns the maximum value of all lanes in the vector
+static inline float simd_hmax(simd_vector a);
+
+// returns the sum of all lanes
+static inline float simd_hsum(simd_vector a);
+
+```
+
 ## misc
 
 ```C
