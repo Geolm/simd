@@ -93,6 +93,35 @@ int test_get_lane(void)
         if (simd_get_lane(a, i) != array[i])
             return 0;
 
+    if (simd_get_first_lane(a) != array[0])
+        return 0;
+
+    printf(" ok\n");
+    return 1;
+}
+
+int test_horizontal(void)
+{
+    float sum=0.0f;
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        array[i] = (float) i;
+        sum += array[i];
+    }
+
+    printf("simd_horizontal :");
+
+    simd_vector a = simd_load(array);
+    if (simd_hsum(a) != sum)
+        return 0;
+
+    if (simd_hmin(a) != array[0])
+        return 0;
+
+    if (simd_hmax(a) != array[simd_last_lane])
+        return 0;
+
     printf(" ok\n");
     return 1;
 }
@@ -113,9 +142,12 @@ int main(int argc, const char * argv[])
 
     if (!test_get_lane())
         return -1;
-    
-    if (!test_aabb())
+
+    if (!test_horizontal())
         return -1;
+    
+    //if (!test_aabb())
+    //    return -1;
     
     return 0;
 }
