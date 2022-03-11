@@ -196,7 +196,7 @@ static inline __m256i loadstore_mask(int element_count)
 }
 
 // swap the two 128 bits part of the __m256
-static inline __m256 _mm256_swap(__m256 a) {return _mm256_permute2f128_ps(a, a, _MM_SHUFFLE(0, 0, 1, 1));}
+static inline __m256 _mm256_swap(__m256 a) {return _mm256_permute2f128_ps(a, a, 1);}
 
 //----------------------------------------------------------------------------------------------------------------------
 // simd public functions
@@ -337,6 +337,29 @@ static inline void simd_load_xyzw_unorder(const float* array, simd_vector* x, si
 static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
     simd_load_xyzw_unorder(array, x, y, z, w);
+    
+    simd_vector swap = _mm256_swap(*x);
+    simd_vector lo = _mm256_unpacklo_ps(*x, swap);
+    simd_vector hi = _mm256_unpackhi_ps(*x, swap);
+    *x = _mm256_permute2f128_ps(lo, hi, 2<<4);
+    
+    *y = _mm256_permute_ps(*y, _MM_SHUFFLE(0, 3, 2, 1));
+    swap = _mm256_swap(*y);
+    lo = _mm256_unpacklo_ps(*y, swap);
+    hi = _mm256_unpackhi_ps(*y, swap);
+    *y = _mm256_permute2f128_ps(lo, hi, 0x20);
+    
+    *z = _mm256_permute_ps(*z, _MM_SHUFFLE(1, 0, 3, 2));
+    swap = _mm256_swap(*z);
+    lo = _mm256_unpacklo_ps(*z, swap);
+    hi = _mm256_unpackhi_ps(*z, swap);
+    *z = _mm256_permute2f128_ps(lo, hi, 0x20);
+    
+    *w = _mm256_permute_ps(*w, _MM_SHUFFLE(2, 1, 0, 3));
+    swap = _mm256_swap(*w);
+    lo = _mm256_unpacklo_ps(*w, swap);
+    hi = _mm256_unpackhi_ps(*w, swap);
+    *w = _mm256_permute2f128_ps(lo, hi, 0x20);
 }
 
 static inline simd_vector simd_sort(simd_vector input)
