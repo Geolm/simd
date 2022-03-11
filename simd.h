@@ -227,6 +227,7 @@ static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_round_ps(a, _MM_FROUND_TRUNC));}
+static inline simd_vector simd_round(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_NINT);}
 static inline simd_vector simd_floor(simd_vector a) {return _mm256_floor_ps(a);}
 static inline simd_vector simd_ceil(simd_vector a) {return _mm256_ceil_ps(a);}
 static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
@@ -443,46 +444,6 @@ static inline float simd_hsum(simd_vector a)
     return simd_get_first_lane(a);
 }
 
-/*
-static inline simd_vector simd_sin(simd_vector a)
-{
-    
-
-    // Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
-	inline n128 _hlslpp_sin_ps(n128 x)
-	{
-		static const n128 sin_c1 = f4_1;
-		static const n128 sin_c3 = _hlslpp_set1_ps(-1.6665578e-1f);
-		static const n128 sin_c5 = _hlslpp_set1_ps(8.3109378e-3f);
-		static const n128 sin_c7 = _hlslpp_set1_ps(-1.84477486e-4f);
-
-		// Range reduction (into [-pi, pi] range)
-		// Formula is x = x - round(x / 2pi) * 2pi
-
-		x = _hlslpp_subm_ps(x, _hlslpp_round_ps(_hlslpp_mul_ps(x, f4_inv2pi)), f4_2pi);
-
-		n128 gtpi2 = _hlslpp_cmpgt_ps(x, f4_pi2);
-		n128 ltminusPi2 = _hlslpp_cmplt_ps(x, f4_minusPi2);
-
-		n128 ox = x;
-
-		// Use identities/mirroring to remap into the range of the minimax polynomial
-		x = _hlslpp_sel_ps(x, _hlslpp_sub_ps(f4_pi, ox), gtpi2);
-		x = _hlslpp_sel_ps(x, _hlslpp_sub_ps(f4_minusPi, ox), ltminusPi2);
-
-		n128 x2 = _hlslpp_mul_ps(x, x);
-		n128 result;
-		result = _hlslpp_madd_ps(x2, sin_c7, sin_c5);
-		result = _hlslpp_madd_ps(x2, result, sin_c3);
-		result = _hlslpp_madd_ps(x2, result, sin_c1);
-		result = _hlslpp_mul_ps(result, x);
-		return result;
-	}
-
-    
-}
- */
-
 #endif
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -494,6 +455,44 @@ static inline simd_vector simd_sin(simd_vector a)
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
+
+// from hlslpp
+// Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
+static inline simd_vector simd_sin(simd_vector x)
+{
+    simd_vector invtau = simd_splat(0.15915494f);  // 1 / (2 * pi)
+    simd_vector tau = simd_splat(6.28318530f);
+    simd_vector pi2 = simd_splat(1.57079632f);  //  pi / 2
+
+    // Range reduction (into [-pi, pi] range)
+    // Formula is x = x - round(x / 2pi) * 2pi
+    x = simd_sub(x, simd_mul(simd_round(simd_mul(x, invtau)), tau));
+
+    simd_vector gt_pi2 = simd_cmp_gt(x, pi2);
+    simd_vector lt_minus_pi2 = simd_cmp_lt(x, simd_neg(pi2));
+    
+    simd_vector ox = x;
+
+    // Use identities/mirroring to remap into the range of the minimax polynomial
+    simd_vector pi = simd_splat(3.14159265f);
+    x = simd_select(x, simd_sub(pi, ox), gt_pi2);
+    x = simd_select(x, simd_sub(simd_neg(pi), ox), lt_minus_pi2);
+
+    simd_vector x_squared = simd_mul(x, x);
+
+    simd_vector c1 = simd_splat(1.f);
+    simd_vector c3 = simd_splat(-1.6665578e-1f);
+    simd_vector c5 = simd_splat(8.3109378e-3f);
+    simd_vector c7 = simd_splat(-1.84477486e-4f);
+
+    simd_vector result;
+    result = simd_fmad(x_squared, c7, c5);
+    result = simd_fmad(x_squared, result, c3);
+    result = simd_fmad(x_squared, result, c1);
+    result = simd_mul(result, x);
+
+    return result;
+}
 
 
 #endif // __SIMD__H__
