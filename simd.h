@@ -208,10 +208,10 @@ static inline simd_vector simd_div(simd_vector a, simd_vector b) {return _mm256_
 static inline simd_vector simd_rcp(simd_vector a) {return _mm256_rcp_ps(a);}
 static inline simd_vector simd_rsqrt(simd_vector a) {return _mm256_rsqrt_ps(a);}
 static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
-static inline simd_vector simd_abs(simd_vector a) {return _mm256_and_ps(a, _mm256_cvtepi32_ps(_mm256_set1_epi32(-1)));}
+static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
+static inline simd_vector simd_abs(simd_vector a) {return _mm256_max_ps(a, simd_neg(a));}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
 static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c) {return _mm256_fmadd_ps(a, b, c);}
-static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
 static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
@@ -442,6 +442,22 @@ static inline float simd_hsum(simd_vector a)
     a = simd_add(a, _mm256_permute_ps(a, _MM_SHUFFLE(1, 0, 3, 2)));
     a = simd_add(a, _mm256_swap(a));
     return simd_get_first_lane(a);
+}
+
+static inline int simd_pack_mask(simd_vector a)
+{
+    return _mm256_movemask_ps(a);
+}
+
+// returns 1 if all abs(a-b) < epsilon, otherwise 0
+static inline int simd_similar(simd_vector a, simd_vector b, simd_vector epsilon)
+{
+    simd_vector diff = simd_abs_diff(a, b);
+    simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
+
+    if (_mm256_movemask_ps(lt_epsilon) == 0xFF)
+        return 1;
+    return 0;
 }
 
 #endif

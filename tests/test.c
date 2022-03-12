@@ -5,6 +5,7 @@
 #include "sokol_time.h"
 
 #include "test_aabb.h"
+#include <math.h>
 
 int test_load_xy(void)
 {
@@ -150,6 +151,31 @@ int test_load_xyzw(void)
     return 1;
 }
 
+int test_sin(void)
+{
+    float array[simd_vector_width];
+    float result[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        array[i] = (float) (i - simd_vector_width/2);
+        result[i] = sinf(array[i]);
+    }
+
+    printf("simd_sin :");
+
+    simd_vector a = simd_load(array);
+    simd_vector target = simd_load(result);
+    a = simd_sin(a);
+    
+    simd_vector epsilon = simd_splat(0.000001f);
+    
+    if (!simd_similar(a, target, epsilon))
+        return 0;
+
+    printf(" ok\n");
+    return 1;
+}
+
 
 int main(int argc, const char * argv[])
 {
@@ -171,6 +197,9 @@ int main(int argc, const char * argv[])
         return -1;
 
     if (!test_horizontal())
+        return -1;
+
+    if (!test_sin())
         return -1;
     
     //if (!test_aabb())
