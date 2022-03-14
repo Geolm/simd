@@ -94,6 +94,16 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
     }
 }
 
+static inline void simd_interlace_xy(simd_vector x, simd_vector y, simd_vector* output0, simd_vector* output1)
+{
+    // vzip2q_f32()
+}
+
+static inline void simd_deinterlace_xy(simd_vector a, simd_vector b, simd_vector* x, simd_vector* y)
+{
+    // vunzip
+}
+
 static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
 {
     float32x4x2_t data = vld2q_f32(array);
@@ -286,6 +296,28 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
         _mm256_maskstore_ps(array, loadstore_mask(count), a);
 }
 
+static inline void simd_interlace_xy(simd_vector x, simd_vector y, simd_vector* output0, simd_vector* output1)
+{
+    *output0 = _mm256_unpacklo_ps(x, y);
+    *output1 = _mm256_unpackhi_ps(x, y);
+}
+
+static inline void simd_deinterlace_xy(simd_vector a, simd_vector b, simd_vector* x, simd_vector* y)
+{
+    *x = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(2, 0, 2, 0));
+    *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
+
+    // do additionnal shuffle to preserve order
+    simd_vector tmp;
+    tmp = _mm256_swap(*x);
+    tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
+    *x = _mm256_blend_ps(*x, tmp, 0x3C);   // 00111100b = 0x3C
+    
+    tmp = _mm256_swap(*y);
+    tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
+    *y = _mm256_blend_ps(*y, tmp, 0x3C);   // 00111100b = 0x3C
+}
+
 static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y)
 {
     simd_vector a = simd_load(array);
@@ -297,17 +329,7 @@ static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd
 
 static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
 {
-    simd_load_xy_unorder(array, x, y);
-
-    // do additionnal shuffle to preserve order
-    simd_vector tmp;
-    tmp = _mm256_swap(*x);
-    tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
-    *x = _mm256_blend_ps(*x, tmp, 0x3C);   // 00111100b = 0x3C
-    
-    tmp = _mm256_swap(*y);
-    tmp = _mm256_permute_ps(tmp, _MM_SHUFFLE(1, 0, 3, 2));
-    *y = _mm256_blend_ps(*y, tmp, 0x3C);   // 00111100b = 0x3C
+    simd_deinterlace_xy(simd_load(array), simd_load(array + simd_vector_width), x, y);
 }
 
 static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
