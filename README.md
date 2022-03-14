@@ -1,7 +1,7 @@
 # simd
-Neon/AVX simd library
+NEON/AVX simd library
 
-This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits Neon on my M1 Mac. 
+This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits NEON on my M1 Mac. 
 
 # example
 
@@ -133,11 +133,27 @@ simd_vector simd_neg(simd_vector a);
 
 ```C
 
+all comparison functions return a vector with the comparison result in each lanes
+a value of NAN for true and zero for false
+those result vectors can be use with simd_select and simd_any
+
+// greater than comparison
 simd_vector simd_cmp_gt(simd_vector a, simd_vector b);
-simd_vector simd_cmp_ge(simd_vector a, simd_vector b); 
+
+// greater or equal comparison
+simd_vector simd_cmp_ge(simd_vector a, simd_vector b);
+
+// less than comparison
 simd_vector simd_cmp_lt(simd_vector a, simd_vector b); 
+
+// less or equal comparison
 simd_vector simd_cmp_le(simd_vector a, simd_vector b); 
+
+// equal comparison
 simd_vector simd_cmp_eq(simd_vector a, simd_vector b); 
+
+// not equal comparison
+simd_vector simd_cmp_neq(simd_vector a, simd_vector b); 
 
 // returns a vector with value from a or b depending of the mask
 // mask can be obtain by a comparison
@@ -157,6 +173,9 @@ simd_vector simd_floor(simd_vector a);
 
 // returns the smallest integer less than [a]
 simd_vector simd_ceil(simd_vector a);
+
+// returns round value to the nearest integer
+simd_vector simd_round(simd_vector a);
 
 ```
 

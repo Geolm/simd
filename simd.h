@@ -53,6 +53,7 @@ static inline simd_vector simd_cmp_ge(simd_vector a, simd_vector b) {return vrei
 static inline simd_vector simd_cmp_lt(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vcltq_f32(a, b));}
 static inline simd_vector simd_cmp_le(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vcleq_f32(a, b));}
 static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vceqq_f32(a, b));}
+static inline simd_vector simd_cmp_neq(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vmvnq_u32(vceqq_f32(a, b)));}
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return vbslq_f32(vreinterpretq_u32_f32(mask), b, a);}
 static inline simd_vector simd_reverse(simd_vector a) {return __builtin_shufflevector(a, a, 3, 2, 1, 0);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
@@ -182,6 +183,30 @@ static inline float simd_hsum(simd_vector a)
     return vaddvq_f32(a);
 }
 
+static inline int simd_get_mask(simd_vector a)
+{
+    static const int32x4_t shift = {0, 1, 2, 3};
+    uint32x4_t tmp = vshrq_n_u32(a, 31);
+    return vaddvq_u32(vshlq_u32(tmp, shift));
+}
+
+// returns 1 if all abs(a-b) < epsilon, otherwise 0
+static inline int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
+{
+    simd_vector diff = simd_abs_diff(a, b);
+    simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
+
+    if (simd_get_mask(lt_epsilon) == 0xF)
+        return 1;
+
+    return 0;
+}
+
+static inline int simd_any(simd_vector a)
+{
+    return simd_get_mask(a) != 0;
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -236,6 +261,7 @@ static inline simd_vector simd_cmp_ge(simd_vector a, simd_vector b) {return _mm2
 static inline simd_vector simd_cmp_lt(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_LT_OQ);}
 static inline simd_vector simd_cmp_le(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_LE_OQ);}
 static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_EQ_OQ);}
+static inline simd_vector simd_cmp_neq(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_NEQ_OQ);}
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return _mm256_blendv_ps(a, b, mask);}
 static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));}
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
@@ -458,13 +484,8 @@ static inline float simd_hsum(simd_vector a)
     return simd_get_first_lane(a);
 }
 
-static inline int simd_pack_mask(simd_vector a)
-{
-    return _mm256_movemask_ps(a);
-}
-
 // returns 1 if all abs(a-b) < epsilon, otherwise 0
-static inline int simd_similar(simd_vector a, simd_vector b, simd_vector epsilon)
+static inline int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
 {
     simd_vector diff = simd_abs_diff(a, b);
     simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
@@ -472,6 +493,11 @@ static inline int simd_similar(simd_vector a, simd_vector b, simd_vector epsilon
     if (_mm256_movemask_ps(lt_epsilon) == 0xFF)
         return 1;
     return 0;
+}
+
+static inline int simd_any(simd_vector a)
+{
+    return _mm256_movemask_ps(a) != 0;
 }
 
 #endif
@@ -522,6 +548,22 @@ static inline simd_vector simd_sin(simd_vector x)
     result = simd_mul(result, x);
 
     return result;
+}
+
+static inline simd_vector simd_cos(simd_vector a)
+{
+    return simd_sin(simd_sub(simd_splat(1.57079632f), a));
+}
+
+static inline simd_vector simd_smoothstep(simd_vector edge0, simd_vector edge1, simd_vector x)
+{
+    x = simd_saturate(simd_div(simd_sub(x, edge0), simd_sub(edge1, edge0)));
+    return simd_mul(simd_mul(x, x), simd_sub(simd_splat(3.f), simd_add(x, x)));
+}
+
+static inline simd_vector simd_isnan(simd_vector a)
+{
+    return simd_cmp_neq(a, a);
 }
 
 
