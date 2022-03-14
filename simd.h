@@ -6,7 +6,7 @@
     NEON/AVX simd library
 
     This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. 
-    With the same code it will use 256 bits AVX on intel-based computers or 128 bits NEON on my arm. 
+    With the same code it will use 256 bits AVX on intel-based computers or 128 bits NEON on arm. 
 
     Documentation can be found https://github.com/Geolm/simd/
 */
