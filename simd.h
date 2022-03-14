@@ -169,6 +169,25 @@ static inline float simd_hsum(simd_vector a)
     return vaddvq_f32(a);
 }
 
+static inline int simd_get_mask(simd_vector a)
+{
+    static const int32x4_t shift = {0, 1, 2, 3};
+    uint32x4_t tmp = vshrq_n_u32(a, 31);
+    return vaddvq_u32(vshlq_u32(tmp, shift));
+}
+
+// returns 1 if all abs(a-b) < epsilon, otherwise 0
+static inline int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
+{
+    simd_vector diff = simd_abs_diff(a, b);
+    simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
+
+    if (simd_get_mask(lt_epsilon) == 0xF)
+        return 1;
+
+    return 0;
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -445,13 +464,8 @@ static inline float simd_hsum(simd_vector a)
     return simd_get_first_lane(a);
 }
 
-static inline int simd_pack_mask(simd_vector a)
-{
-    return _mm256_movemask_ps(a);
-}
-
 // returns 1 if all abs(a-b) < epsilon, otherwise 0
-static inline int simd_similar(simd_vector a, simd_vector b, simd_vector epsilon)
+static inline int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
 {
     simd_vector diff = simd_abs_diff(a, b);
     simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
