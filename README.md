@@ -131,11 +131,11 @@ simd_vector simd_neg(simd_vector a);
 
 ## comparison
 
-```C
-
 all comparison functions return a vector with the comparison result in each lanes
 a value of NAN for true and zero for false
 those result vectors can be use with simd_select and simd_any
+
+```C
 
 // greater than comparison
 simd_vector simd_cmp_gt(simd_vector a, simd_vector b);
@@ -158,6 +158,12 @@ simd_vector simd_cmp_neq(simd_vector a, simd_vector b);
 // returns a vector with value from a or b depending of the mask
 // mask can be obtain by a comparison
 simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask)
+
+// returns 1 if all abs(a-b) < epsilon, otherwise 0
+int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
+
+// returns 1 if any of the lanes is true (NAN), otherwise 0
+int simd_any(simd_vector a)
 
 ```
 
