@@ -1,5 +1,5 @@
 # simd
-Neon/AVX simd library
+NEON/AVX simd library
 
 This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits NEON on my M1 Mac. 
 
@@ -151,6 +151,9 @@ simd_vector simd_cmp_le(simd_vector a, simd_vector b);
 
 // equal comparison
 simd_vector simd_cmp_eq(simd_vector a, simd_vector b); 
+
+// not equal comparison
+simd_vector simd_cmp_neq(simd_vector a, simd_vector b); 
 
 // returns a vector with value from a or b depending of the mask
 // mask can be obtain by a comparison
