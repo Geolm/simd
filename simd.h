@@ -1,10 +1,23 @@
 #ifndef __SIMD__H__
 #define __SIMD__H__
 
+/*
+
+    NEON/AVX simd library
+
+    This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. 
+    There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example.
+    But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits NEON on my M1 Mac. 
+
+    Documentation can be found https://github.com/Geolm/simd/
+*/
+
+
+
 #include <assert.h>
 
 //----------------------------------------------------------------------------------------------------------------------
-// Neon
+// NEON
 //----------------------------------------------------------------------------------------------------------------------
 
 #if defined(__ARM_NEON) && defined(__ARM_NEON__)
