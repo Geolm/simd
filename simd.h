@@ -96,12 +96,14 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
 
 static inline void simd_interlace_xy(simd_vector x, simd_vector y, simd_vector* output0, simd_vector* output1)
 {
-    // vzip2q_f32()
+    *output0 = vzip1q_f32(x, y);
+    *output1 = vzip2q_f32(x, y);
 }
 
 static inline void simd_deinterlace_xy(simd_vector a, simd_vector b, simd_vector* x, simd_vector* y)
 {
-    // vunzip
+    *x = vuzp1q_f32(a, b);
+    *y = vuzp2q_f32(a, b);
 }
 
 static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
