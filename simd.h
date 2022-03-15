@@ -300,8 +300,13 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
 
 static inline void simd_interlace_xy(simd_vector x, simd_vector y, simd_vector* output0, simd_vector* output1)
 {
-    *output0 = _mm256_unpacklo_ps(x, y);
-    *output1 = _mm256_unpackhi_ps(x, y);
+    __m128 x_lo = _mm256_extractf128_ps(x, 0);
+    __m128 x_hi = _mm256_extractf128_ps(x, 1);
+    __m128 y_lo = _mm256_extractf128_ps(y, 0);
+    __m128 y_hi = _mm256_extractf128_ps(y, 1);
+
+    *output0 = _mm256_set_m128(_mm_unpackhi_ps(x_lo, y_lo), _mm_unpacklo_ps(x_lo, y_lo));
+    *output1 = _mm256_set_m128(_mm_unpackhi_ps(x_hi, y_hi), _mm_unpacklo_ps(x_hi, y_hi));
 }
 
 static inline void simd_deinterlace_xy(simd_vector a, simd_vector b, simd_vector* x, simd_vector* y)

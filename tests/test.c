@@ -199,7 +199,7 @@ int test_interlacing(void)
         if (output[i*2] != i)
             return 0;
         
-        if (output[i*2+1] != i+ 4)
+        if (output[i*2+1] != i+ simd_vector_width)
             return 0;    
     }
     
