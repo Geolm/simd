@@ -176,46 +176,6 @@ int test_sin(void)
     return 1;
 }
 
-int test_interlacing(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i;
-        
-    printf("simd_interlace :");
-
-    simd_vector x = simd_load(array);
-    simd_vector y = simd_load(array + simd_vector_width);
-    simd_vector a, b;
-
-    simd_interlace_xy(x, y, &a, &b);
-
-    float output[simd_vector_width*2];
-    simd_store(output, a);
-    simd_store(output + simd_vector_width, b);
-    
-    for(int i=0; i<simd_vector_width; ++i)
-    {
-        if (output[i*2] != i)
-            return 0;
-        
-        if (output[i*2+1] != i+ simd_vector_width)
-            return 0;    
-    }
-    
-    simd_deinterlace_xy(a, b, &a, &b);
-    
-    if (simd_any(simd_cmp_neq(a, x)))
-        return 0;
-        
-    if (!simd_all(simd_cmp_eq(b, y)))
-        return 0;
-
-    printf(" ok\n");
-    return 1;
-}
-
-
 int main(int argc, const char * argv[])
 {
     stm_setup();
@@ -239,9 +199,6 @@ int main(int argc, const char * argv[])
         return -1;
 
     if (!test_sin())
-        return -1;
-
-    if (!test_interlacing())
         return -1;
     
     //if (!test_aabb())
