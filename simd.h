@@ -505,6 +505,11 @@ static inline float simd_hsum(simd_vector a)
     return simd_get_first_lane(a);
 }
 
+static inline int simd_get_mask(simd_vector a)
+{
+    return _mm256_movemask_ps(a);
+}
+
 static inline int simd_any(simd_vector a)
 {
     return _mm256_movemask_ps(a) != 0;
@@ -514,6 +519,8 @@ static inline int simd_all(simd_vector a)
 {
     return _mm256_movemask_ps(a) == 0xff;
 }
+
+
 
 #endif
 
