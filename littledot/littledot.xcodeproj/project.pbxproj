@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FB9CD19927E277B1006519FC /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = FB9CD19827E277B1006519FC /* main.c */; };
+		FB15A6AB27E2789C000C18B2 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = FB15A6AA27E2789C000C18B2 /* main.c */; };
+		FB15A6AE27E27D76000C18B2 /* fpng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FB15A6AC27E27D76000C18B2 /* fpng.cpp */; };
+		FB7F85CD27EA4D3B000DB8FD /* rasterizer.c in Sources */ = {isa = PBXBuildFile; fileRef = FB7F85CC27EA4D3B000DB8FD /* rasterizer.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,8 +25,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FB15A6AA27E2789C000C18B2 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		FB15A6AC27E27D76000C18B2 /* fpng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fpng.cpp; sourceTree = "<group>"; };
+		FB15A6AD27E27D76000C18B2 /* fpng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fpng.h; sourceTree = "<group>"; };
+		FB7F85CB27EA4D3B000DB8FD /* rasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rasterizer.h; sourceTree = "<group>"; };
+		FB7F85CC27EA4D3B000DB8FD /* rasterizer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rasterizer.c; sourceTree = "<group>"; };
 		FB9CD19527E277B1006519FC /* littledot */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = littledot; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB9CD19827E277B1006519FC /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +47,11 @@
 		FB9CD18C27E277B1006519FC = {
 			isa = PBXGroup;
 			children = (
-				FB9CD19727E277B1006519FC /* littledot */,
+				FB7F85CC27EA4D3B000DB8FD /* rasterizer.c */,
+				FB7F85CB27EA4D3B000DB8FD /* rasterizer.h */,
+				FB15A6AA27E2789C000C18B2 /* main.c */,
+				FB15A6AC27E27D76000C18B2 /* fpng.cpp */,
+				FB15A6AD27E27D76000C18B2 /* fpng.h */,
 				FB9CD19627E277B1006519FC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,14 +62,6 @@
 				FB9CD19527E277B1006519FC /* littledot */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		FB9CD19727E277B1006519FC /* littledot */ = {
-			isa = PBXGroup;
-			children = (
-				FB9CD19827E277B1006519FC /* main.c */,
-			);
-			path = littledot;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,7 +121,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB9CD19927E277B1006519FC /* main.c in Sources */,
+				FB7F85CD27EA4D3B000DB8FD /* rasterizer.c in Sources */,
+				FB15A6AE27E27D76000C18B2 /* fpng.cpp in Sources */,
+				FB15A6AB27E2789C000C18B2 /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,6 +162,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CLANG_X86_VECTOR_INSTRUCTIONS = avx;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -216,12 +221,14 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CLANG_X86_VECTOR_INSTRUCTIONS = avx;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
