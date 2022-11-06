@@ -1,5 +1,5 @@
 # simd
-NEON/AVX simd library
+NEON/AVX simd library, one header file library.
 
 This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits NEON on my M1 Mac. 
 
@@ -8,6 +8,8 @@ This is not a math library, this a multiplatform simd intrinsic "vector size agn
 Simple function to compute aabb from a list of points. Not the most optimal function but does work on any sized simd vector. 
 
 ```C
+#include "simd.h"
+
 typedef struct {float x, y, z;} point;
 
 void simd_compute_aabb(const point* points, int num_points, point* aabb_min, point* aabb_max)
