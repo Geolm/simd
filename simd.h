@@ -177,16 +177,12 @@ static inline float simd_get_first_lane(simd_vector a) {return vgetq_lane_f32(a,
 
 static inline float simd_hmin(simd_vector a)
 {
-    a = simd_min(a, __builtin_shufflevector(a, a, 3, 0, 1, 2));
-    a = simd_min(a, __builtin_shufflevector(a, a, 2, 3, 0, 1));
-    return vgetq_lane_f32(a, 0);
+    return vminvq_f32(a);
 }
 
 static inline float simd_hmax(simd_vector a)
 {
-    a = simd_max(a, __builtin_shufflevector(a, a, 3, 0, 1, 2));
-    a = simd_max(a, __builtin_shufflevector(a, a, 2, 3, 0, 1));
-    return vgetq_lane_f32(a, 0);
+    return vmaxvq_f32(a);
 }
 
 static inline float simd_hsum(simd_vector a)

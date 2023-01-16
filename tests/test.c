@@ -201,8 +201,8 @@ int main(int argc, const char * argv[])
     if (!test_sin())
         return -1;
     
-    //if (!test_aabb())
-    //    return -1;
+    if (!test_aabb())
+        return -1;
     
     return 0;
 }
