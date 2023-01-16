@@ -1,5 +1,5 @@
 # simd
-NEON/AVX simd library
+NEON/AVX simd library, one header file library.
 
 This is not a math library, this a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits NEON on my M1 Mac. 
 
@@ -8,6 +8,8 @@ This is not a math library, this a multiplatform simd intrinsic "vector size agn
 Simple function to compute aabb from a list of points. Not the most optimal function but does work on any sized simd vector. 
 
 ```C
+#include "simd.h"
+
 typedef struct {float x, y, z;} point;
 
 void simd_compute_aabb(const point* points, int num_points, point* aabb_min, point* aabb_max)
@@ -82,9 +84,25 @@ void simd_store_partial(float* array, simd_vector a, int count);
 // reads simd_vector_width*2 floats. preserves order.
 void simd_load_xy(const float* array, simd_vector* x, simd_vector* y);
 
+// loads 2 channels data from [array] and deinterleave data in [x] and [y].
+// reads simd_vector_width*2 floats. Does not preserve order, faster on AVX than previous function.
+static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y);
+
 // loads 3 channels data from [array] and deinterleave data in [x], [y] and [z].
 // reads simd_vector_width*3 floats. preserves order.
 void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z);
+
+// loads 3 channels data from [array] and deinterleave data in [x], [y] and [z].
+// reads simd_vector_width*3 floats. Does not preserve order, faster on AVX than previous function.
+void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z);
+
+// loads 4 channels data from [array] and deinterleave data in [x], [y], [z] and [w]
+// reads simd_vector_width*4 floats. preserves order.
+void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w);
+
+// loads 4 channels data from [array] and deinterleave data in [x], [y], [z] and [w]
+// reads simd_vector_width*4 floats. Does not preserve order, faster on AVX than previous function.
+void simd_load_xyzw_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w);
 
 // returns a vector with all lanes set to [value] 
 simd_vector simd_splat(float value);
