@@ -204,7 +204,7 @@ static inline int simd_any(simd_vector a)
 
 static inline int simd_all(simd_vector a)
 {
-    return simd_get_mask(a) == 0xf;
+    return vminvq_u32(a) == UINT32_MAX;
 }
 
 #else
