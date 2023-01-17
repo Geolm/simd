@@ -250,7 +250,14 @@ static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
 static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
 static inline simd_vector simd_abs(simd_vector a) {return _mm256_max_ps(a, simd_neg(a));}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
-static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c) {return _mm256_fmadd_ps(a, b, c);}
+static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c)
+{
+#ifdef __FMA__
+    return _mm256_fmadd_ps(a, b, c);
+#else
+    return _mm256_add_ps(_mm256_mul_ps(a, b), c);
+#endif
+}
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
 static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
@@ -270,8 +277,20 @@ static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_r
 static inline simd_vector simd_round(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_NINT);}
 static inline simd_vector simd_floor(simd_vector a) {return _mm256_floor_ps(a);}
 static inline simd_vector simd_ceil(simd_vector a) {return _mm256_ceil_ps(a);}
-static inline simd_vector simd_load(const float* array) {return _mm256_loadu_ps(array);}
-static inline void simd_store(float* array, simd_vector a) {_mm256_storeu_ps(array, a);}
+static inline simd_vector simd_load(const float* array)
+{
+    if ((((uintptr_t)(array)) & 31 ) == 0) // aligned on 32 bytes
+        return _mm256_load_ps(array);
+    
+    return _mm256_loadu_ps(array);
+}
+static inline void simd_store(float* array, simd_vector a)
+{
+    if ((((uintptr_t)(array)) & 31 ) == 0) // aligned on 32 bytes
+        _mm256_store_ps(array, a);
+    
+    _mm256_storeu_ps(array, a);
+}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
     assert(count>0);
