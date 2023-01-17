@@ -24,7 +24,6 @@
 #include <arm_neon.h>
 
 #define simd_vector_width (4)
-
 typedef float32x4_t simd_vector;
 
 
@@ -207,6 +206,11 @@ static inline int simd_all(simd_vector a)
     return vminvq_u32(a) == UINT32_MAX;
 }
 
+static inline int simd_none(simd_vector a)
+{
+    return vmaxvq_u32(a) == 0;
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -217,9 +221,7 @@ static inline int simd_all(simd_vector a)
 #include <stdint.h>
 
 #define simd_vector_width (8)
-
 typedef __m256 simd_vector;
-
 
 // private function, you should not use this function, specific to AVX implementation
 static inline __m256i loadstore_mask(int element_count)
@@ -288,8 +290,8 @@ static inline void simd_store(float* array, simd_vector a)
 {
     if ((((uintptr_t)(array)) & 31 ) == 0) // aligned on 32 bytes
         _mm256_store_ps(array, a);
-    
-    _mm256_storeu_ps(array, a);
+    else
+        _mm256_storeu_ps(array, a);
 }
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
@@ -535,7 +537,10 @@ static inline int simd_all(simd_vector a)
     return _mm256_movemask_ps(a) == 0xff;
 }
 
-
+static inline int simd_none(simd_vector a)
+{
+    return _mm256_movemask_ps(a) == 0;
+}
 
 #endif
 
