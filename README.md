@@ -140,6 +140,7 @@ simd_vector simd_sqrt(simd_vector a);
 simd_vector simd_abs(simd_vector a);
 
 // returns a*b+c (fused multiply-add)
+// with AVX it is emulated if the __FMA__ macro is not defined 
 simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c);
 
 // returns -a
