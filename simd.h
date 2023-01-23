@@ -14,6 +14,7 @@
 
 
 #include <assert.h>
+#include <stdlib.h>
 
 //----------------------------------------------------------------------------------------------------------------------
 // NEON
@@ -24,6 +25,7 @@
 #include <arm_neon.h>
 
 #define simd_vector_width (4)
+#define simd_vector_alignment (16)
 typedef float32x4_t simd_vector;
 
 
@@ -219,8 +221,10 @@ static inline int simd_none(simd_vector a)
 
 #include <immintrin.h>
 #include <stdint.h>
+#include <mm_malloc.h>
 
 #define simd_vector_width (8)
+#define simd_vector_alignment (32)
 typedef __m256 simd_vector;
 
 // private function, you should not use this function, specific to AVX implementation
@@ -549,11 +553,13 @@ static inline int simd_none(simd_vector a)
 //----------------------------------------------------------------------------------------------------------------------
 
 #define simd_last_lane (simd_vector_width-1)
+#define simd_full_mask ((1<<simd_vector_width)-1)
 
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
 
+//----------------------------------------------------------------------------------------------------------------------
 // from hlslpp
 // Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
 static inline simd_vector simd_sin(simd_vector x)
@@ -592,28 +598,57 @@ static inline simd_vector simd_sin(simd_vector x)
     return result;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_cos(simd_vector a)
 {
     return simd_sin(simd_sub(simd_splat(1.57079632f), a));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_smoothstep(simd_vector edge0, simd_vector edge1, simd_vector x)
 {
     x = simd_saturate(simd_div(simd_sub(x, edge0), simd_sub(edge1, edge0)));
     return simd_mul(simd_mul(x, x), simd_sub(simd_splat(3.f), simd_add(x, x)));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_isnan(simd_vector a)
 {
     return simd_cmp_neq(a, a);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
 {
     simd_vector diff = simd_abs_diff(a, b);
     simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
 
     return simd_all(lt_epsilon);
+}
+
+//-----------------------------------------------------------------------------
+static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, simd_vector p2, simd_vector t)
+{
+    simd_vector one_minus_t = simd_sub(simd_splat(1.f), t);
+    simd_vector a = simd_mul(one_minus_t, one_minus_t);
+    simd_vector b = simd_mul(simd_splat(2.f), simd_mul(one_minus_t, t));
+    simd_vector c = simd_mul(t, t);
+    
+    return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
+}
+
+//-----------------------------------------------------------------------------
+static inline void* simd_aligned_alloc(size_t size)
+{
+    size = (size + simd_vector_alignment - 1) / simd_vector_alignment;
+    size *= simd_vector_alignment;
+    return aligned_alloc(simd_vector_alignment, size);
+}
+
+//-----------------------------------------------------------------------------
+static inline void simd_aligned_free(void* ptr)
+{
+    free(ptr);
 }
 
 
