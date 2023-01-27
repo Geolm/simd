@@ -213,6 +213,18 @@ static inline int simd_none(simd_vector a)
     return vmaxvq_u32(a) == 0;
 }
 
+static inline simd_vector simd_set_mask(int mask)
+{
+    uint32_t v_mask[4] = 
+    {
+        (mask&1)   ? 0xffffffff : 0,
+        (mask&2)   ? 0xffffffff : 0,
+        (mask&4)   ? 0xffffffff : 0,
+        (mask&8)   ? 0xffffffff : 0,
+    };
+    return vreinterpretq_f32_u32(vld1q_u32(v_mask));
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -546,6 +558,19 @@ static inline int simd_none(simd_vector a)
     return _mm256_movemask_ps(a) == 0;
 }
 
+static inline simd_vector simd_set_mask(int mask)
+{
+    return _mm256_cvtepi32_ps(_mm256_set_epi32(
+        (mask&128) ? 0xffffffff : 0,
+        (mask&64)  ? 0xffffffff : 0,
+        (mask&32)  ? 0xffffffff : 0,
+        (mask&16)  ? 0xffffffff : 0,
+        (mask&8)   ? 0xffffffff : 0,
+        (mask&4)   ? 0xffffffff : 0,
+        (mask&2)   ? 0xffffffff : 0,
+        (mask&1)   ? 0xffffffff : 0));
+}
+
 #endif
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -574,7 +599,6 @@ static inline simd_vector simd_sin(simd_vector x)
 
     simd_vector gt_pi2 = simd_cmp_gt(x, pi2);
     simd_vector lt_minus_pi2 = simd_cmp_lt(x, simd_neg(pi2));
-    
     simd_vector ox = x;
 
     // Use identities/mirroring to remap into the range of the minimax polynomial
