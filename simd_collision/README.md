@@ -9,21 +9,27 @@ This library uses simd.h to compute intersection between 2d primitives with AVX/
 
 * The user provides a callback when initializing the library
 * The user calls intersection functions (aabb vs triangle for example) with an user id
-* Once the library has enough intersections, it computes a batch of intersection using simd instructions
-* The library calls the callback in case of intersection and pass the used id in parameter
+* Once the library has enough data, it computes a batch of intersection using simd instructions
+* The library calls the callback in case of intersection and pass the user id in parameter
 
 Note : the user can force the library to compute intersection even if the batch is not full (not optimal but sometimes needed)
 
 ## Details
 
+```C
 struct simdcol_context* simdcol_init(void* user_context, simdcol_callback callback);
+```
 
 Init the library, one should pass a pointer to a user context and a valid callback pointer.
 The callback has this signature:
 
+```C
 typedef void (*simdcol_callback)(void*, uint32_t);
+```
 
-The callback is going to be called in case of an intersection
+The callback is going to be called in case of an intersection with two parameters:
+* a void* pointer to the user context provided at initialization
+* an uin32_t provided when requesting an intersection test
 
 Every intersection functions take in parameters :
   * the library context (simdcol_context) that contains internal buffers/data
