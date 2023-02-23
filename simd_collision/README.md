@@ -36,6 +36,43 @@ Every intersection functions take in parameters :
   * an uint32_t user_data that is going to be passed to the callback in case of collision. One could store both primitives id in this user data to run the appropriate code in case of an intersection
   * primitives data (circle center and radius for example)
 
+```C
+void simdcol_aabb_triangle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 p0, vec2 p1, vec2 p2);
+```
 
+AABB vs Triangle
 
+Test based on Separating Axis Theorem (SAT)
+
+Any winding order for the triangle
+
+```C
+void simdcol_aabb_obb(struct simdcol_context* context, uint32_t user_data, aabb box, segment obb_height, float obb_width);
+```
+
+```C
+void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 circle_center, float circle_radius);
+```
+
+```C
+void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_data, const vec2 a[3], const vec2 b[3]);
+```
+
+```C
+void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
+```
+
+Force the library to compute intersection even if the batch is not full. The use has to pass a hint on what to flush has described here:
+
+```C
+enum flush_hint
+{
+    flush_aabb_triangle,
+    flush_aabb_obb,
+    flush_aabb_circle,
+    flush_triangle_triangle,
+    flush_segment_aabb,
+    flush_all
+};
+```
 
