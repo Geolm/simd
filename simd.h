@@ -15,6 +15,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 //----------------------------------------------------------------------------------------------------------------------
 // NEON
@@ -232,8 +233,6 @@ static inline simd_vector simd_set_mask(int mask)
 //----------------------------------------------------------------------------------------------------------------------
 
 #include <immintrin.h>
-#include <stdint.h>
-#include <mm_malloc.h>
 
 #define simd_vector_width (8)
 #define simd_vector_alignment (32)
@@ -579,6 +578,9 @@ static inline simd_vector simd_set_mask(int mask)
 
 #define simd_last_lane (simd_vector_width-1)
 #define simd_full_mask ((1<<simd_vector_width)-1)
+#define SIMD_TAU (6.28318530f)
+#define SIMD_PI  (3.14159265f)
+#define SIMD_PI2 (1.57079632f)
 
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
@@ -589,9 +591,9 @@ static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t)
 // Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
 static inline simd_vector simd_sin(simd_vector x)
 {
-    simd_vector invtau = simd_splat(0.15915494f);  // 1 / (2 * pi)
-    simd_vector tau = simd_splat(6.28318530f);
-    simd_vector pi2 = simd_splat(1.57079632f);  //  pi / 2
+    simd_vector invtau = simd_splat(1.f/SIMD_TAU);
+    simd_vector tau = simd_splat(SIMD_TAU);
+    simd_vector pi2 = simd_splat(SIMD_PI2);
 
     // Range reduction (into [-pi, pi] range)
     // Formula is x = x - round(x / 2pi) * 2pi
@@ -602,7 +604,7 @@ static inline simd_vector simd_sin(simd_vector x)
     simd_vector ox = x;
 
     // Use identities/mirroring to remap into the range of the minimax polynomial
-    simd_vector pi = simd_splat(3.14159265f);
+    simd_vector pi = simd_splat(SIMD_PI);
     x = simd_select(x, simd_sub(pi, ox), gt_pi2);
     x = simd_select(x, simd_sub(simd_neg(pi), ox), lt_minus_pi2);
 
@@ -625,7 +627,7 @@ static inline simd_vector simd_sin(simd_vector x)
 //----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_cos(simd_vector a)
 {
-    return simd_sin(simd_sub(simd_splat(1.57079632f), a));
+    return simd_sin(simd_sub(simd_splat(SIMD_PI2), a));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
