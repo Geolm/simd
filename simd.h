@@ -615,14 +615,12 @@ static inline void simd_aligned_free(void* ptr)
 //-----------------------------------------------------------------------------
 static inline simd_vector simd_sign(simd_vector a)
 {
-    simd_vector eq_zero = simd_cmp_eq(a, simd_splat_zero());
     simd_vector lt_zero = simd_cmp_lt(a, simd_splat_zero());
     simd_vector gt_zero = simd_cmp_gt(a, simd_splat_zero());
 
     simd_vector result = simd_splat_zero();
-    result = simd_or(result, simd_or(eq_zero, simd_splat_zero()));
-    result = simd_or(result, simd_or(lt_zero, simd_splat(-1.f)));
-    result = simd_or(result, simd_or(gt_zero, simd_splat(1.f)));
+    result = simd_select(result, simd_splat(-1.f), lt_zero);
+    result = simd_select(result, simd_splat( 1.f), gt_zero);
     return result;
 }
 

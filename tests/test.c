@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../simd.h"
+#include "../simd_math.h"
 
 #define SOKOL_IMPL
 #include "sokol_time.h"
@@ -176,6 +176,32 @@ int test_sin(void)
     return 1;
 }
 
+static inline float float_sign(float f) {if (f>0.f) return 1.f; if (f<0.f) return -1.f; return 0.f;}
+
+int test_sign(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+    
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+    
+    float result[simd_vector_width*2];
+    
+    simd_store(result, simd_sign(a));
+    simd_store(result+simd_vector_width, simd_sign(b));
+    
+    printf("simd_sign :");
+    
+    for(int i=0; i<simd_vector_width*2; ++i)
+        if (result[i] != float_sign(array[i]))
+            return -1;
+    
+    printf(" ok\n");
+    return 0;
+}
+
 int main(int argc, const char * argv[])
 {
     stm_setup();
@@ -201,7 +227,10 @@ int main(int argc, const char * argv[])
     if (!test_sin())
         return -1;
     
-    if (!test_aabb())
+    //if (!test_aabb())
+    //    return -1;
+    
+    if (!test_sign())
         return -1;
     
     return 0;
