@@ -38,25 +38,11 @@ Every intersection functions take in parameters :
 
 ```C
 void simdcol_aabb_triangle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 p0, vec2 p1, vec2 p2);
-```
-
-AABB vs Triangle
-
-Test based on Separating Axis Theorem (SAT)
-
-Any winding order for the triangle
-
-```C
 void simdcol_aabb_obb(struct simdcol_context* context, uint32_t user_data, aabb box, segment obb_height, float obb_width);
-```
-
-```C
 void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 circle_center, float circle_radius);
-```
-
-```C
 void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_data, const vec2 a[3], const vec2 b[3]);
 ```
+
 
 ```C
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
