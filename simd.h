@@ -590,12 +590,10 @@ static inline simd_vector simd_isnan(simd_vector a)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-static inline int simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
+static inline simd_vector simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
 {
     simd_vector diff = simd_abs_diff(a, b);
-    simd_vector lt_epsilon = simd_cmp_lt(diff, epsilon);
-
-    return simd_all(lt_epsilon);
+    return simd_cmp_lt(diff, epsilon);
 }
 
 //-----------------------------------------------------------------------------

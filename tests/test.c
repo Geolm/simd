@@ -169,7 +169,7 @@ int test_sin(void)
     
     simd_vector epsilon = simd_splat(0.000001f);
     
-    if (!simd_equal(a, target, epsilon))
+    if (!simd_all(simd_equal(a, target, epsilon)))
         return 0;
 
     printf(" ok\n");
