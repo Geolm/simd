@@ -43,6 +43,9 @@ void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aa
 void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_data, const vec2 a[3], const vec2 b[3]);
 ```
 
+Intersection tests are based on Separate Axis Theorem (or signed distance when a primitive is a circle)
+
+Both winding order are supported for triangles
 
 ```C
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
