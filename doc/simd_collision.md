@@ -51,7 +51,7 @@ Both winding order are supported for triangles
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
 ```
 
-Force the library to compute intersection even if the batch is not full. The use has to pass a hint on what to flush has described here:
+Force the library to compute intersection even if the batch is not full. The user has to pass a hint on what to flush has described here:
 
 ```C
 enum flush_hint
