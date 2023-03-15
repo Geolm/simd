@@ -44,7 +44,7 @@ Every intersection functions take in parameters :
 ```C
 void simdcol_aabb_triangle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 p0, vec2 p1, vec2 p2);
 void simdcol_aabb_obb(struct simdcol_context* context, uint32_t user_data, aabb box, segment obb_height, float obb_width);
-void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 circle_center, float circle_radius);
+void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, circle c);
 void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_data, const vec2 a[3], const vec2 b[3]);
 void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, segment line, aabb box);
 void simdcol_segment_circle(struct simdcol_context* context, uint32_t user_data, segment line, circle c);
