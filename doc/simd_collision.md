@@ -2,7 +2,6 @@
 
 This library uses simd.h to compute intersection between 2d primitives with AVX/Neon instructions under the hood. In order to maximize the size of the simd register, the library batches intersection requests and so the results are deferred.
 
-
 # API
 
 ## In a nutshell
@@ -13,6 +12,12 @@ This library uses simd.h to compute intersection between 2d primitives with AVX/
 * The library calls the callback in case of intersection and pass the user id in parameter
 
 Note : the user can force the library to compute intersection even if the batch is not full (not optimal but sometimes needed)
+
+## Features
+
+* batch intersection tests to maximize SIMD register usage
+* convert data from AOS to SOA
+* branchless intersection code
 
 ## Details
 
