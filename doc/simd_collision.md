@@ -2,7 +2,6 @@
 
 This library uses simd.h to compute intersection between 2d primitives with AVX/Neon instructions under the hood. In order to maximize the size of the simd register, the library batches intersection requests and so the results are deferred.
 
-
 # API
 
 ## In a nutshell
@@ -13,6 +12,12 @@ This library uses simd.h to compute intersection between 2d primitives with AVX/
 * The library calls the callback in case of intersection and pass the user id in parameter
 
 Note : the user can force the library to compute intersection even if the batch is not full (not optimal but sometimes needed)
+
+## Features
+
+* batch intersection tests to maximize SIMD register usage
+* convert data from AOS to SOA
+* branchless intersection code
 
 ## Details
 
@@ -39,16 +44,22 @@ Every intersection functions take in parameters :
 ```C
 void simdcol_aabb_triangle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 p0, vec2 p1, vec2 p2);
 void simdcol_aabb_obb(struct simdcol_context* context, uint32_t user_data, aabb box, segment obb_height, float obb_width);
-void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 circle_center, float circle_radius);
+void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, circle c);
 void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_data, const vec2 a[3], const vec2 b[3]);
+void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, segment line, aabb box);
+void simdcol_segment_circle(struct simdcol_context* context, uint32_t user_data, segment line, circle c);
+void simdcol_triangle_circle(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, circle c);
 ```
 
+Intersection tests are based on Separate Axis Theorem (or signed distance when a primitive is a circle)
+
+Both winding order are supported for triangles
 
 ```C
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
 ```
 
-Force the library to compute intersection even if the batch is not full. The use has to pass a hint on what to flush has described here:
+Force the library to compute intersection even if the batch is not full. The user has to pass a hint on what to flush has described here:
 
 ```C
 enum flush_hint
@@ -58,6 +69,8 @@ enum flush_hint
     flush_aabb_circle,
     flush_triangle_triangle,
     flush_segment_aabb,
+    flush_segment_circle,
+    flush_triangle_circle,
     flush_all
 };
 ```
