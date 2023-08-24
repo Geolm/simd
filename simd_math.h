@@ -52,6 +52,39 @@ static inline simd_vector simd_cos(simd_vector a)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+// based on https://stackoverflow.com/a/66868438
+static inline simd_vector simd_approx_cos(simd_vector a)
+{
+    a = simd_mul(a, simd_splat(1.f / SIMD_MATH_TAU));
+    a = simd_sub(a, simd_add(simd_splat(.25f), simd_floor(simd_add(a, simd_splat(.25f)))));
+    a = simd_mul(a, simd_mul(simd_splat(16.f), simd_sub(simd_abs(a), simd_splat(.5f))));
+    return simd_add(a, simd_mul(simd_splat(.225f), simd_mul(a, simd_sub(simd_abs(a), simd_splat(1.f)))));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_approx_sin(simd_vector a)
+{
+    return simd_cos(simd_sub(a, simd_splat(SIMD_MATH_PI2)));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+// based on https://stackoverflow.com/questions/3380628/fast-arc-cos-algorithm
+static inline simd_vector simd_approx_acos(simd_vector x)
+{
+    simd_vector x_2 = simd_mul(x, x);
+    simd_vector x_3 = simd_mul(x_2, x);
+    simd_vector x_4 = simd_mul(x_2, x_2);
+    simd_vector result = simd_mul(simd_splat(-0.939115566365855f), x);
+    result = simd_fmad(simd_splat(0.9217841528914573f), x_3, result);
+    
+    simd_vector divisor = simd_sub(simd_splat(1.f), simd_mul(simd_splat(1.2845906244690837f), x_2));
+    divisor = simd_fmad(simd_splat(0.295624144969963174f), x_4, divisor);
+    result = simd_div(result, divisor);
+
+    return simd_add(result, simd_splat(SIMD_MATH_PI2));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_smoothstep(simd_vector edge0, simd_vector edge1, simd_vector x)
 {
     x = simd_saturate(simd_div(simd_sub(x, edge0), simd_sub(edge1, edge0)));
