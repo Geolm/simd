@@ -165,15 +165,44 @@ int test_sin(void)
 
     simd_vector a = simd_load(array);
     simd_vector target = simd_load(result);
-    a = simd_sin(a);
     
     simd_vector epsilon = simd_splat(0.000001f);
     
-    if (!simd_all(simd_equal(a, target, epsilon)))
+    if (!simd_all(simd_equal(simd_sin(a), target, epsilon)))
+        return 0;
+    
+    // bigger epsilon for approximation
+    epsilon = simd_splat(0.00001f);
+    
+    if (!simd_all(simd_equal(simd_approx_sin(a), target, epsilon)))
         return 0;
 
     printf(" ok\n");
     return 1;
+}
+
+int test_acos(void)
+{
+    float array[simd_vector_width];
+    float result[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        array[i] = (float) (i - simd_vector_width/2) / (float)(simd_vector_width/2);
+        result[i] = acosf(array[i]);
+    }
+    
+    simd_vector a = simd_load(array);
+    simd_vector target = simd_load(result);
+    
+    simd_vector epsilon = simd_splat(0.02f);
+    
+    printf("simd_acos :");
+    if (!simd_all(simd_equal(simd_approx_acos(a), target, epsilon)))
+        return 0;
+    
+    printf(" ok\n");
+    return 1;
+    
 }
 
 static inline float float_sign(float f) {if (f>0.f) return 1.f; if (f<0.f) return -1.f; return 0.f;}
@@ -196,10 +225,10 @@ int test_sign(void)
     
     for(int i=0; i<simd_vector_width*2; ++i)
         if (result[i] != float_sign(array[i]))
-            return -1;
+            return 0;
     
     printf(" ok\n");
-    return 0;
+    return 1;
 }
 
 int main(int argc, const char * argv[])
@@ -225,6 +254,9 @@ int main(int argc, const char * argv[])
         return -1;
 
     if (!test_sin())
+        return -1;
+    
+    if (!test_acos())
         return -1;
     
     //if (!test_aabb())

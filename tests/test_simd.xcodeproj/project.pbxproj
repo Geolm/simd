@@ -33,6 +33,8 @@
 		FBC2F5B427B401F700800DE3 /* test_aabb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test_aabb.c; sourceTree = "<group>"; };
 		FBC55FED27BC52E80003CC87 /* simd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../simd.h; sourceTree = "<group>"; };
 		FBE8606F27B1B8B900A7294A /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
+		FBFB727B2A97CDB100065923 /* simd_vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_vec2.h; path = ../simd_vec2.h; sourceTree = "<group>"; };
+		FBFB727C2A97CDB100065923 /* simd_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_math.h; path = ../simd_math.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +51,8 @@
 		FBB4AA1827B1B881005F0430 = {
 			isa = PBXGroup;
 			children = (
+				FBFB727C2A97CDB100065923 /* simd_math.h */,
+				FBFB727B2A97CDB100065923 /* simd_vec2.h */,
 				FB6747E427D98AA000F25138 /* test_aabb.h */,
 				FB6747DE27D98A2C00F25138 /* fast_obj.c */,
 				FB6747E027D98A2C00F25138 /* fast_obj.h */,
