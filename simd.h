@@ -614,8 +614,7 @@ static inline void simd_aligned_free(void* ptr)
 static inline simd_vector simd_sign(simd_vector a)
 {
     simd_vector result = simd_select(simd_splat_zero(), simd_splat(-1.f), simd_cmp_lt(a, simd_splat_zero()));
-    result = simd_select(result, simd_splat( 1.f), simd_cmp_gt(a, simd_splat_zero()));
-    return result;
+    return simd_select(result, simd_splat( 1.f), simd_cmp_gt(a, simd_splat_zero()));
 }
 
 
