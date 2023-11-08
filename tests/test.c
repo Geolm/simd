@@ -1,19 +1,14 @@
 #include <stdio.h>
 #include "../simd_math.h"
-
-#define SOKOL_IMPL
-#include "sokol_time.h"
-
-#include "test_aabb.h"
 #include <math.h>
+#include "greatest.h"
 
-int test_load_xy(void)
+
+TEST load_xy(void)
 {
     float array[simd_vector_width*2];
     for(int i=0; i<simd_vector_width*2; ++i)
         array[i] = (float) i;
-    
-    printf("simd_load_xy :");
     
     simd_vector x, y;
     simd_load_xy(array, &x, &y);
@@ -23,21 +18,17 @@ int test_load_xy(void)
     
     for(int i=0; i<2; ++i)
         for(int j=0; j<simd_vector_width; ++j)
-            if (array[i*simd_vector_width + j] != (float)(i+(j*2)))
-                return 0;
-    
-    printf(" ok\n");
-    return 1;
+            ASSERT_EQ(array[i*simd_vector_width + j], (float)(i+(j*2)));
+
+    PASS();
 }
 
-int test_load_xyz(void)
+TEST load_xyz(void)
 {
     float array[simd_vector_width*3];
     for(int i=0; i<simd_vector_width*3; ++i)
         array[i] = (float) i;
-    
-    printf("simd_load_xyz :");
-    
+
     simd_vector x, y, z;
     simd_load_xyz(array, &x, &y, &z);
     simd_store(array, x);
@@ -46,95 +37,17 @@ int test_load_xyz(void)
     
     for(int i=0; i<3; ++i)
         for(int j=0; j<simd_vector_width; ++j)
-            if (array[i*simd_vector_width + j] != (float)(i+(j*3)))
-                return 0;
-    
-    printf(" ok\n");
-    return 1;
+            ASSERT_EQ(array[i*simd_vector_width + j], (float)(i+(j*3)));
+
+    PASS();
 }
 
-int test_sort(void)
-{
-    float array[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
-        array[i] = (float) (simd_vector_width-i);
-    
-    printf("simd_sort :");
-
-    simd_vector a = simd_load(array);
-    a = simd_sort(a);
-
-    simd_store(array, a);
-    
-    for(int i=0; i<simd_vector_width-1; ++i)
-        if (array[i] > array[i+1])
-            return 0;
-
-    simd_store(array, simd_reverse(a));
-
-    for(int i=0; i<simd_vector_width-1; ++i)
-        if (array[i] < array[i+1])
-            return 0;
-
-    printf(" ok\n");
-    return 1;
-}
-
-int test_get_lane(void)
-{
-    float array[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
-        array[i] = (float) (simd_vector_width-i);
-
-    printf("simd_get_lane :");
-
-    simd_vector a = simd_load(array);
-
-    for(int i=0; i<simd_vector_width; ++i)
-        if (simd_get_lane(a, i) != array[i])
-            return 0;
-
-    if (simd_get_first_lane(a) != array[0])
-        return 0;
-
-    printf(" ok\n");
-    return 1;
-}
-
-int test_horizontal(void)
-{
-    float sum=0.0f;
-    float array[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
-    {
-        array[i] = (float) i;
-        sum += array[i];
-    }
-
-    printf("simd_horizontal :");
-
-    simd_vector a = simd_load(array);
-    if (simd_hsum(a) != sum)
-        return 0;
-
-    if (simd_hmin(a) != array[0])
-        return 0;
-
-    if (simd_hmax(a) != array[simd_last_lane])
-        return 0;
-
-    printf(" ok\n");
-    return 1;
-}
-
-int test_load_xyzw(void)
+TEST load_xyzw(void)
 {
     float array[simd_vector_width*4];
     for(int i=0; i<simd_vector_width*4; ++i)
         array[i] = (float) i;
-    
-    printf("simd_load_xyzw :");
-    
+
     simd_vector x, y, z, w;
     simd_load_xyzw(array, &x, &y, &z, &w);
     simd_store(array, x);
@@ -144,14 +57,102 @@ int test_load_xyzw(void)
     
     for(int i=0; i<4; ++i)
         for(int j=0; j<simd_vector_width; ++j)
-            if (array[i*simd_vector_width + j] != (float)(i+(j*4)))
-                return 0;
-    
-    printf(" ok\n");
-    return 1;
+            ASSERT_EQ(array[i*simd_vector_width + j], (float)(i+(j*4)));
+
+    PASS();
 }
 
-int test_sin(void)
+SUITE(load)
+{
+    RUN_TEST(load_xy);
+    RUN_TEST(load_xyz);
+    RUN_TEST(load_xyzw);
+}
+
+TEST sort(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (simd_vector_width-i);
+
+    simd_vector a = simd_load(array);
+    a = simd_sort(a);
+
+    simd_store(array, a);
+    
+    for(int i=0; i<simd_vector_width-1; ++i)
+        ASSERT_LT(array[i], array[i+1]);
+
+    simd_store(array, simd_reverse(a));
+
+    for(int i=0; i<simd_vector_width-1; ++i)
+        ASSERT_GT(array[i], array[i+1]);
+
+    PASS();
+}
+
+TEST get_lane(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (simd_vector_width-i);
+
+    simd_vector a = simd_load(array);
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(simd_get_lane(a, i), array[i]);
+
+    ASSERT_EQ(simd_get_first_lane(a), array[0]);
+    PASS();
+}
+
+TEST hsum(void)
+{
+    float sum=0.0f;
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        array[i] = (float) i;
+        sum += array[i];
+    }
+
+    simd_vector a = simd_load(array);
+    ASSERT_EQ(simd_hsum(a), sum);
+
+    PASS();
+}
+
+TEST hmin(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) i;
+    
+    simd_vector a = simd_load(array);
+    ASSERT_EQ(simd_hmin(a), array[0]);
+    PASS();
+}
+
+TEST hmax(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) i;
+    
+    simd_vector a = simd_load(array);
+    ASSERT_EQ(simd_hmax(a), array[simd_last_lane]);
+    PASS();
+}
+
+SUITE(horizontal)
+{
+    RUN_TEST(get_lane);
+    RUN_TEST(hsum);
+    RUN_TEST(hmin);
+    RUN_TEST(hmax);
+}
+
+TEST sinus(void)
 {
     float array[simd_vector_width];
     float result[simd_vector_width];
@@ -161,27 +162,34 @@ int test_sin(void)
         result[i] = sinf(array[i]);
     }
 
-    printf("simd_sin :");
-
     simd_vector a = simd_load(array);
     simd_vector target = simd_load(result);
     
     simd_vector epsilon = simd_splat(0.000001f);
     
-    if (!simd_all(simd_equal(simd_sin(a), target, epsilon)))
-        return 0;
-    
-    // bigger epsilon for approximation
-    epsilon = simd_splat(0.00001f);
-    
-    if (!simd_all(simd_equal(simd_approx_sin(a), target, epsilon)))
-        return 0;
-
-    printf(" ok\n");
-    return 1;
+    ASSERT(simd_all(simd_equal(simd_sin(a), target, epsilon)));
+    PASS();
 }
 
-int test_acos(void)
+TEST approx_sin(void)
+{
+    float array[simd_vector_width];
+    float result[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        array[i] = (float) (i - simd_vector_width/2);
+        result[i] = sinf(array[i]);
+    }
+
+    simd_vector a = simd_load(array);
+    simd_vector target = simd_load(result);
+    simd_vector epsilon = simd_splat(0.00001f);
+    
+    ASSERT(simd_all(simd_equal(simd_approx_sin(a), target, epsilon)));
+    PASS();
+}
+
+TEST arcos(void)
 {
     float array[simd_vector_width];
     float result[simd_vector_width];
@@ -193,16 +201,10 @@ int test_acos(void)
     
     simd_vector a = simd_load(array);
     simd_vector target = simd_load(result);
-    
     simd_vector epsilon = simd_splat(0.02f);
-    
-    printf("simd_acos :");
-    if (!simd_all(simd_equal(simd_approx_acos(a), target, epsilon)))
-        return 0;
-    
-    printf(" ok\n");
-    return 1;
-    
+
+    ASSERT(simd_all(simd_equal(simd_approx_acos(a), target, epsilon)));
+    PASS();
 }
 
 static inline float float_sign(float f) {if (f>0.f) return 1.f; if (f<0.f) return -1.f; return 0.f;}
@@ -231,39 +233,23 @@ int test_sign(void)
     return 1;
 }
 
-int main(int argc, const char * argv[])
+SUITE(trigonometry)
 {
-    stm_setup();
+    RUN_TEST(sinus);
+    RUN_TEST(approx_sin);
+    RUN_TEST(arcos);
+}
 
-    if (!test_load_xy())
-        return -1;
-    
-    if (!test_load_xyz())
-        return -1;
+GREATEST_MAIN_DEFS();
 
-    if (!test_load_xyzw())
-        return -1;
-    
-    if (!test_sort())
-        return -1;
+int main(int argc, char * argv[])
+{
+    GREATEST_MAIN_BEGIN();
 
-    if (!test_get_lane())
-        return -1;
+    RUN_SUITE(load);
+    RUN_TEST(sort);
+    RUN_SUITE(horizontal);
+    RUN_SUITE(trigonometry);
 
-    if (!test_horizontal())
-        return -1;
-
-    if (!test_sin())
-        return -1;
-    
-    if (!test_acos())
-        return -1;
-    
-    //if (!test_aabb())
-    //    return -1;
-    
-    if (!test_sign())
-        return -1;
-    
-    return 0;
+    GREATEST_MAIN_END();
 }
