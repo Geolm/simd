@@ -48,9 +48,9 @@ static inline vec2 vec2_max4(vec2 a, vec2 b, vec2 c, vec2 d) {return vec2_max(a,
 static inline vec2 vec2_clamp(vec2 v, vec2 lower_bound, vec2 higher_bound) {return vec2_min(vec2_max(v, lower_bound), higher_bound);}
 static inline vec2 vec2_saturate(vec2 v) {return vec2_clamp(v, vec2_splat(0.f), vec2_splat(1.f));}
 static inline bool vec2_equal(vec2 a, vec2 b) {return (a.x == b.x && a.y == b.y);}
-static inline bool vec2_similar(vec2 a, vec2 b, float epsilon) {return (fabs(a.x - b.x) < epsilon) && (fabs(a.y - b.y) < epsilon);}
+static inline bool vec2_similar(vec2 a, vec2 b, float epsilon) {return (fabsf(a.x - b.x) < epsilon) && (fabsf(a.y - b.y) < epsilon);}
 static inline vec2 vec2_neg(vec2 a) {return  (vec2){-a.x, -a.y};}
-static inline vec2 vec2_abs(vec2 a) {return (vec2) {.x = fabs(a.x), .y = fabs(a.y)};}
+static inline vec2 vec2_abs(vec2 a) {return (vec2) {.x = fabsf(a.x), .y = fabsf(a.y)};}
 static inline bool vec2_all_less(vec2 a, vec2 b) {return (a.x < b.x && a.y < b.y);}
 static inline bool vec2_any_less(vec2 a, vec2 b) {return (a.x < b.x || a.y < b.y);}
 static inline bool vec2_all_greater(vec2 a, vec2 b) {return (a.x > b.x && a.y > b.y);}
