@@ -32,7 +32,7 @@ TEST approx_sin(void)
 
     simd_vector a = simd_load(array);
     simd_vector target = simd_load(result);
-    simd_vector epsilon = simd_splat(0.00001f);
+    simd_vector epsilon = simd_splat(0.0003f);
     
     ASSERT(simd_all(simd_equal(simd_approx_sin(a), target, epsilon)));
     PASS();

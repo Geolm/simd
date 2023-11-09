@@ -34,11 +34,6 @@ void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, s
 void simdcol_segment_circle(struct simdcol_context* context, uint32_t user_data, segment line, circle c);
 void simdcol_triangle_circle(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, circle c);
 
-// below : to be implemented
-void simdcol_obb_circle(struct simdcol_context* context, uint32_t user_data, segment obb_height, float obb_width, circle c);
-void simdcol_triangle_obb(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, segment obb_height, float obb_width);
-
-
 // force to compute intersection right now, run callback on intersection
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
 
