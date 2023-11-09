@@ -4,7 +4,7 @@ NEON/AVX simd library, one header file library.
 This is a multiplatform simd intrinsic "vector size agnostic" library. There are already libraries to translate intrinsics like [SSE2Neon](https://github.com/DLTcollab/sse2neon) for example. But the idea behind this library is little different : with the same code be able to use 256 bits AVX on my intel-based computer and 128 bits NEON on my M1 Mac. 
 
 ### Unit tests build status (Linux/MacOs/Windows)
-![build status](https://github.com/geolm/simd/actions/workflows/build.yml/badge.svg)
+[![Build Status](https://github.com/geolm/simd/actions/workflows/build.yml/badge.svg)](https://github.com/geolm/simd/actions)
 
 # optional headers
 * simd_math.h : contains math (sin/cos for example) specific functions
