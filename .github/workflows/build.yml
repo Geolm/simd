@@ -15,13 +15,13 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake ${{github.workspace}}/tests -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake ${{github.workspace}}/tests/
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/tests --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/tests/
 
     - name: Test
-      working-directory: ${{github.workspace}}/tests
+      working-directory: ${{github.workspace}}/tests/
       run: ./tests/test
       
   build-macos:
@@ -32,13 +32,13 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake ${{github.workspace}}/tests -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake ${{github.workspace}}/tests/
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/tests --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/tests/
 
     - name: Test
-      working-directory: ${{github.workspace}}/tests
+      working-directory: ${{github.workspace}}/tests/
       run: ./tests/test
       
   build-windows:
@@ -49,11 +49,11 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/tests/
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/tests/
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ./tests/${{env.BUILD_TYPE}}/test
+      working-directory: ${{github.workspace}}/tests
+      run: ./tests/test
