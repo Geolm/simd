@@ -8,6 +8,8 @@ add_executable(test test_simd.c)
 
 if (LINUX)
     target_compile_options(test PRIVATE -Wall -Wextra -Wpedantic -Werror -mavx -lm)
+elseif(MSVC)
+    target_compile_options(test PRIVATE /W4 /WX /std:c17)
 else()
     target_compile_options(test PRIVATE -Wall -Wextra -Wpedantic -Werror -mavx)
 endif()
