@@ -49,11 +49,11 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/tests/
+      run: cmake -B ${{github.workspace}}\tests
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/
+      run: cmake --build ${{github.workspace}}\
 
     - name: Test
-      working-directory: ${{github.workspace}}/
+      working-directory: ${{github.workspace}}\
       run: ./test
