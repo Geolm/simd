@@ -8,7 +8,7 @@ This is a multiplatform simd intrinsic "vector size agnostic" library. There are
 
 # optional headers
 * simd_math.h : contains math (sin/cos for example) specific functions
-* [simd_collision.h](doc/simd_collision.md) : 2d collision functions, batch collision to fully use SIMD registers
+* [simd_2d_collision.h](doc/simd_2d_collision.md) : 2d collision functions, batch collision to fully use SIMD registers
 
 # example
 
