@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "greatest.h"
 #include <math.h>
+#include "../vec2.h"
 #include "../simd_math.h"
 
 #include "test_simd_math.h"
@@ -155,9 +156,6 @@ SUITE(horizontal)
     RUN_TEST(hmax);
 }
 
-
-static inline float float_sign(float f) {if (f>0.f) return 1.f; if (f<0.f) return -1.f; return 0.f;}
-
 TEST sign(void)
 {
     float array[simd_vector_width*2];
@@ -250,6 +248,25 @@ TEST division(void)
     PASS();
 }
 
+TEST fmad(void)
+{
+    float array[simd_vector_width*3];
+    for(int i=0; i<simd_vector_width*3; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+    simd_vector c = simd_load(array + simd_vector_width * 2);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_fmad(a, b, c));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], (array[i] * array[i + simd_vector_width]) + array[i + simd_vector_width * 2]);
+
+    PASS();
+}
+
 SUITE(arithmetic)
 {
     RUN_TEST(sign);
@@ -257,7 +274,141 @@ SUITE(arithmetic)
     RUN_TEST(sub);
     RUN_TEST(mul);
     RUN_TEST(division);
+    RUN_TEST(fmad);
 }
+
+TEST squareroot(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) i;
+
+    simd_vector a = simd_load(array);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_sqrt(a));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], sqrtf(array[i]));
+
+    PASS();
+}
+
+TEST rcp_squareroot(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (i + 1);
+
+    simd_vector a = simd_load(array);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_rsqrt(a));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_LT(fabsf(result[i] - (1.f / sqrtf(array[i]))), 0.0005f);
+
+    PASS();
+}
+
+TEST rcp(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (i + 1);
+
+    simd_vector a = simd_load(array);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_rcp(a));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_LT(fabsf(result[i] - (1.f / array[i])), 0.0005f);
+
+    PASS();
+}
+
+SUITE(sqrt_and_rcp)
+{
+    RUN_TEST(squareroot);
+    RUN_TEST(rcp_squareroot);
+    RUN_TEST(rcp);
+}
+
+TEST absolute(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (-i);
+    
+    float result[simd_vector_width];
+    simd_store(result, simd_abs(simd_load(array)));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], fabsf(array[i]));
+
+    PASS();
+}
+
+TEST negative(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (i) - (simd_vector_width/2);
+    
+    float result[simd_vector_width];
+    simd_store(result, simd_neg(simd_load(array)));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], -array[i]);
+
+    PASS();
+}
+
+TEST minimum(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_min(a, b));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], float_min(array[i], array[i+simd_vector_width]));
+
+    PASS();
+}
+
+TEST maximum(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_max(a, b));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], float_max(array[i], array[i+simd_vector_width]));
+
+    PASS();
+}
+
+SUITE(abs_neg_min_max)
+{
+    RUN_TEST(absolute);
+    RUN_TEST(negative);
+    RUN_TEST(minimum);
+    RUN_TEST(maximum);
+}
+
 
 GREATEST_MAIN_DEFS();
 
@@ -270,6 +421,8 @@ int main(int argc, char * argv[])
     RUN_SUITE(horizontal);
     RUN_SUITE(trigonometry);
     RUN_SUITE(arithmetic);
+    RUN_SUITE(sqrt_and_rcp);
+    RUN_SUITE(abs_neg_min_max);
 
     GREATEST_MAIN_END();
 }
