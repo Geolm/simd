@@ -58,4 +58,4 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}\tests
-      run: test
+      run: ./test
