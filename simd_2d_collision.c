@@ -1,4 +1,4 @@
-#include "simd_collision.h"
+#include "simd_2d_collision.h"
 #include "simd_vec2.h"
 
 //-----------------------------------------------------------------------------

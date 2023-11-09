@@ -1,5 +1,5 @@
-#ifndef __SIMD_COLLISION__
-#define __SIMD_COLLISION__
+#ifndef __SIMD_2D_COLLISION__
+#define __SIMD_2D_COLLISION__
 
 #include "vec2.h"
 #include <stdint.h>
