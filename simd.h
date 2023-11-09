@@ -37,8 +37,8 @@ static inline simd_vector simd_add(simd_vector a, simd_vector b) {return vaddq_f
 static inline simd_vector simd_sub(simd_vector a, simd_vector b) {return vsubq_f32(a, b);}
 static inline simd_vector simd_mul(simd_vector a, simd_vector b) {return vmulq_f32(a, b);}
 static inline simd_vector simd_div(simd_vector a, simd_vector b) {return vdivq_f32(a, b);}
-static inline simd_vector simd_rcp(simd_vector a) {simd_vector recip = vrecpeq_f32(a); return vmulq_f32(recip, vrecpsq_f32(recip, a));}
-static inline simd_vector simd_rsqrt(simd_vector a) {return vrsqrteq_f32(a);}
+static inline simd_vector simd_rcp(simd_vector a) {simd_vector out = vrecpeq_f32(a); return vmulq_f32(out, vrecpsq_f32(out, a));}
+static inline simd_vector simd_rsqrt(simd_vector a) {simd_vector out = vrsqrteq_f32(a); return vmulq_f32(out, vrsqrtsq_f32(vmulq_f32(a, out), out));}
 static inline simd_vector simd_sqrt(simd_vector a) {return vsqrtq_f32(a);}
 static inline simd_vector simd_abs(simd_vector a) {return vabsq_f32(a);}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return vabdq_f32(a, b);}
