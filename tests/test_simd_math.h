@@ -75,7 +75,8 @@ TEST approx_length()
     for(int i=0; i<NUM_ELEMENTS; ++i)
         array[i] = vec2_angle(step * (float)i);
 
-    simd_vector epsilon = simd_splat(0.0005f);
+    simd_vector unit_epsilon = simd_splat(0.0005f);
+    simd_vector any_epsilon = simd_splat(0.03f);
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -83,7 +84,14 @@ TEST approx_length()
         simd_load_xy((float*)array + i * simd_vector_width, &vec.x, &vec.y);
 
         simd_vector approx = simd_vec2_approx_length(vec);
-        ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), epsilon)));
+        ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), unit_epsilon)));
+
+        simd_vector length = simd_splat((float) i + 1);
+        vec.x = simd_mul(vec.x, length);
+        vec.y = simd_mul(vec.y, length);
+
+        approx = simd_vec2_approx_length(vec);
+        ASSERT(simd_all(simd_equal(approx, length, any_epsilon)));
     }
 
     PASS();
