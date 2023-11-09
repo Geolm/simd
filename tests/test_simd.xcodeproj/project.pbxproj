@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FBE8607027B1B8B900A7294A /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = FBE8606F27B1B8B900A7294A /* test.c */; };
+		FBE8607027B1B8B900A7294A /* test_simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBE8606F27B1B8B900A7294A /* test_simd.c */; };
+		FBFB32EE2AFD20E80048AD63 /* test_simd_math.h in Sources */ = {isa = PBXBuildFile; fileRef = FBFB32ED2AFD20E80048AD63 /* test_simd_math.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,7 +26,9 @@
 /* Begin PBXFileReference section */
 		FBB4AA2127B1B881005F0430 /* test_simd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_simd; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBC55FED27BC52E80003CC87 /* simd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../simd.h; sourceTree = "<group>"; };
-		FBE8606F27B1B8B900A7294A /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
+		FBE8606F27B1B8B900A7294A /* test_simd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test_simd.c; sourceTree = "<group>"; };
+		FBFB32EC2AFD20E80048AD63 /* greatest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = greatest.h; sourceTree = "<group>"; };
+		FBFB32ED2AFD20E80048AD63 /* test_simd_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_simd_math.h; sourceTree = "<group>"; };
 		FBFB727B2A97CDB100065923 /* simd_vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_vec2.h; path = ../simd_vec2.h; sourceTree = "<group>"; };
 		FBFB727C2A97CDB100065923 /* simd_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_math.h; path = ../simd_math.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -44,10 +47,12 @@
 		FBB4AA1827B1B881005F0430 = {
 			isa = PBXGroup;
 			children = (
+				FBFB32EC2AFD20E80048AD63 /* greatest.h */,
 				FBFB727C2A97CDB100065923 /* simd_math.h */,
 				FBFB727B2A97CDB100065923 /* simd_vec2.h */,
 				FBC55FED27BC52E80003CC87 /* simd.h */,
-				FBE8606F27B1B8B900A7294A /* test.c */,
+				FBE8606F27B1B8B900A7294A /* test_simd.c */,
+				FBFB32ED2AFD20E80048AD63 /* test_simd_math.h */,
 				FBB4AA2227B1B881005F0430 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -116,7 +121,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBE8607027B1B8B900A7294A /* test.c in Sources */,
+				FBFB32EE2AFD20E80048AD63 /* test_simd_math.h in Sources */,
+				FBE8607027B1B8B900A7294A /* test_simd.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

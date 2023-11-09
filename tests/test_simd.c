@@ -1,7 +1,10 @@
 #include <stdio.h>
-#include "../simd_math.h"
-#include <math.h>
 #include "greatest.h"
+#include <math.h>
+#include "../simd_math.h"
+
+#include "test_simd_math.h"
+
 
 
 TEST load_xy(void)
@@ -152,64 +155,10 @@ SUITE(horizontal)
     RUN_TEST(hmax);
 }
 
-TEST sinus(void)
-{
-    float array[simd_vector_width];
-    float result[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
-    {
-        array[i] = (float) (i - simd_vector_width/2);
-        result[i] = sinf(array[i]);
-    }
-
-    simd_vector a = simd_load(array);
-    simd_vector target = simd_load(result);
-    
-    simd_vector epsilon = simd_splat(0.000001f);
-    
-    ASSERT(simd_all(simd_equal(simd_sin(a), target, epsilon)));
-    PASS();
-}
-
-TEST approx_sin(void)
-{
-    float array[simd_vector_width];
-    float result[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
-    {
-        array[i] = (float) (i - simd_vector_width/2);
-        result[i] = sinf(array[i]);
-    }
-
-    simd_vector a = simd_load(array);
-    simd_vector target = simd_load(result);
-    simd_vector epsilon = simd_splat(0.00001f);
-    
-    ASSERT(simd_all(simd_equal(simd_approx_sin(a), target, epsilon)));
-    PASS();
-}
-
-TEST arcos(void)
-{
-    float array[simd_vector_width];
-    float result[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
-    {
-        array[i] = (float) (i - simd_vector_width/2) / (float)(simd_vector_width/2);
-        result[i] = acosf(array[i]);
-    }
-    
-    simd_vector a = simd_load(array);
-    simd_vector target = simd_load(result);
-    simd_vector epsilon = simd_splat(0.02f);
-
-    ASSERT(simd_all(simd_equal(simd_approx_acos(a), target, epsilon)));
-    PASS();
-}
 
 static inline float float_sign(float f) {if (f>0.f) return 1.f; if (f<0.f) return -1.f; return 0.f;}
 
-int test_sign(void)
+TEST sign(void)
 {
     float array[simd_vector_width*2];
     for(int i=0; i<simd_vector_width*2; ++i)
@@ -223,21 +172,91 @@ int test_sign(void)
     simd_store(result, simd_sign(a));
     simd_store(result+simd_vector_width, simd_sign(b));
     
-    printf("simd_sign :");
-    
     for(int i=0; i<simd_vector_width*2; ++i)
-        if (result[i] != float_sign(array[i]))
-            return 0;
-    
-    printf(" ok\n");
-    return 1;
+        ASSERT_EQ(result[i], float_sign(array[i]));
+
+    PASS();
 }
 
-SUITE(trigonometry)
+TEST add(void)
 {
-    RUN_TEST(sinus);
-    RUN_TEST(approx_sin);
-    RUN_TEST(arcos);
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_add(a, b));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], array[i] + array[i + simd_vector_width]);
+
+    PASS();
+}
+
+TEST sub(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_sub(a, b));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], array[i] - array[i + simd_vector_width]);
+
+    PASS();
+}
+
+TEST mul(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_mul(a, b));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], array[i] * array[i + simd_vector_width]);
+
+    PASS();
+}
+
+TEST division(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) i - (float)simd_vector_width;
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    float result[simd_vector_width];
+    simd_store(result, simd_div(a, b));
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(result[i], array[i] / array[i + simd_vector_width]);
+
+    PASS();
+}
+
+SUITE(arithmetic)
+{
+    RUN_TEST(sign);
+    RUN_TEST(add);
+    RUN_TEST(sub);
+    RUN_TEST(mul);
+    RUN_TEST(division);
 }
 
 GREATEST_MAIN_DEFS();
@@ -250,6 +269,7 @@ int main(int argc, char * argv[])
     RUN_TEST(sort);
     RUN_SUITE(horizontal);
     RUN_SUITE(trigonometry);
+    RUN_SUITE(arithmetic);
 
     GREATEST_MAIN_END();
 }
