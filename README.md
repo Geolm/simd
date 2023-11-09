@@ -90,7 +90,7 @@ void simd_load_xy(const float* array, simd_vector* x, simd_vector* y);
 
 // loads 2 channels data from [array] and deinterleave data in [x] and [y].
 // reads simd_vector_width*2 floats. Does not preserve order, faster on AVX than previous function.
-static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y);
+void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y);
 
 // loads 3 channels data from [array] and deinterleave data in [x], [y] and [z].
 // reads simd_vector_width*3 floats. preserves order.
