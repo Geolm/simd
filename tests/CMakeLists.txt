@@ -4,7 +4,7 @@ set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 
 project(simd_unit_tests)
 
-add_executable(test test_simd.c)
+add_executable(test test_simd.c ../simd_collision.c)
 
 if(LINUX)
     set(CMAKE_EXE_LINKER_FLAGS "-lm")

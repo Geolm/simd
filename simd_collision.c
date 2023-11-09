@@ -359,7 +359,7 @@ void process_aabb_circle(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         simd_vec2 aabb_min = simd_vec2_load(data->aabb_min_x, data->aabb_min_y, offset);
         simd_vec2 aabb_max = simd_vec2_load(data->aabb_max_x, data->aabb_max_y,  offset);
@@ -371,7 +371,7 @@ void process_aabb_circle(struct simdcol_context* context)
         simd_vector result = simd_cmp_lt(sq_distance, sq_radius);
 
         int bitfield = simd_get_mask(result);
-        for(int i=0; i<simd_vector_width; ++i)
+        for(u_int32_t i=0; i<simd_vector_width; ++i)
             if (bitfield&(1<<i) && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
@@ -431,7 +431,7 @@ void process_aabb_obb(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         // load everything (compiler will optimize simd register management)
         simd_vector j_a = simd_load(data->j_a + offset);
@@ -469,7 +469,7 @@ void process_aabb_obb(struct simdcol_context* context)
         
         int bitfield = simd_get_mask(result);
 
-        for(int i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
+        for(u_int32_t i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
             if ((bitfield&(1<<i)) == 0 && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
@@ -513,7 +513,7 @@ void process_triangle_triangle(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         simd_vec2 a0 = simd_vec2_load(data->tri0_x[0], data->tri0_y[0], offset);
         simd_vec2 a1 = simd_vec2_load(data->tri0_x[1], data->tri0_y[1], offset);
@@ -530,7 +530,7 @@ void process_triangle_triangle(struct simdcol_context* context)
         result = simd_or(result, edge_triangle(b2, b0, b1, a0, a1, a2));
 
         int bitfield = simd_get_mask(result);
-        for(int i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
+        for(u_int32_t i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
             if ((bitfield&(1<<i)) == 0 && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
@@ -574,7 +574,7 @@ void process_aabb_triangle(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         simd_vec2 aabb_min = simd_vec2_load(data->aabb_min_x, data->aabb_min_y, offset);
         simd_vec2 aabb_max = simd_vec2_load(data->aabb_max_x, data->aabb_max_y, offset);
@@ -595,7 +595,7 @@ void process_aabb_triangle(struct simdcol_context* context)
 
         int bitfield = simd_get_mask(result);
 
-        for(int i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
+        for(u_int32_t i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
             if ((bitfield&(1<<i)) == 0 && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
@@ -624,7 +624,7 @@ void process_segment_aabb(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         simd_vec2 aabb_min = simd_vec2_load(data->aabb_min_x, data->aabb_min_y, offset);
         simd_vec2 aabb_max = simd_vec2_load(data->aabb_max_x, data->aabb_max_y, offset);
@@ -634,7 +634,7 @@ void process_segment_aabb(struct simdcol_context* context)
         result = simd_and(result, slab_test(aabb_min.y, aabb_max.y, p0.y, p1.y));
 
         int bitfield = simd_get_mask(result);
-        for(int i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
+        for(u_int32_t i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
             if ((bitfield&(1<<i)) && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
@@ -663,7 +663,7 @@ void process_segment_circle(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         simd_vec2 p0 = simd_vec2_load(data->p0_x, data->p0_y, offset);
         simd_vec2 p1 = simd_vec2_load(data->p1_x, data->p1_y, offset);
@@ -672,7 +672,7 @@ void process_segment_circle(struct simdcol_context* context)
         simd_vector result = simd_cmp_le(sq_distance_to_segment(center, p0, p1), sq_radius);
 
         int bitfield = simd_get_mask(result);
-        for(int i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
+        for(u_int32_t i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
             if ((bitfield&(1<<i)) && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
@@ -714,7 +714,7 @@ void process_triangle_circle(struct simdcol_context* context)
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
-        int offset = vec_index * simd_vector_width;
+        u_int32_t offset = vec_index * simd_vector_width;
 
         simd_vec2 v0 = simd_vec2_load(data->v_x[0], data->v_y[0], offset);
         simd_vec2 v1 = simd_vec2_load(data->v_x[1], data->v_y[1], offset);
@@ -728,7 +728,7 @@ void process_triangle_circle(struct simdcol_context* context)
         result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v2, v0), sq_radius));
 
         int bitfield = simd_get_mask(result);
-        for(int i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
+        for(u_int32_t i=0; i<simd_vector_width && bitfield != simd_full_mask; ++i)
             if ((bitfield&(1<<i)) && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
