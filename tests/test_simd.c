@@ -428,6 +428,7 @@ int main(int argc, char * argv[])
     RUN_SUITE(arithmetic);
     RUN_SUITE(sqrt_and_rcp);
     RUN_SUITE(abs_neg_min_max);
+    RUN_TEST(approx_length);
 
     GREATEST_MAIN_END();
 }

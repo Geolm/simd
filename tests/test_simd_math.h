@@ -1,5 +1,6 @@
 
-
+#include "../vec2.h"
+#include "../simd_vec2.h"
 
 TEST sinus(void)
 {
@@ -61,4 +62,29 @@ SUITE(trigonometry)
     RUN_TEST(sinus);
     RUN_TEST(approx_sin);
     RUN_TEST(arcos);
+}
+
+#define NUM_VECTORS (100)
+#define NUM_ELEMENTS (simd_vector_width * NUM_VECTORS)
+
+TEST approx_length()
+{
+    vec2 array[NUM_ELEMENTS];
+    float step = VEC2_TAU / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+        array[i] = vec2_angle(step * (float)i);
+
+    simd_vector epsilon = simd_splat(0.0005f);
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vec2 vec;
+        simd_load_xy((float*)array + i * simd_vector_width, &vec.x, &vec.y);
+
+        simd_vector approx = simd_vec2_approx_length(vec);
+        ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), epsilon)));
+    }
+
+    PASS();
 }
