@@ -6,6 +6,10 @@ project(simd_unit_tests)
 
 add_executable(test test_simd.c)
 
+if(LINUX)
+    set(CMAKE_EXE_LINKER_FLAGS "-lm")
+endif()
+
 if(MSVC)
     target_compile_options(test PRIVATE /W4 /WX /std:c17)
 else()
