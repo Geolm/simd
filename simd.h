@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#if _MSC_VER
+#include <malloc.h>
+#endif
+
 //----------------------------------------------------------------------------------------------------------------------
 // NEON
 //----------------------------------------------------------------------------------------------------------------------
@@ -599,15 +603,23 @@ static inline simd_vector simd_equal(simd_vector a, simd_vector b, simd_vector e
 //-----------------------------------------------------------------------------
 static inline void* simd_aligned_alloc(size_t size)
 {
+#if _MSC_VER
+    return _aligned_malloc(size, simd_vector_alignment);
+#else
     size = (size + simd_vector_alignment - 1) / simd_vector_alignment;
     size *= simd_vector_alignment;
     return aligned_alloc(simd_vector_alignment, size);
+#endif
 }
 
 //-----------------------------------------------------------------------------
 static inline void simd_aligned_free(void* ptr)
 {
+#if _MSC_VER
+    _aligned_free(ptr);
+#else
     free(ptr);
+#endif
 }
 
 //-----------------------------------------------------------------------------
