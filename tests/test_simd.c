@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include "greatest.h"
 #include <math.h>
@@ -6,7 +10,7 @@
 
 #include "test_simd_math.h"
 
-#define _CRT_SECURE_NO_WARNINGS
+
 
 
 TEST load_xy(void)
