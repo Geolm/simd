@@ -21,8 +21,8 @@ jobs:
       run: cmake --build ${{github.workspace}}/
 
     - name: Test
-      working-directory: ${{github.workspace}}/tests/
-      run: ./tests/test
+      working-directory: ${{github.workspace}}/
+      run: ./test
       
   build-macos:
     name: macos
@@ -38,8 +38,8 @@ jobs:
       run: cmake --build ${{github.workspace}}/
 
     - name: Test
-      working-directory: ${{github.workspace}}/tests/
-      run: ./tests/test
+      working-directory: ${{github.workspace}}/
+      run: ./test
       
   build-windows:
     name: windows
@@ -55,5 +55,5 @@ jobs:
       run: cmake --build ${{github.workspace}}/
 
     - name: Test
-      working-directory: ${{github.workspace}}/tests
-      run: ./tests/test
+      working-directory: ${{github.workspace}}/
+      run: ./test
