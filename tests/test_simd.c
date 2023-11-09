@@ -6,6 +6,7 @@
 
 #include "test_simd_math.h"
 
+#define _CRT_SECURE_NO_WARNINGS
 
 
 TEST load_xy(void)
