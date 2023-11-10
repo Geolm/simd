@@ -28,6 +28,7 @@
 		FB726A262AFD79910079CFD0 /* vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vec2.h; path = ../vec2.h; sourceTree = "<group>"; };
 		FB726A272AFD79910079CFD0 /* simd_2d_collision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_2d_collision.h; path = ../simd_2d_collision.h; sourceTree = "<group>"; };
 		FB726A282AFD79910079CFD0 /* simd_2d_collision.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = simd_2d_collision.c; path = ../simd_2d_collision.c; sourceTree = "<group>"; };
+		FBA72AF42AFECCFF002C984E /* test_collision_2d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_collision_2d.h; sourceTree = "<group>"; };
 		FBB4AA2127B1B881005F0430 /* test_simd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_simd; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBC55FED27BC52E80003CC87 /* simd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../simd.h; sourceTree = "<group>"; };
 		FBE8606F27B1B8B900A7294A /* test_simd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test_simd.c; sourceTree = "<group>"; };
@@ -56,6 +57,7 @@
 				FBFB32EC2AFD20E80048AD63 /* greatest.h */,
 				FBFB727C2A97CDB100065923 /* simd_math.h */,
 				FBC55FED27BC52E80003CC87 /* simd.h */,
+				FBA72AF42AFECCFF002C984E /* test_collision_2d.h */,
 				FBE8606F27B1B8B900A7294A /* test_simd.c */,
 				FBFB32ED2AFD20E80048AD63 /* test_simd_math.h */,
 				FBB4AA2227B1B881005F0430 /* Products */,

@@ -9,6 +9,7 @@
 #include "../simd_math.h"
 
 #include "test_simd_math.h"
+#include "test_collision_2d.h"
 
 
 
@@ -473,6 +474,7 @@ int main(int argc, char * argv[])
     RUN_SUITE(abs_neg_min_max);
     RUN_TEST(approx_length);
     RUN_SUITE(export);
+    RUN_SUITE(collision_2d);
 
     GREATEST_MAIN_END();
 }
