@@ -23,29 +23,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/
       run: ./test
-
-  build-ubuntu-clang-arm:
-    name: ubuntu-clang on aarch64
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v3
-      - name: build artifact
-        uses: uraimo/run-on-arch-action@v2.5.0
-        with:
-          arch: aarch64
-          distro: ubuntu20.04
-          env: |
-            CXX: clang++-11
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y clang++-11 cmake
-          working-directory: ${{github.workspace}}/
-          run: |
-            cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
-            cmake --build ${{github.workspace}}/
-            ./tests/test
       
   build-macos:
     name: macos
