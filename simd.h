@@ -230,6 +230,12 @@ static inline simd_vector simd_set_mask(int mask)
     return vreinterpretq_f32_u32(vld1q_u32(v_mask));
 }
 
+static inline void simd_export_int16(simd_vector input, int16_t* output)
+{
+    int32x4_t tmp = vcvtq_s32_f32(input);
+    vst1_s16(output, vmovn_u32(tmp));
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -572,6 +578,15 @@ static inline simd_vector simd_set_mask(int mask)
         (mask&4)   ? 0xffffffff : 0,
         (mask&2)   ? 0xffffffff : 0,
         (mask&1)   ? 0xffffffff : 0));
+}
+
+// convert float to int16_t
+static inline void simd_export_int16(simd_vector input, int16_t* output)
+{
+    __m256i tmp = _mm256_cvtps_epi32(input);
+    tmp = _mm256_packs_epi32(tmp, _mm256_setzero_si256());
+    tmp = _mm256_permute4x64_epi64(tmp, 0xD8);
+    _mm_storeu_si128((__m128i*)output, _mm256_castsi256_si128(tmp));
 }
 
 #endif

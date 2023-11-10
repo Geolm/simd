@@ -414,6 +414,28 @@ SUITE(abs_neg_min_max)
     RUN_TEST(maximum);
 }
 
+TEST export_int16(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (i);
+
+    simd_vector a = simd_load(array);
+
+    int16_t output[simd_vector_width];
+    simd_export_int16(a, output);
+
+    for(int i=0; i<simd_vector_width; ++i)
+        ASSERT_EQ(i, output[i]);
+
+    PASS();
+}
+
+SUITE(export)
+{
+    RUN_TEST(export_int16);
+}
+
 
 GREATEST_MAIN_DEFS();
 
@@ -429,6 +451,7 @@ int main(int argc, char * argv[])
     RUN_SUITE(sqrt_and_rcp);
     RUN_SUITE(abs_neg_min_max);
     RUN_TEST(approx_length);
+    RUN_SUITE(export);
 
     GREATEST_MAIN_END();
 }
