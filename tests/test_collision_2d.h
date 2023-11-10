@@ -1,9 +1,12 @@
 #include "../simd_2d_collision.h"
 
+#define UNUSED(x) (void)(x)
+
 void collision_failure(void* user_context, uint32_t user_data)
 {
     bool* failure = (bool*) user_context;
     *failure = true;
+    UNUSED(user_data);
 }
 
 void check_user_data(void* user_context, uint32_t user_data)
