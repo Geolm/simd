@@ -418,7 +418,7 @@ TEST export_int16(void)
 {
     float array[simd_vector_width];
     for(int i=0; i<simd_vector_width; ++i)
-        array[i] = (float) (i);
+        array[i] = (float) (i-32767);
 
     simd_vector a = simd_load(array);
 
@@ -426,7 +426,27 @@ TEST export_int16(void)
     simd_export_int16(a, output);
 
     for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(i, output[i]);
+        ASSERT_EQ(i-32767, output[i]);
+
+    PASS();
+}
+
+TEST export_int8(void)
+{
+    float array[simd_vector_width*4];
+    for(int i=0; i<simd_vector_width*4; ++i)
+        array[i] = (float) (i-128);
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array+simd_vector_width);
+    simd_vector c = simd_load(array+simd_vector_width*2);
+    simd_vector d = simd_load(array+simd_vector_width*3);
+
+    int8_t output[simd_vector_width*4];
+    simd_export_int8(a, b, c, d, output);
+
+    for(int i=0; i<simd_vector_width*4; ++i)
+        ASSERT_EQ(i-128, output[i]);
 
     PASS();
 }
@@ -434,6 +454,7 @@ TEST export_int16(void)
 SUITE(export)
 {
     RUN_TEST(export_int16);
+    RUN_TEST(export_int8);
 }
 
 

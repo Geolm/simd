@@ -236,6 +236,18 @@ static inline void simd_export_int16(simd_vector input, int16_t* output)
     vst1_s16(output, vmovn_u32(tmp));
 }
 
+static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, int8_t* output)
+{
+    int16x4x4_t value_int16;
+    value_int16.val[0] = vmovn_u32(vcvtq_s32_f32(a));
+    value_int16.val[1] = vmovn_u32(vcvtq_s32_f32(b));
+    value_int16.val[2] = vmovn_u32(vcvtq_s32_f32(c));
+    value_int16.val[3] = vmovn_u32(vcvtq_s32_f32(d));
+
+    vst1_s8(output, vqmovn_u16(vcombine_s16(value_int16.val[0], value_int16.val[1])));
+    vst1_s8(output+simd_vector_width, vqmovn_u16(vcombine_s16(value_int16.val[2], value_int16.val[3])));
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -580,13 +592,26 @@ static inline simd_vector simd_set_mask(int mask)
         (mask&1)   ? 0xffffffff : 0));
 }
 
-// convert float to int16_t
+// convert float to int16_t : it's up to the caller to be sure the float are in the right range [-32768.f; 32767.f]
 static inline void simd_export_int16(simd_vector input, int16_t* output)
 {
     __m256i tmp = _mm256_cvtps_epi32(input);
     tmp = _mm256_packs_epi32(tmp, _mm256_setzero_si256());
     tmp = _mm256_permute4x64_epi64(tmp, 0xD8);
     _mm_storeu_si128((__m128i*)output, _mm256_castsi256_si128(tmp));
+}
+
+
+static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, int8_t* output)
+{
+    __m256i ab_int16 = _mm256_packs_epi32(_mm256_cvtps_epi32(a), _mm256_cvtps_epi32(c));
+    __m256i cd_int16 = _mm256_packs_epi32(_mm256_cvtps_epi32(b), _mm256_cvtps_epi32(d));
+
+    ab_int16 = _mm256_permute4x64_epi64(ab_int16, 0xD8);
+    cd_int16 = _mm256_permute4x64_epi64(cd_int16, 0xD8);
+
+    __m256i pack = _mm256_packs_epi16(ab_int16, cd_int16);
+    _mm256_store_si256((__m256i*)output, pack);
 }
 
 #endif
