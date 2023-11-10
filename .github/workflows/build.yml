@@ -29,24 +29,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: uraimo/run-on-arch-action@v2
-        name: Run commands
-        id: runcmd
+      - name: checkout code
+        uses: actions/checkout@v3
+      - name: build artifact
+        uses: uraimo/run-on-arch-action@v2.5.0
         with:
           arch: aarch64
-          distro: ubuntu_latest
+          distro: ubuntu-latest
+          env: |
+            CXX: clang++-11
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y clang++-11 make
+            apt-get install -q -y gcc
+          run: |
+            make check
 
-    - name: Configure CMake
-      run: cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
+      - name: Configure CMake
+        run: cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/
+      - name: Build
+        run: cmake --build ${{github.workspace}}/
 
-    - name: Test
-      working-directory: ${{github.workspace}}/
-      run: ./test
-
+      - name: Test
+        working-directory: ${{github.workspace}}/
+        run: ./test
       
   build-macos:
     name: macos
