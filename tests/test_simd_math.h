@@ -66,7 +66,7 @@ SUITE(trigonometry)
 #define NUM_VECTORS (100)
 #define NUM_ELEMENTS (simd_vector_width * NUM_VECTORS)
 
-TEST approx_length()
+TEST approx_length(void)
 {
     vec2 array[NUM_ELEMENTS];
     float step = VEC2_TAU / (float) NUM_ELEMENTS;
