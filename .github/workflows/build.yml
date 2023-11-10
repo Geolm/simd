@@ -43,7 +43,7 @@ jobs:
             apt-get install -q -y clang++-11 make
             apt-get install -q -y gcc
           run: |
-          cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
+            cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
 
       - name: Build
         run: cmake --build ${{github.workspace}}/
