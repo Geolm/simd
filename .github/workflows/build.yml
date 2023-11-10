@@ -40,17 +40,12 @@ jobs:
             CXX: clang++-11
           install: |
             apt-get update -q -y
-            apt-get install -q -y clang++-11 make
-            apt-get install -q -y gcc
+            apt-get install -q -y clang++-11 cmake
+          working-directory: ${{github.workspace}}/
           run: |
             cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
-
-      - name: Build
-        run: cmake --build ${{github.workspace}}/
-
-      - name: Test
-        working-directory: ${{github.workspace}}/
-        run: ./test
+            cmake --build ${{github.workspace}}/
+            ./tests/test
       
   build-macos:
     name: macos
