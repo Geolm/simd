@@ -1,6 +1,5 @@
 
 #include "../vec2.h"
-#include "../simd_vec2.h"
 
 TEST sinus(void)
 {
@@ -80,17 +79,17 @@ TEST approx_length()
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
-        simd_vec2 vec;
-        simd_load_xy((float*)array + i * simd_vector_width, &vec.x, &vec.y);
+        simd_vector vec_x, vec_y;
+        simd_load_xy((float*)array + i * simd_vector_width, &vec_x, &vec_y);
 
-        simd_vector approx = simd_vec2_approx_length(vec);
+        simd_vector approx = simd_vec2_approx_length(vec_x, vec_y);
         ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), unit_epsilon)));
 
         simd_vector length = simd_splat((float) i + 1);
-        vec.x = simd_mul(vec.x, length);
-        vec.y = simd_mul(vec.y, length);
+        vec_x = simd_mul(vec_x, length);
+        vec_y = simd_mul(vec_y, length);
 
-        approx = simd_vec2_approx_length(vec);
+        approx = simd_vec2_approx_length(vec_x, vec_y);
         ASSERT(simd_all(simd_equal(approx, length, any_epsilon)));
     }
 

@@ -130,4 +130,21 @@ static inline simd_vector simd_solve_quadratic(simd_vector a, simd_vector b, sim
     return real_roots;
 }
 
+//-----------------------------------------------------------------------------
+// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm
+static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
+{
+    simd_vector abs_value_x = simd_abs(x);
+    simd_vector abs_value_y = simd_abs(y);
+    simd_vector min_value = simd_min(abs_value_x, abs_value_y);
+    simd_vector max_value = simd_max(abs_value_x, abs_value_y);
+    
+    simd_vector approximation = simd_fmad(simd_splat(0.485968200201465f), min_value, simd_mul(simd_splat(0.898204193266868f), max_value));
+    approximation = simd_max(max_value, approximation);
+    
+    // do one newton raphson iteration
+    simd_vector sq_length = simd_add(simd_mul(x, x), simd_mul(y, y));
+    return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
+}
+
 #endif
