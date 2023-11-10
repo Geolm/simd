@@ -35,7 +35,7 @@ jobs:
         uses: uraimo/run-on-arch-action@v2.5.0
         with:
           arch: aarch64
-          distro: ubuntu-latest
+          distro: ubuntu20.04
           env: |
             CXX: clang++-11
           install: |
