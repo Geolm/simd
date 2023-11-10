@@ -117,6 +117,12 @@ simd_vector simd_splat(float value);
 // returns a vector with all lanes set zero
 simd_vector simd_splat_zero(void);
 
+// export a vector to int16_t : the floats have to be in the right range [-32768.f; 32767.f]
+void simd_export_int16(simd_vector input, int16_t* output);
+
+// export 4 vectors to int8_t : the floats have to be in the right range [-128.f; 127.f]
+void simd_export_int8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, int8_t* output);
+
 ```
 
 ## arithmetic 

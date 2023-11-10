@@ -244,8 +244,8 @@ static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c,
     value_int16.val[2] = vmovn_u32(vcvtq_s32_f32(c));
     value_int16.val[3] = vmovn_u32(vcvtq_s32_f32(d));
 
-    vst1_s8(output, vqmovn_u16(vcombine_s16(value_int16.val[0], value_int16.val[1])));
-    vst1_s8(output+simd_vector_width, vqmovn_u16(vcombine_s16(value_int16.val[2], value_int16.val[3])));
+    vst1_s8(output, vqmovn_s16(vcombine_s16(value_int16.val[0], value_int16.val[1])));
+    vst1_s8(output+simd_vector_width*2, vqmovn_s16(vcombine_s16(value_int16.val[2], value_int16.val[3])));
 }
 
 #else
