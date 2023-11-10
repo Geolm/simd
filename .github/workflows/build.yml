@@ -23,6 +23,30 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/
       run: ./test
+
+  build-ubuntu-clang-arm:
+    name: ubuntu-clang on aarch64
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: uraimo/run-on-arch-action@v2
+        name: Run commands
+        id: runcmd
+        with:
+          arch: aarch64
+          distro: ubuntu_latest
+
+    - name: Configure CMake
+      run: cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/
+
+    - name: Test
+      working-directory: ${{github.workspace}}/
+      run: ./test
+
       
   build-macos:
     name: macos
