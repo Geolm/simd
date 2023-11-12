@@ -452,12 +452,94 @@ TEST export_int8(void)
     PASS();
 }
 
+TEST export_uint8(void)
+{
+    float array[simd_vector_width*4];
+    for(int i=0; i<simd_vector_width*4; ++i)
+        array[i] = (float) (255-i);
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array+simd_vector_width);
+    simd_vector c = simd_load(array+simd_vector_width*2);
+    simd_vector d = simd_load(array+simd_vector_width*3);
+
+    uint8_t output[simd_vector_width*4];
+    simd_export_uint8(a, b, c, d, output);
+
+    for(int i=0; i<simd_vector_width*4; ++i)
+        ASSERT_EQ(255-i, output[i]);
+
+    PASS();
+}
+
 SUITE(export)
 {
     RUN_TEST(export_int16);
     RUN_TEST(export_int8);
+    RUN_TEST(export_uint8);
 }
 
+TEST interlace_xy(void)
+{
+    float array[simd_vector_width*2];
+    for(int i=0; i<simd_vector_width*2; ++i)
+        array[i] = (float) (i);
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+
+    simd_vector interlace0, interlace1;
+    simd_interlace_xy(a, b, &interlace0, &interlace1);
+
+    float result[simd_vector_width*2];
+    simd_store(result, interlace0);
+    simd_store(result+simd_vector_width, interlace1);
+
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        ASSERT_EQ(result[i*2], array[i]);
+        ASSERT_EQ(result[i*2+1], array[i+simd_vector_width]);
+    }
+
+    PASS();
+}
+
+TEST interlace_xyzw(void)
+{
+    float array[simd_vector_width*4];
+    for(int i=0; i<simd_vector_width*4; ++i)
+        array[i] = (float) (i);
+
+    simd_vector a = simd_load(array);
+    simd_vector b = simd_load(array + simd_vector_width);
+    simd_vector c = simd_load(array + simd_vector_width * 2);
+    simd_vector d = simd_load(array + simd_vector_width * 3);
+
+    simd_vector interlace0, interlace1, interlace2, interlace3;
+    simd_interlace_xyzw(a, b, c, d, &interlace0, &interlace1, &interlace2, &interlace3);
+
+    float result[simd_vector_width*4];
+    simd_store(result, interlace0);
+    simd_store(result+simd_vector_width, interlace1);
+    simd_store(result+simd_vector_width*2, interlace2);
+    simd_store(result+simd_vector_width*3, interlace3);
+
+    for(int i=0; i<simd_vector_width; ++i)
+    {
+        ASSERT_EQ(result[i*4], array[i]);
+        ASSERT_EQ(result[i*4+1], array[i+simd_vector_width]);
+        ASSERT_EQ(result[i*4+2], array[i+simd_vector_width*2]);
+        ASSERT_EQ(result[i*4+3], array[i+simd_vector_width*3]);
+    }
+
+    PASS();
+}
+
+SUITE(interlace_deinterlace)
+{
+    RUN_TEST(interlace_xy);
+    RUN_TEST(interlace_xyzw);
+}
 
 GREATEST_MAIN_DEFS();
 
@@ -475,6 +557,7 @@ int main(int argc, char * argv[])
     RUN_TEST(approx_length);
     RUN_SUITE(export);
     RUN_SUITE(collision_2d);
+    RUN_SUITE(interlace_deinterlace);
 
     GREATEST_MAIN_END();
 }

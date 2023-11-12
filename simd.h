@@ -248,6 +248,18 @@ static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c,
     vst1_s8(output+simd_vector_width*2, vqmovn_s16(vcombine_s16(value_int16.val[2], value_int16.val[3])));
 }
 
+static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, uint8_t* output)
+{
+    uint16x4x4_t value_uint16;
+    value_uint16.val[0] = vmovn_u32(vcvtq_s32_f32(a));
+    value_uint16.val[1] = vmovn_u32(vcvtq_s32_f32(b));
+    value_uint16.val[2] = vmovn_u32(vcvtq_s32_f32(c));
+    value_uint16.val[3] = vmovn_u32(vcvtq_s32_f32(d));
+
+    vst1_u8(output, vqmovn_u16(vcombine_u16(value_uint16.val[0], value_uint16.val[1])));
+    vst1_u8(output+simd_vector_width*2, vqmovn_u16(vcombine_u16(value_uint16.val[2], value_uint16.val[3])));
+}
+
 #else
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -601,7 +613,6 @@ static inline void simd_export_int16(simd_vector input, int16_t* output)
     _mm_storeu_si128((__m128i*)output, _mm256_castsi256_si128(tmp));
 }
 
-
 static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, int8_t* output)
 {
     __m256i ab_int16 = _mm256_packs_epi32(_mm256_cvtps_epi32(a), _mm256_cvtps_epi32(c));
@@ -612,6 +623,20 @@ static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c,
 
     __m256i pack = _mm256_packs_epi16(ab_int16, cd_int16);
     _mm256_store_si256((__m256i*)output, pack);
+}
+
+static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, uint8_t* output)
+{
+    // preping the float
+    simd_vector threshold = simd_splat(127.f);
+    simd_vector c2 = simd_splat(-256.f);
+
+    a = simd_select(a, simd_add(c2, a), simd_cmp_ge(a, threshold));
+    b = simd_select(b, simd_add(c2, b), simd_cmp_ge(b, threshold));
+    c = simd_select(c, simd_add(c2, c), simd_cmp_ge(c, threshold));
+    d = simd_select(d, simd_add(c2, d), simd_cmp_ge(d, threshold));
+
+    simd_export_int8(a, b, c, d, (int8_t*)output);
 }
 
 #endif
@@ -627,13 +652,13 @@ static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
 
-//----------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 static inline simd_vector simd_isnan(simd_vector a)
 {
     return simd_cmp_neq(a, a);
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 static inline simd_vector simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
 {
     simd_vector diff = simd_abs_diff(a, b);
@@ -667,6 +692,29 @@ static inline simd_vector simd_sign(simd_vector a)
 {
     simd_vector result = simd_select(simd_splat_zero(), simd_splat(-1.f), simd_cmp_lt(a, simd_splat_zero()));
     return simd_select(result, simd_splat( 1.f), simd_cmp_gt(a, simd_splat_zero()));
+}
+
+//-----------------------------------------------------------------------------
+static inline void simd_interlace_xyzw(simd_vector x, simd_vector y, simd_vector z, simd_vector w,
+                                       simd_vector* output0, simd_vector* output1, simd_vector* output2, simd_vector* output3)
+{
+    simd_vector xz0, xz1;
+    simd_interlace_xy(x, z, &xz0, &xz1);
+
+    simd_vector yw0, yw1;
+    simd_interlace_xy(y, w, &yw0, &yw1);
+
+    simd_interlace_xy(xz0, yw0, output0, output1);
+    simd_interlace_xy(xz1, yw1, output2, output3);
+}
+
+//-----------------------------------------------------------------------------
+static inline void simd_export_color(simd_vector red, simd_vector green, simd_vector blue, simd_vector alpha, uint8_t* output)
+{
+    simd_vector rgba0, rgba1, rgba2, rgba3;
+    simd_interlace_xyzw(red, green, blue, alpha, &rgba0, &rgba1, &rgba2, &rgba3);
+
+    simd_export_uint8(rgba0, rgba1, rgba2, rgba3, output);
 }
 
 
