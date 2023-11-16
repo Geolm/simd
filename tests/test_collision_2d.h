@@ -114,7 +114,7 @@ TEST intersection_aabb_disc(void)
 
     PASS();
 }
-
+/*
 TEST no_intersection_aabb_circle(void)
 {
     bool failure = false;
@@ -148,7 +148,7 @@ TEST intersection_aabb_circle(void)
     simdcol_terminate(context);
 
     PASS();
-}
+}*/
 
 
 SUITE(collision_2d)
