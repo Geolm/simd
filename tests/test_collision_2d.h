@@ -61,7 +61,7 @@ TEST no_intersection_aabb_triangle(void)
     simdcol_terminate(context);
     PASS();
 }
-/*
+
 TEST intersection_aabb_triangle(void)
 {
     bool success[4] = {false, false, false, false};
@@ -80,7 +80,7 @@ TEST intersection_aabb_triangle(void)
 
     PASS();
 }
-
+/*
 TEST no_intersection_aabb_disc(void)
 {
     bool failure = false;
