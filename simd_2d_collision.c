@@ -197,6 +197,7 @@ struct simdcol_context* simdcol_init(void* user_context, simdcol_intersection_ca
     context->aabb_triangle->num_items = 0;
     context->aabb_obb->num_items = 0;
     context->aabb_disc->num_items = 0;
+    context->aabb_circle->num_items = 0;
     context->triangle_triangle->num_items = 0;
     context->segment_aabb->num_items = 0;
     context->segment_disc->num_items = 0;
