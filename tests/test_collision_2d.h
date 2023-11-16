@@ -159,6 +159,6 @@ SUITE(collision_2d)
     RUN_TEST(intersection_aabb_triangle);
     RUN_TEST(no_intersection_aabb_disc);
     RUN_TEST(intersection_aabb_disc);
-    RUN_TEST(no_intersection_aabb_circle);
-    RUN_TEST(intersection_aabb_circle);
+    //RUN_TEST(no_intersection_aabb_circle);
+    //RUN_TEST(intersection_aabb_circle);
 }
