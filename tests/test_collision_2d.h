@@ -36,7 +36,7 @@ TEST collision_user_data(void)
     bool failure = true;
     struct simdcol_context* context = simdcol_init(&failure, check_user_data);
     
-    simdcol_aabb_circle(context, 0x12345678, (aabb) {.min = {-40.f, -40.f}, .max = {10.f, 10.f}}, (circle){.center = (vec2){-30.f, -20.f}, .radius = 500.f});
+    simdcol_aabb_disc(context, 0x12345678, (aabb) {.min = {-40.f, -40.f}, .max = {10.f, 10.f}}, (vec2){-30.f, -20.f}, 500.f);
 
     simdcol_flush(context, flush_all);
     ASSERT_NEQ(failure, true);
@@ -56,7 +56,6 @@ TEST no_intersection_aabb_triangle(void)
     simdcol_aabb_triangle(context, 2, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {15.f, -5.f}, (vec2) {10.f, -5.f}, (vec2) {15.f, 2.f});
     simdcol_aabb_triangle(context, 3, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {0.f, 15.f}, (vec2) {10.f, 12.f}, (vec2) {15.f, 15.f});
 
-    
     ASSERT_NEQ(failure, true);
 
     simdcol_terminate(context);
@@ -82,6 +81,75 @@ TEST intersection_aabb_triangle(void)
     PASS();
 }
 
+TEST no_intersection_aabb_disc(void)
+{
+    bool failure = false;
+    struct simdcol_context* context = simdcol_init(&failure, collision_failure);
+
+    simdcol_aabb_disc(context, 0, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {-5.f, -5.f}, 5.f);
+    simdcol_aabb_disc(context, 1, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {0.f, -50.f}, 45.f);
+    simdcol_aabb_disc(context, 2, (aabb) {.min = {10.f, 10.f}, .max = {20.f, 20.f}}, (vec2) {-5.f, -5.f}, 10.f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
+TEST intersection_aabb_disc(void)
+{
+    bool success[4] = {false, false, false, false};
+    struct simdcol_context* context = simdcol_init(&success, collision_success);
+
+    simdcol_aabb_disc(context, 0, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {-5.f, -5.f}, 10.f);
+    simdcol_aabb_disc(context, 1, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {5.f, 5.f}, 25.f);
+    simdcol_aabb_disc(context, 2, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {2.f, 2.f}, 5.f);
+    simdcol_aabb_disc(context, 3, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {5.f, 8.f}, 5.f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+    
+    simdcol_terminate(context);
+
+    PASS();
+}
+
+TEST no_intersection_aabb_circle(void)
+{
+    bool failure = false;
+    struct simdcol_context* context = simdcol_init(&failure, collision_failure);
+
+    simdcol_aabb_circle(context, 0, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {-5.f, -5.f}, 5.f, 2.f);
+    simdcol_aabb_circle(context, 1, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {0.f, -50.f}, 45.f, 3.f);
+    simdcol_aabb_circle(context, 2, (aabb) {.min = {10.f, 10.f}, .max = {20.f, 20.f}}, (vec2) {-5.f, -5.f}, 10.f, 1.f);
+    simdcol_aabb_circle(context, 3, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {0.f, 0.f}, 100.f, 10.f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
+TEST intersection_aabb_circle(void)
+{
+    bool success[4] = {false, false, false, false};
+    struct simdcol_context* context = simdcol_init(&success, collision_success);
+
+    simdcol_aabb_circle(context, 0, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {5.f, 5.f}, 5.5f, 2.f);
+    simdcol_aabb_circle(context, 1, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {5.f, 5.f}, 6.f, 2.f);
+    simdcol_aabb_circle(context, 2, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {-5.f, -5.f}, 10.f, 2.f);
+    simdcol_aabb_circle(context, 3, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {20.f, 20.f}, 30.f, 25.f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+    
+    simdcol_terminate(context);
+
+    PASS();
+}
+
 
 SUITE(collision_2d)
 {
@@ -89,4 +157,8 @@ SUITE(collision_2d)
     RUN_TEST(collision_user_data);
     RUN_TEST(no_intersection_aabb_triangle);
     RUN_TEST(intersection_aabb_triangle);
+    RUN_TEST(no_intersection_aabb_disc);
+    RUN_TEST(intersection_aabb_disc);
+    RUN_TEST(no_intersection_aabb_circle);
+    RUN_TEST(intersection_aabb_circle);
 }

@@ -631,10 +631,10 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
     simd_vector threshold = simd_splat(127.f);
     simd_vector c2 = simd_splat(-256.f);
 
-    a = simd_select(a, simd_add(c2, a), simd_cmp_ge(a, threshold));
-    b = simd_select(b, simd_add(c2, b), simd_cmp_ge(b, threshold));
-    c = simd_select(c, simd_add(c2, c), simd_cmp_ge(c, threshold));
-    d = simd_select(d, simd_add(c2, d), simd_cmp_ge(d, threshold));
+    a = simd_select(a, simd_add(c2, a), simd_cmp_gt(a, threshold));
+    b = simd_select(b, simd_add(c2, b), simd_cmp_gt(b, threshold));
+    c = simd_select(c, simd_add(c2, c), simd_cmp_gt(c, threshold));
+    d = simd_select(d, simd_add(c2, d), simd_cmp_gt(d, threshold));
 
     simd_export_int8(a, b, c, d, (int8_t*)output);
 }

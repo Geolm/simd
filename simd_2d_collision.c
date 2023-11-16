@@ -13,6 +13,8 @@ typedef struct
 static inline simd_vec2 simd_vec2_load(const float* x, const float* y, ptrdiff_t offset) {return (simd_vec2) {.x = simd_load(x + offset), .y = simd_load(y + offset)};}
 static inline simd_vec2 simd_vec2_sub(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_sub(a.x, b.x), .y = simd_sub(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_mul(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_mul(a.x, b.x), .y = simd_mul(a.y, b.y)};}
+static inline simd_vec2 simd_vec2_abs(simd_vec2 a) {return (simd_vec2) {.x = simd_abs(a.x), .y = simd_abs(a.y)};}
+static inline simd_vec2 simd_vec2_max(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_max(a.x, b.x), .y = simd_max(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_clamp(simd_vec2 a, simd_vec2 range_min, simd_vec2 range_max) 
 {
     return (simd_vec2) {.x = simd_clamp(a.x, range_min.x, range_max.x), .y = simd_clamp(a.y, range_min.y, range_max.y)};
@@ -62,7 +64,7 @@ struct aabb_obb_data
 };
 
 //-----------------------------------------------------------------------------
-struct aabb_circle_data
+struct aabb_disc_data
 {
     float aabb_min_x[BATCH_SIZE];
     float aabb_min_y[BATCH_SIZE];
@@ -72,6 +74,23 @@ struct aabb_circle_data
     float center_x[BATCH_SIZE];
     float center_y[BATCH_SIZE];
     float sq_radius[BATCH_SIZE];
+
+    uint32_t user_data[BATCH_SIZE];
+    uint32_t num_items;
+};
+
+//-----------------------------------------------------------------------------
+struct aabb_circle_data
+{
+    float aabb_min_x[BATCH_SIZE];
+    float aabb_min_y[BATCH_SIZE];
+    float aabb_max_x[BATCH_SIZE];
+    float aabb_max_y[BATCH_SIZE];
+
+    float center_x[BATCH_SIZE];
+    float center_y[BATCH_SIZE];
+    float sq_outter_radius[BATCH_SIZE];
+    float sq_inner_radius[BATCH_SIZE];
 
     uint32_t user_data[BATCH_SIZE];
     uint32_t num_items;
@@ -107,7 +126,7 @@ struct segment_aabb_data
 };
 
 //-----------------------------------------------------------------------------
-struct segment_circle_data
+struct segment_disc_data
 {
     float p0_x[BATCH_SIZE];
     float p0_y[BATCH_SIZE];
@@ -123,7 +142,7 @@ struct segment_circle_data
 };
 
 //-----------------------------------------------------------------------------
-struct triangle_circle_data
+struct triangle_disc_data
 {
     float v_x[3][BATCH_SIZE];
     float v_y[3][BATCH_SIZE];
@@ -148,11 +167,12 @@ struct simdcol_context
 {
     struct aabb_triangle_data* aabb_triangle;
     struct aabb_obb_data* aabb_obb;
+    struct aabb_disc_data* aabb_disc;
     struct aabb_circle_data* aabb_circle;
     struct triangle_triangle_data* triangle_triangle;
     struct segment_aabb_data* segment_aabb;
-    struct segment_circle_data* segment_circle;
-    struct triangle_circle_data* triangle_circle;
+    struct segment_disc_data* segment_disc;
+    struct triangle_disc_data* triangle_disc;
 
     void* user_context;
     simdcol_intersection_callback on_intersection;
@@ -167,19 +187,20 @@ struct simdcol_context* simdcol_init(void* user_context, simdcol_intersection_ca
     struct simdcol_context* context = (struct simdcol_context*) malloc(sizeof(struct simdcol_context));
     context->aabb_triangle = (struct aabb_triangle_data*) simd_aligned_alloc(sizeof(struct aabb_triangle_data));
     context->aabb_obb = (struct aabb_obb_data*) simd_aligned_alloc(sizeof(struct aabb_obb_data));
+    context->aabb_disc = (struct aabb_disc_data*) simd_aligned_alloc(sizeof(struct aabb_disc_data));
     context->aabb_circle = (struct aabb_circle_data*) simd_aligned_alloc(sizeof(struct aabb_circle_data));
     context->triangle_triangle = (struct triangle_triangle_data*) simd_aligned_alloc(sizeof(struct triangle_triangle_data));
     context->segment_aabb = (struct segment_aabb_data*) simd_aligned_alloc(sizeof(struct segment_aabb_data));
-    context->segment_circle = (struct segment_circle_data*) simd_aligned_alloc(sizeof(struct segment_circle_data));
-    context->triangle_circle = (struct triangle_circle_data*) simd_aligned_alloc(sizeof(struct triangle_circle_data));
+    context->segment_disc = (struct segment_disc_data*) simd_aligned_alloc(sizeof(struct segment_disc_data));
+    context->triangle_disc = (struct triangle_disc_data*) simd_aligned_alloc(sizeof(struct triangle_disc_data));
 
     context->aabb_triangle->num_items = 0;
     context->aabb_obb->num_items = 0;
-    context->aabb_circle->num_items = 0;
+    context->aabb_disc->num_items = 0;
     context->triangle_triangle->num_items = 0;
     context->segment_aabb->num_items = 0;
-    context->segment_circle->num_items = 0;
-    context->triangle_circle->num_items = 0;
+    context->segment_disc->num_items = 0;
+    context->triangle_disc->num_items = 0;
 
     context->state = state_idle;
     context->on_intersection = callback;
@@ -250,12 +271,12 @@ void simdcol_aabb_obb(struct simdcol_context* context, uint32_t user_data, aabb 
 }
 
 //-----------------------------------------------------------------------------
-void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, circle c)
+void simdcol_aabb_disc(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 center, float radius)
 {
-    assert(context->aabb_circle->num_items < BATCH_SIZE);
+    assert(context->aabb_disc->num_items < BATCH_SIZE);
     assert(context->state == state_idle);
 
-    struct aabb_circle_data* data = context->aabb_circle;
+    struct aabb_disc_data* data = context->aabb_disc;
     uint32_t index = data->num_items++;
 
     // copy data in SoA
@@ -264,9 +285,35 @@ void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aa
     data->aabb_min_y[index] = box.min.y;
     data->aabb_max_x[index] = box.max.x;
     data->aabb_max_y[index] = box.max.y;
-    data->center_x[index] = c.center.x;
-    data->center_y[index] = c.center.y;
-    data->sq_radius[index] = c.radius * c.radius;
+    data->center_x[index] = center.x;
+    data->center_y[index] = center.y;
+    data->sq_radius[index] = radius * radius;
+
+    if (data->num_items == BATCH_SIZE)
+        simdcol_flush(context, flush_aabb_disc);
+}
+
+//-----------------------------------------------------------------------------
+void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 center, float radius, float width)
+{
+    assert(context->aabb_circle->num_items < BATCH_SIZE);
+    assert(context->state == state_idle);
+
+    struct aabb_circle_data* data = context->aabb_circle;
+    uint32_t index = data->num_items++;
+
+    float half_width = width * .5f;
+
+    // copy data in SoA
+    data->user_data[index] = user_data;
+    data->aabb_min_x[index] = box.min.x;
+    data->aabb_min_y[index] = box.min.y;
+    data->aabb_max_x[index] = box.max.x;
+    data->aabb_max_y[index] = box.max.y;
+    data->center_x[index] = center.x;
+    data->center_y[index] = center.y;
+    data->sq_outter_radius[index] = float_square(radius + half_width);
+    data->sq_inner_radius[index] = float_square(radius - half_width);
 
     if (data->num_items == BATCH_SIZE)
         simdcol_flush(context, flush_aabb_circle);
@@ -323,34 +370,34 @@ void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, s
 }
 
 //-----------------------------------------------------------------------------
-void simdcol_segment_circle(struct simdcol_context* context, uint32_t user_data, segment line, circle c)
+void simdcol_segment_disc(struct simdcol_context* context, uint32_t user_data, segment line, circle disc)
 {
     assert(context->state == state_idle);
-    assert(context->segment_circle->num_items < BATCH_SIZE);
+    assert(context->segment_disc->num_items < BATCH_SIZE);
 
-    struct segment_circle_data* data = context->segment_circle;
+    struct segment_disc_data* data = context->segment_disc;
     uint32_t index = data->num_items++;
 
     data->p0_x[index] = line.p0.x;
     data->p1_x[index] = line.p1.x;
     data->p0_y[index] = line.p0.y;
     data->p1_y[index] = line.p1.y;
-    data->center_x[index] = c.center.x;
-    data->center_y[index] = c.center.y;
-    data->sq_radius[index] = c.radius * c.radius;
+    data->center_x[index] = disc.center.x;
+    data->center_y[index] = disc.center.y;
+    data->sq_radius[index] = disc.radius * disc.radius;
     data->user_data[index] = user_data;
 
     if (data->num_items == BATCH_SIZE)
-        simdcol_flush(context, flush_segment_circle);
+        simdcol_flush(context, flush_segment_disc);
 }
 
 //-----------------------------------------------------------------------------
-void simdcol_triangle_circle(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, circle c)
+void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, circle disc)
 {
     assert(context->state == state_idle);
-    assert(context->triangle_circle->num_items < BATCH_SIZE);
+    assert(context->triangle_disc->num_items < BATCH_SIZE);
 
-    struct triangle_circle_data* data = context->triangle_circle;
+    struct triangle_disc_data* data = context->triangle_disc;
     uint32_t index = data->num_items++;
 
     data->v_x[0][index] = v0.x;
@@ -359,19 +406,19 @@ void simdcol_triangle_circle(struct simdcol_context* context, uint32_t user_data
     data->v_y[0][index] = v0.y;
     data->v_y[1][index] = v1.y;
     data->v_y[2][index] = v2.y;
-    data->center_x[index] = c.center.x;
-    data->center_y[index] = c.center.y;
-    data->sq_radius[index] = c.radius * c.radius;
+    data->center_x[index] = disc.center.x;
+    data->center_y[index] = disc.center.y;
+    data->sq_radius[index] = disc.radius * disc.radius;
     data->user_data[index] = user_data;
 
     if (data->num_items == BATCH_SIZE)
-        simdcol_flush(context, flush_triangle_circle);
+        simdcol_flush(context, flush_triangle_disc);
 }
 
 //-----------------------------------------------------------------------------
-void process_aabb_circle(struct simdcol_context* context)
+void process_aabb_disc(struct simdcol_context* context)
 {
-    struct aabb_circle_data* data = context->aabb_circle;
+    struct aabb_disc_data* data = context->aabb_disc;
 
     if (data->num_items == 0)
         return;
@@ -397,6 +444,45 @@ void process_aabb_circle(struct simdcol_context* context)
     }
     data->num_items = 0;
 }
+
+//-----------------------------------------------------------------------------
+void process_aabb_circle(struct simdcol_context* context)
+{
+    struct aabb_circle_data* data = context->aabb_circle;
+
+    if (data->num_items == 0)
+        return;
+
+    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
+    {
+        uint32_t offset = vec_index * simd_vector_width;
+
+        // first check the aabb is in outter disc 
+        simd_vec2 aabb_min = simd_vec2_load(data->aabb_min_x, data->aabb_min_y, offset);
+        simd_vec2 aabb_max = simd_vec2_load(data->aabb_max_x, data->aabb_max_y,  offset);
+        simd_vec2 center = simd_vec2_load(data->center_x, data->center_y, offset);
+        simd_vec2 nearest = simd_vec2_clamp(center, aabb_min, aabb_max);
+        simd_vec2 delta = simd_vec2_sub(nearest, center);
+        simd_vector sq_distance = simd_vec2_sq_length(delta);
+        simd_vector sq_outter_radius = simd_load(data->sq_outter_radius + offset);
+        simd_vector sq_inner_radius = simd_load(data->sq_inner_radius + offset);
+        simd_vector result = simd_cmp_lt(sq_distance, sq_outter_radius);
+        
+        // check the furthest corner is in inner disc
+        simd_vec2 candidate0 = simd_vec2_abs(simd_vec2_sub(center, aabb_min));
+        simd_vec2 candidate1 = simd_vec2_abs(simd_vec2_sub(center, aabb_max));
+        simd_vec2 furthest = simd_vec2_max(candidate0, candidate1);
+        result = simd_and(result, simd_cmp_gt(simd_vec2_sq_length(furthest), sq_inner_radius));
+
+        int bitfield = simd_get_mask(result);
+        for(uint32_t i=0; i<simd_vector_width; ++i)
+            if (bitfield&(1<<i) && (offset + i) < data->num_items)
+                context->on_intersection(context->user_context, data->user_data[offset + i]);
+    }
+    data->num_items = 0;
+}
+
 
 //-----------------------------------------------------------------------------
 static inline simd_vector all_greater3(simd_vector reference, simd_vector value0, simd_vector value1, simd_vector value2)
@@ -673,9 +759,9 @@ static inline simd_vector sq_distance_to_segment(simd_vec2 point, simd_vec2 a, s
 
 //-----------------------------------------------------------------------------
 // simply compute squared distance between center and the segment and compare it to squared radius
-void process_segment_circle(struct simdcol_context* context)
+void process_segment_disc(struct simdcol_context* context)
 {
-    struct segment_circle_data* data = context->segment_circle;
+    struct segment_disc_data* data = context->segment_disc;
 
     if (data->num_items == 0)
         return;
@@ -727,9 +813,9 @@ static simd_vector point_in_triangle(simd_vec2 p, simd_vec2 v0, simd_vec2 v1, si
 // 2 steps : 
 //   - center of circle in the triangle
 //   - triangle's edges intersection with circle
-void process_triangle_circle(struct simdcol_context* context)
+void process_triangle_disc(struct simdcol_context* context)
 {
-    struct triangle_circle_data* data = context->triangle_circle;
+    struct triangle_disc_data* data = context->triangle_disc;
 
     uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
@@ -761,6 +847,9 @@ void simdcol_flush(struct simdcol_context* context, enum flush_hint hint)
     assert(context->state == state_idle);
     context->state = state_processing;
 
+    if (hint == flush_aabb_disc || hint == flush_all)
+        process_aabb_disc(context);
+
     if (hint == flush_aabb_circle || hint == flush_all)
         process_aabb_circle(context);
 
@@ -776,11 +865,11 @@ void simdcol_flush(struct simdcol_context* context, enum flush_hint hint)
     if (hint == flush_segment_aabb || hint == flush_all)
         process_segment_aabb(context);
 
-    if (hint == flush_segment_circle || hint == flush_all)
-        process_segment_circle(context);
+    if (hint == flush_segment_disc || hint == flush_all)
+        process_segment_disc(context);
 
-    if (hint == flush_triangle_circle || hint == flush_all)
-        process_triangle_circle(context);
+    if (hint == flush_triangle_disc || hint == flush_all)
+        process_triangle_disc(context);
 
     context->state = state_idle;
 }
@@ -790,10 +879,11 @@ void simdcol_terminate(struct simdcol_context* context)
 {
     simd_aligned_free(context->aabb_triangle);
     simd_aligned_free(context->aabb_obb);
+    simd_aligned_free(context->aabb_disc);
     simd_aligned_free(context->aabb_circle);
     simd_aligned_free(context->triangle_triangle);
     simd_aligned_free(context->segment_aabb);
-    simd_aligned_free(context->segment_circle);
-    simd_aligned_free(context->triangle_circle);
+    simd_aligned_free(context->segment_disc);
+    simd_aligned_free(context->triangle_disc);
     free(context);
 }
