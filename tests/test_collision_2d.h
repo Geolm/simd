@@ -186,6 +186,40 @@ TEST intersection_segment_aabb(void)
     PASS();
 }
 
+TEST no_intersection_segment_disc(void)
+{
+    bool failure = false;
+    struct simdcol_context* context = simdcol_init(&failure, collision_failure);
+
+    simdcol_segment_disc(context, 0, (vec2) {0.f, 0.f}, (vec2) {1.f, 1.f}, (vec2) {10.f, 10.f}, 5.f);
+    simdcol_segment_disc(context, 1, (vec2) {0.f, 0.f}, (vec2) {100.f, 0.f}, (vec2) {0.f, 20.f}, 5.f);
+    simdcol_segment_disc(context, 2, (vec2) {10.f, 0.f}, (vec2) {-100.f, 0.f}, (vec2) {0.f, 20.f}, 5.f);
+    simdcol_segment_disc(context, 3, (vec2) {-1.f, -1.f}, (vec2) {-100.f, -200.f}, (vec2) {0.f, 20.f}, 5.f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
+TEST intersection_segment_disc(void)
+{
+    bool success[4] = {false, false, false, false};
+    struct simdcol_context* context = simdcol_init(&success, collision_success);
+
+    simdcol_segment_disc(context, 0, (vec2) {0.f, 0.f}, (vec2) {1.f, 1.f}, (vec2) {5.f, 5.f}, 10.f);
+    simdcol_segment_disc(context, 1, (vec2) {0.f, 0.f}, (vec2) {100.f, 0.f}, (vec2) {0.f, 20.f}, 25.f);
+    simdcol_segment_disc(context, 2, (vec2) {10.f, 0.f}, (vec2) {-100.f, 0.f}, (vec2) {-50.f, 20.f}, 25.f);
+    simdcol_segment_disc(context, 3, (vec2) {-1.f, -1.f}, (vec2) {-100.f, -100.f}, (vec2) {-50.f, -50.f}, 2.f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
 
 SUITE(collision_2d)
 {
@@ -199,4 +233,6 @@ SUITE(collision_2d)
     RUN_TEST(intersection_aabb_circle);
     RUN_TEST(no_intersection_segment_aabb);
     RUN_TEST(intersection_segment_aabb);
+    RUN_TEST(no_intersection_segment_disc);
+    RUN_TEST(intersection_segment_disc);
 }
