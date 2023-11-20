@@ -348,7 +348,7 @@ void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_da
 }
 
 //-----------------------------------------------------------------------------
-void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, segment line, aabb box)
+void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, vec2 p0, vec2 p1, aabb box)
 {
     assert(context->state == state_idle);
     assert(context->segment_aabb->num_items < BATCH_SIZE);
@@ -356,10 +356,10 @@ void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, s
     struct segment_aabb_data* data = context->segment_aabb;
     uint32_t index = data->num_items++;
 
-    data->p0_x[index] = line.p0.x;
-    data->p1_x[index] = line.p1.x;
-    data->p0_y[index] = line.p0.y;
-    data->p1_y[index] = line.p1.y;
+    data->p0_x[index] = p0.x;
+    data->p1_x[index] = p1.x;
+    data->p0_y[index] = p0.y;
+    data->p1_y[index] = p1.y;
     data->aabb_min_x[index] = box.min.x;
     data->aabb_min_y[index] = box.min.y;
     data->aabb_max_x[index] = box.max.x;
