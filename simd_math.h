@@ -64,7 +64,7 @@ static inline simd_vector simd_approx_cos(simd_vector a)
 //----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_approx_sin(simd_vector a)
 {
-    return simd_cos(simd_sub(a, simd_splat(SIMD_MATH_PI2)));
+    return simd_approx_cos(simd_sub(a, simd_splat(SIMD_MATH_PI2)));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
