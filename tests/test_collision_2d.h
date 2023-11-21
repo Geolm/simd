@@ -224,6 +224,27 @@ TEST intersection_segment_disc(void)
     PASS();
 }
 
+TEST no_intersection_aabb_arc(void)
+{
+    bool failure = false;
+    struct simdcol_context* context = simdcol_init(&failure, collision_failure);
+
+    simdcol_aabb_arc(context, 0, (aabb) {.min = {-2.f, 1.f}, .max = {-1.f, 2.f}}, (vec2) {0.f, 0.f}, 1.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 1, (aabb) {.min = {1.f, 1.f}, .max = {2.f, 2.f}}, (vec2) {0.f, 0.f}, 1.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 2, (aabb) {.min = {-0.5f, -1.5f}, .max = {1.5f, -0.5f}}, (vec2) {0.f, 0.f}, 1.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 3, (aabb) {.min = {-1.f, 0.f}, .max = {1.f, 2.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 4, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, 0.f, VEC2_PI_2);
+    simdcol_aabb_arc(context, 5, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI, VEC2_PI_2);
+    simdcol_aabb_arc(context, 6, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, -VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 7, (aabb) {.min = {5.f, 0.f}, .max = {6.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
 
 SUITE(collision_2d)
 {
@@ -239,4 +260,5 @@ SUITE(collision_2d)
     RUN_TEST(intersection_segment_aabb);
     RUN_TEST(no_intersection_segment_disc);
     RUN_TEST(intersection_segment_disc);
+    RUN_TEST(no_intersection_aabb_arc);
 }

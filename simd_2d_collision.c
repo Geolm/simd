@@ -551,10 +551,10 @@ static inline simd_vector aabb_segment_test(simd_vec2 aabb_min, simd_vec2 aabb_m
     simd_vector tmax_y = simd_max(t0_y, t1_y);
     
     simd_vector result = simd_cmp_le( simd_max(tmin_x, tmin_y), simd_min(tmax_x, tmax_y));
-    result = simd_and(result, simd_cmp_gt(tmax_x, simd_splat_zero()));
-    result = simd_and(result, simd_cmp_lt(tmin_x, simd_splat(1.f)));
-    result = simd_and(result, simd_cmp_gt(tmax_y, simd_splat_zero()));
-    result = simd_and(result, simd_cmp_lt(tmin_y, simd_splat(1.f)));
+    result = simd_and(result, simd_cmp_ge(tmax_x, simd_splat_zero()));
+    result = simd_and(result, simd_cmp_le(tmin_x, simd_splat(1.f)));
+    result = simd_and(result, simd_cmp_ge(tmax_y, simd_splat_zero()));
+    result = simd_and(result, simd_cmp_le(tmin_y, simd_splat(1.f)));
     return result;
 }
 
