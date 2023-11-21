@@ -159,6 +159,10 @@ TEST no_intersection_segment_aabb(void)
     simdcol_segment_aabb(context, 1, (vec2) {0.f, 0.f}, (vec2) {-1.f, -1.f}, (aabb) {.min = {1.f, 1.f}, .max = {10.f, 10.f}});
     simdcol_segment_aabb(context, 2, (vec2) {0.f, 0.f}, (vec2) {1.f, 0.f}, (aabb) {.min = {2.f, -1.f}, .max = {10.f, 10.f}});
     simdcol_segment_aabb(context, 3, (vec2) {0.f, 0.f}, (vec2) {0.f, -10.f}, (aabb) {.min = {2.f, 2.f}, .max = {10.f, 10.f}});
+    simdcol_segment_aabb(context, 4, (vec2) {0.f, 0.f}, (vec2) {1.f, 2.f}, (aabb) {.min = {1.f, 0.f}, .max = {2.f, 1.f}});
+    simdcol_segment_aabb(context, 5, (vec2) {0.f, 0.f}, (vec2) {1.f, 2.f}, (aabb) {.min = {-1.f, 1.f}, .max = {0.f, 2.f}});
+    simdcol_segment_aabb(context, 6, (vec2) {0.f, 0.f}, (vec2) {1.f, 2.f}, (aabb) {.min = {2.f, 4.f}, .max = {3.f, 5.f}});
+    simdcol_segment_aabb(context, 7, (vec2) {0.f, 0.f}, (vec2) {1.f, 2.f}, (aabb) {.min = {-2.f, -2.f}, .max = {-1.f, -1.f}});
 
 
     simdcol_flush(context, flush_all);
