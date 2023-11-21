@@ -1,5 +1,6 @@
 #include "simd_2d_collision.h"
 #include "simd.h"
+#include "simd_math.h"
 #include <stddef.h>
 
 // SoA, Structure of Array, Vec2
@@ -11,6 +12,7 @@ typedef struct
 
 
 static inline simd_vec2 simd_vec2_load(const float* x, const float* y, ptrdiff_t offset) {return (simd_vec2) {.x = simd_load(x + offset), .y = simd_load(y + offset)};}
+static inline simd_vec2 simd_vec2_add(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_add(a.x, b.x), .y = simd_add(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_sub(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_sub(a.x, b.x), .y = simd_sub(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_mul(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_mul(a.x, b.x), .y = simd_mul(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_abs(simd_vec2 a) {return (simd_vec2) {.x = simd_abs(a.x), .y = simd_abs(a.y)};}
@@ -21,6 +23,12 @@ static inline simd_vec2 simd_vec2_clamp(simd_vec2 a, simd_vec2 range_min, simd_v
 }
 static inline simd_vector simd_vec2_sq_length(simd_vec2 a) {return simd_fmad(a.x, a.x, simd_mul(a.y, a.y));}
 static inline simd_vector simd_vec2_dot(simd_vec2 a, simd_vec2 b) {return simd_fmad(a.x, b.x, simd_mul(a.y, b.y));}
+static inline simd_vec2 simd_vec2_normalize(simd_vec2 a)
+{
+    simd_vector rcp_length = simd_rsqrt(simd_vec2_sq_length(a));
+    return (simd_vec2) {.x = simd_mul(a.x, rcp_length), .y = simd_mul(a.y, rcp_length)};
+}
+static inline simd_vec2 simd_vec2_scale(simd_vec2 a, simd_vector scale) {return (simd_vec2) {.x = simd_mul(a.x, scale), .y = simd_mul(a.y, scale)};}
 
 
 //-----------------------------------------------------------------------------
@@ -91,6 +99,25 @@ struct aabb_circle_data
     float center_y[BATCH_SIZE];
     float sq_outter_radius[BATCH_SIZE];
     float sq_inner_radius[BATCH_SIZE];
+
+    uint32_t user_data[BATCH_SIZE];
+    uint32_t num_items;
+};
+
+//-----------------------------------------------------------------------------
+struct aabb_arc_data
+{
+    float aabb_min_x[BATCH_SIZE];
+    float aabb_min_y[BATCH_SIZE];
+    float aabb_max_x[BATCH_SIZE];
+    float aabb_max_y[BATCH_SIZE];
+
+    float center_x[BATCH_SIZE];
+    float center_y[BATCH_SIZE];
+    float outter_radius[BATCH_SIZE];
+    float sq_inner_radius[BATCH_SIZE];
+    float orientation[BATCH_SIZE];
+    float aperture[BATCH_SIZE];
 
     uint32_t user_data[BATCH_SIZE];
     uint32_t num_items;
@@ -169,6 +196,7 @@ struct simdcol_context
     struct aabb_obb_data* aabb_obb;
     struct aabb_disc_data* aabb_disc;
     struct aabb_circle_data* aabb_circle;
+    struct aabb_arc_data* aabb_arc;
     struct triangle_triangle_data* triangle_triangle;
     struct segment_aabb_data* segment_aabb;
     struct segment_disc_data* segment_disc;
@@ -189,6 +217,7 @@ struct simdcol_context* simdcol_init(void* user_context, simdcol_intersection_ca
     context->aabb_obb = (struct aabb_obb_data*) simd_aligned_alloc(sizeof(struct aabb_obb_data));
     context->aabb_disc = (struct aabb_disc_data*) simd_aligned_alloc(sizeof(struct aabb_disc_data));
     context->aabb_circle = (struct aabb_circle_data*) simd_aligned_alloc(sizeof(struct aabb_circle_data));
+    context->aabb_arc = (struct aabb_arc_data*) simd_aligned_alloc(sizeof(struct aabb_arc_data));
     context->triangle_triangle = (struct triangle_triangle_data*) simd_aligned_alloc(sizeof(struct triangle_triangle_data));
     context->segment_aabb = (struct segment_aabb_data*) simd_aligned_alloc(sizeof(struct segment_aabb_data));
     context->segment_disc = (struct segment_disc_data*) simd_aligned_alloc(sizeof(struct segment_disc_data));
@@ -198,6 +227,7 @@ struct simdcol_context* simdcol_init(void* user_context, simdcol_intersection_ca
     context->aabb_obb->num_items = 0;
     context->aabb_disc->num_items = 0;
     context->aabb_circle->num_items = 0;
+    context->aabb_arc->num_items = 0;
     context->triangle_triangle->num_items = 0;
     context->segment_aabb->num_items = 0;
     context->segment_disc->num_items = 0;
@@ -318,6 +348,33 @@ void simdcol_aabb_circle(struct simdcol_context* context, uint32_t user_data, aa
 
     if (data->num_items == BATCH_SIZE)
         simdcol_flush(context, flush_aabb_circle);
+}
+
+//-----------------------------------------------------------------------------
+void simdcol_aabb_arc(struct simdcol_context* context, uint32_t user_data, aabb box, vec2 center, float radius, float width, float orientation, float aperture)
+{
+    assert(context->aabb_arc->num_items < BATCH_SIZE);
+    assert(context->state == state_idle);
+
+    struct aabb_arc_data* data = context->aabb_arc;
+    uint32_t index = data->num_items++;
+
+    float half_width = width * .5f;
+
+    data->user_data[index] = user_data;
+    data->aabb_min_x[index] = box.min.x;
+    data->aabb_min_y[index] = box.min.y;
+    data->aabb_max_x[index] = box.max.x;
+    data->aabb_max_y[index] = box.max.y;
+    data->center_x[index] = center.x;
+    data->center_y[index] = center.y;
+    data->outter_radius[index] = radius + half_width;
+    data->sq_inner_radius[index] = float_square(radius - half_width);
+    data->orientation[index] = orientation;
+    data->aperture[index] = aperture;
+
+    if (data->num_items == BATCH_SIZE)
+        simdcol_flush(context, flush_aabb_arc);
 }
 
 //-----------------------------------------------------------------------------
@@ -475,6 +532,102 @@ void process_aabb_circle(struct simdcol_context* context)
             if (bitfield&(1<<i) && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
+    data->num_items = 0;
+}
+
+//-----------------------------------------------------------------------------
+static inline simd_vector aabb_segment_test(simd_vec2 aabb_min, simd_vec2 aabb_max, simd_vec2 p0, simd_vec2 p1)
+{
+    simd_vector inv_dir_x = simd_rcp(simd_sub(p1.x, p0.x));
+    simd_vector t0_x = simd_mul(inv_dir_x, simd_sub(aabb_min.x, p0.x));
+    simd_vector t1_x = simd_mul(inv_dir_x, simd_sub(aabb_max.x, p0.x));
+    simd_vector tmin_x = simd_min(t0_x, t1_x);
+    simd_vector tmax_x = simd_max(t0_x, t1_x);
+
+    simd_vector inv_dir_y = simd_rcp(simd_sub(p1.y, p0.y));
+    simd_vector t0_y = simd_mul(inv_dir_y, simd_sub(aabb_min.y, p0.y));
+    simd_vector t1_y = simd_mul(inv_dir_y, simd_sub(aabb_max.y, p0.y));
+    simd_vector tmin_y = simd_min(t0_y, t1_y);
+    simd_vector tmax_y = simd_max(t0_y, t1_y);
+    
+    simd_vector result = simd_cmp_le( simd_max(tmin_x, tmin_y), simd_min(tmax_x, tmax_y));
+    result = simd_and(result, simd_cmp_gt(tmax_x, simd_splat_zero()));
+    result = simd_and(result, simd_cmp_lt(tmin_x, simd_splat(1.f)));
+    result = simd_and(result, simd_cmp_gt(tmax_y, simd_splat_zero()));
+    result = simd_and(result, simd_cmp_lt(tmin_y, simd_splat(1.f)));
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+void process_aabb_arc(struct simdcol_context* context)
+{
+    struct aabb_arc_data* data = context->aabb_arc;
+
+    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
+    {
+        uint32_t offset = vec_index * simd_vector_width;
+
+        // first check the aabb is in outter disc 
+        simd_vec2 aabb_min = simd_vec2_load(data->aabb_min_x, data->aabb_min_y, offset);
+        simd_vec2 aabb_max = simd_vec2_load(data->aabb_max_x, data->aabb_max_y,  offset);
+        simd_vec2 center = simd_vec2_load(data->center_x, data->center_y, offset);
+        simd_vec2 nearest = simd_vec2_clamp(center, aabb_min, aabb_max);
+        simd_vec2 delta = simd_vec2_sub(nearest, center);
+        simd_vector sq_distance = simd_vec2_sq_length(delta);
+        simd_vector outter_radius = simd_load(data->outter_radius + offset);
+        simd_vector sq_outter_radius = simd_mul(outter_radius, outter_radius);
+        simd_vector sq_inner_radius = simd_load(data->sq_inner_radius + offset);
+        simd_vector result = simd_cmp_lt(sq_distance, sq_outter_radius);
+        
+        // check the furthest corner is in inner disc
+        simd_vec2 candidate0 = simd_vec2_abs(simd_vec2_sub(center, aabb_min));
+        simd_vec2 candidate1 = simd_vec2_abs(simd_vec2_sub(center, aabb_max));
+        simd_vec2 furthest = simd_vec2_max(candidate0, candidate1);
+        result = simd_and(result, simd_cmp_gt(simd_vec2_sq_length(furthest), sq_inner_radius));
+
+        // check if the aabb intersects with the pie part of the disc
+
+        // 1. test if any vertices of the aabb is in the pie
+        simd_vector aperture = simd_load(data->aperture + offset);
+        simd_vector orientation = simd_load(data->orientation + offset);
+        simd_vec2 pie_direction = {.x = simd_cos(orientation), .y = simd_sin(orientation)};
+        simd_vec2 to_vertex = simd_vec2_normalize(simd_vec2_sub(aabb_min, center));
+        simd_vector angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        simd_vector pie_result = simd_cmp_le(angle, aperture);
+
+        to_vertex = simd_vec2_normalize(simd_vec2_sub(aabb_max, center));
+        angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        pie_result = simd_or(pie_result, simd_cmp_le(angle, aperture));
+
+        to_vertex = simd_vec2_normalize(simd_vec2_sub((simd_vec2) {aabb_min.x, aabb_max.y}, center));
+        angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        pie_result = simd_or(pie_result, simd_cmp_le(angle, aperture));
+
+        to_vertex = simd_vec2_normalize(simd_vec2_sub((simd_vec2) {aabb_max.x, aabb_min.y}, center));
+        angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        pie_result = simd_or(pie_result, simd_cmp_le(angle, aperture));
+
+        // 2. test is the edges of the pie intersect with the aabb
+        simd_vector edge_orientation = simd_sub(orientation, aperture);
+        simd_vec2 edge = {.x = simd_cos(edge_orientation), .y = simd_sin(edge_orientation)};
+        edge = simd_vec2_scale(edge, outter_radius);
+        pie_result = simd_or(pie_result, aabb_segment_test(aabb_min, aabb_max, center, simd_vec2_add(center, edge)));
+
+        edge_orientation = simd_add(orientation, aperture);
+        edge = (simd_vec2) {.x = simd_cos(edge_orientation), .y = simd_sin(edge_orientation)};
+        edge = simd_vec2_scale(edge, outter_radius);
+        pie_result = simd_or(pie_result, aabb_segment_test(aabb_min, aabb_max, center, simd_vec2_add(center, edge)));
+
+        result = simd_and(result, pie_result);
+
+        int bitfield = simd_get_mask(result);
+        for(uint32_t i=0; i<simd_vector_width; ++i)
+            if (bitfield&(1<<i) && (offset + i) < data->num_items)
+                context->on_intersection(context->user_context, data->user_data[offset + i]);
+
+    }
+
     data->num_items = 0;
 }
 
@@ -695,17 +848,6 @@ void process_aabb_triangle(struct simdcol_context* context)
 }
 
 //-----------------------------------------------------------------------------
-static inline simd_vector slab_test(simd_vector slab_min, simd_vector slab_max, simd_vector segment_start, simd_vector segment_end)
-{
-    simd_vector inv_dir = simd_rcp(simd_sub(segment_end, segment_start));
-    simd_vector t0 = simd_mul(inv_dir, simd_sub(slab_min, segment_start));
-    simd_vector t1 = simd_mul(inv_dir, simd_sub(slab_max, segment_start));
-    simd_vector enter = simd_min(t0, t1);
-    simd_vector exit = simd_max(t0, t1);
-    return simd_and(simd_cmp_lt(enter, simd_splat(1.f)), simd_cmp_gt(exit, simd_splat_zero()));
-}
-
-//-----------------------------------------------------------------------------
 void process_segment_aabb(struct simdcol_context* context)
 {
     struct segment_aabb_data* data = context->segment_aabb;
@@ -719,8 +861,7 @@ void process_segment_aabb(struct simdcol_context* context)
         simd_vec2 aabb_max = simd_vec2_load(data->aabb_max_x, data->aabb_max_y, offset);
         simd_vec2 p0 = simd_vec2_load(data->p0_x, data->p0_y, offset);
         simd_vec2 p1 = simd_vec2_load(data->p1_x, data->p1_y, offset);
-        simd_vector result = slab_test(aabb_min.x, aabb_max.x, p0.x, p1.x);
-        result = simd_and(result, slab_test(aabb_min.y, aabb_max.y, p0.y, p1.y));
+        simd_vector result = aabb_segment_test(aabb_min, aabb_max, p0, p1);
 
         int bitfield = simd_get_mask(result);
         for(uint32_t i=0; i<simd_vector_width; ++i)
@@ -790,8 +931,9 @@ static simd_vector point_in_triangle(simd_vec2 p, simd_vec2 v0, simd_vec2 v1, si
 }
 
 //-----------------------------------------------------------------------------
-// 2 steps : 
+// 3 steps : 
 //   - center of circle in the triangle
+//   - any triangle's vertex in the circle
 //   - triangle's edges intersection with circle
 void process_triangle_disc(struct simdcol_context* context)
 {
@@ -809,6 +951,9 @@ void process_triangle_disc(struct simdcol_context* context)
         simd_vector sq_radius = simd_load(data->sq_radius + offset);
 
         simd_vector result = point_in_triangle(center, v0, v1, v2);
+
+        // TODO : missing test, any triangle's vertex in the circle
+
         result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v0, v1), sq_radius));
         result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v1, v2), sq_radius));
         result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v2, v0), sq_radius));
@@ -832,6 +977,9 @@ void simdcol_flush(struct simdcol_context* context, enum flush_hint hint)
 
     if (hint == flush_aabb_circle || hint == flush_all)
         process_aabb_circle(context);
+
+    if (hint == flush_aabb_arc || hint == flush_all)
+        process_aabb_arc(context);
 
     if (hint == flush_aabb_triangle || hint == flush_all)
         process_aabb_triangle(context);
@@ -861,6 +1009,7 @@ void simdcol_terminate(struct simdcol_context* context)
     simd_aligned_free(context->aabb_obb);
     simd_aligned_free(context->aabb_disc);
     simd_aligned_free(context->aabb_circle);
+    simd_aligned_free(context->aabb_arc);
     simd_aligned_free(context->triangle_triangle);
     simd_aligned_free(context->segment_aabb);
     simd_aligned_free(context->segment_disc);
