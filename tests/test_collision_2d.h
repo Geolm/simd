@@ -74,7 +74,10 @@ TEST intersection_aabb_triangle(void)
     
     simdcol_flush(context, flush_all);
     
-    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
     
     simdcol_terminate(context);
 
@@ -108,7 +111,11 @@ TEST intersection_aabb_disc(void)
     simdcol_aabb_disc(context, 3, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {5.f, 8.f}, 5.f);
 
     simdcol_flush(context, flush_all);
-    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
     
     simdcol_terminate(context);
 
@@ -143,7 +150,11 @@ TEST intersection_aabb_circle(void)
     simdcol_aabb_circle(context, 3, (aabb) {.min = {0.f, 0.f}, .max = {10.f, 10.f}}, (vec2) {20.f, 20.f}, 30.f, 25.f);
 
     simdcol_flush(context, flush_all);
-    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
     
     simdcol_terminate(context);
 
@@ -183,7 +194,11 @@ TEST intersection_segment_aabb(void)
     simdcol_segment_aabb(context, 3, (vec2) {0.f, 0.f}, (vec2) {0.f, -10.f}, (aabb) {.min = {-500.f, -5.f}, .max = {500.f, -2.f}});
 
     simdcol_flush(context, flush_all);
-    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
     
     simdcol_terminate(context);
 
@@ -218,7 +233,11 @@ TEST intersection_segment_disc(void)
     simdcol_segment_disc(context, 3, (vec2) {-1.f, -1.f}, (vec2) {-100.f, -100.f}, (vec2) {-50.f, -50.f}, 2.f);
 
     simdcol_flush(context, flush_all);
-    ASSERT_EQ(success[0]&&success[1]&&success[2]&&success[3], true);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
 
     simdcol_terminate(context);
     PASS();
@@ -235,11 +254,32 @@ TEST no_intersection_aabb_arc(void)
     simdcol_aabb_arc(context, 3, (aabb) {.min = {-1.f, 0.f}, .max = {1.f, 2.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
     simdcol_aabb_arc(context, 4, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, 0.f, VEC2_PI_2);
     simdcol_aabb_arc(context, 5, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI, VEC2_PI_2);
-    simdcol_aabb_arc(context, 6, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, -VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 6, (aabb) {.min = {-1.f, -1.f}, .max = {1.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI_2, VEC2_PI * 0.75f);
     simdcol_aabb_arc(context, 7, (aabb) {.min = {5.f, 0.f}, .max = {6.f, 1.f}}, (vec2) {0.f, 0.f}, 4.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
 
     simdcol_flush(context, flush_all);
     ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
+TEST intersection_aabb_arc(void)
+{
+    bool success[4] = {false, false, false, false};
+    struct simdcol_context* context = simdcol_init(&success, collision_success);
+
+    simdcol_aabb_arc(context, 0, (aabb) {.min = {1.f, 1.f}, .max = {2.f, 2.f}}, (vec2) {0.f, 0.f}, 2.f, 0.1f, VEC2_PI_2, VEC2_PI_4);
+    simdcol_aabb_arc(context, 1, (aabb) {.min = {-5.f, -5.f}, .max = {5.f, 5.f}}, (vec2) {0.f, 0.f}, 2.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 2, (aabb) {.min = {1.f, -1.f}, .max = {2.f, 1.f}}, (vec2) {0.f, 0.f}, 2.f, 0.1f, VEC2_PI_2, VEC2_PI_2);
+    simdcol_aabb_arc(context, 3, (aabb) {.min = {-10.f, 1.0f}, .max = {10.f, 3.0f}}, (vec2) {0.f, 0.f}, 2.f, 0.1f, VEC2_PI_2, VEC2_PI_4);
+
+    simdcol_flush(context, flush_all);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
 
     simdcol_terminate(context);
     PASS();
@@ -261,4 +301,5 @@ SUITE(collision_2d)
     RUN_TEST(no_intersection_segment_disc);
     RUN_TEST(intersection_segment_disc);
     RUN_TEST(no_intersection_aabb_arc);
+    RUN_TEST(intersection_aabb_arc);
 }
