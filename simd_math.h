@@ -143,7 +143,7 @@ static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
     approximation = simd_max(max_value, approximation);
     
     // do one newton raphson iteration
-    simd_vector sq_length = simd_add(simd_mul(x, x), simd_mul(y, y));
+    simd_vector sq_length = simd_fmad(x, x, simd_mul(y, y));
     return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
 }
 
