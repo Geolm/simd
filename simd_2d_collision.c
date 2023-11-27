@@ -21,8 +21,8 @@ static inline simd_vec2 simd_vec2_clamp(simd_vec2 a, simd_vec2 range_min, simd_v
 {
     return (simd_vec2) {.x = simd_clamp(a.x, range_min.x, range_max.x), .y = simd_clamp(a.y, range_min.y, range_max.y)};
 }
-static inline simd_vector simd_vec2_sq_length(simd_vec2 a) {return simd_fmad(a.x, a.x, simd_mul(a.y, a.y));}
 static inline simd_vector simd_vec2_dot(simd_vec2 a, simd_vec2 b) {return simd_fmad(a.x, b.x, simd_mul(a.y, b.y));}
+static inline simd_vector simd_vec2_sq_length(simd_vec2 a) {return simd_vec2_dot(a, a);}
 static inline simd_vec2 simd_vec2_normalize(simd_vec2 a)
 {
     simd_vector rcp_length = simd_rsqrt(simd_vec2_sq_length(a));
