@@ -478,7 +478,7 @@ void process_aabb_disc(struct simdcol_context* context)
 {
     struct aabb_disc_data* data = context->aabb_disc;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -505,7 +505,7 @@ void process_aabb_circle(struct simdcol_context* context)
 {
     struct aabb_circle_data* data = context->aabb_circle;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -563,7 +563,7 @@ void process_aabb_arc(struct simdcol_context* context)
 {
     struct aabb_arc_data* data = context->aabb_arc;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -679,7 +679,7 @@ void process_aabb_obb(struct simdcol_context* context)
 {
     struct aabb_obb_data* data = context->aabb_obb;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -758,7 +758,7 @@ void process_triangle_triangle(struct simdcol_context* context)
 {
     struct triangle_triangle_data* data = context->triangle_triangle;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -816,7 +816,7 @@ void process_aabb_triangle(struct simdcol_context* context)
 {
     struct aabb_triangle_data* data = context->aabb_triangle;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -852,7 +852,7 @@ void process_segment_aabb(struct simdcol_context* context)
 {
     struct segment_aabb_data* data = context->segment_aabb;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -887,7 +887,7 @@ void process_segment_disc(struct simdcol_context* context)
 {
     struct segment_disc_data* data = context->segment_disc;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;
@@ -939,7 +939,7 @@ void process_triangle_disc(struct simdcol_context* context)
 {
     struct triangle_disc_data* data = context->triangle_disc;
 
-    uint32_t num_vec = (data->num_items + simd_vector_width - 1) / simd_vector_width;
+    uint32_t num_vec = simd_num_vec(data->num_items);
     for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
     {
         uint32_t offset = vec_index * simd_vector_width;

@@ -648,6 +648,7 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
 #define simd_last_lane (simd_vector_width-1)
 #define simd_full_mask ((1<<simd_vector_width)-1)
 
+static inline uint32_t simd_num_vec(uint32_t num_elements) {return (num_elements +simd_vector_width - 1) / simd_vector_width;}
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
