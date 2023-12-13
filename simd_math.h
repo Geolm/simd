@@ -147,4 +147,19 @@ static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
     return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
 }
 
+//-----------------------------------------------------------------------------
+// https://mazzo.li/posts/vectorized-atan2.html
+static inline simd_vector simd_approx_atan(simd_vector x)
+{
+    simd_vector a1  = simd_splat(0.99997726f);
+    simd_vector a3  = simd_splat(-0.33262347f);
+    simd_vector a5  = simd_splat(0.19354346f);
+    simd_vector a7  = simd_splat(-0.11643287f);
+    simd_vector a9  = simd_splat(0.05265332f);
+    simd_vector a11 = simd_splat(-0.01172120f);
+    simd_vector x_sq = simd_mul(x, x);
+
+    return simd_mul(x, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, a11, a9), a7), a5), a3), a1));
+}
+
 #endif

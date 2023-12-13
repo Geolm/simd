@@ -718,6 +718,12 @@ static inline void simd_export_color(simd_vector red, simd_vector green, simd_ve
     simd_export_uint8(rgba0, rgba1, rgba2, rgba3, output);
 }
 
+//-----------------------------------------------------------------------------
+static inline simd_vector simd_load_offset(const float* array, uint32_t offset_in_simd_vector)
+{
+    return simd_load(array + offset_in_simd_vector * simd_vector_width);
+}
+
 
 
 #endif // __SIMD__H__

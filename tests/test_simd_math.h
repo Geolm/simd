@@ -1,6 +1,9 @@
 
 #include "../vec2.h"
 
+#define NUM_VECTORS (100)
+#define NUM_ELEMENTS (simd_vector_width * NUM_VECTORS)
+
 TEST sinus(void)
 {
     float array[simd_vector_width];
@@ -56,15 +59,38 @@ TEST arcos(void)
     PASS();
 }
 
+TEST arctan(void)
+{
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 2.f / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)i) - 1.f;
+        result[i] = atanf(array[i]);
+    }
+
+    simd_vector epsilon = simd_splat(0.00001f);
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_approx = simd_approx_atan(simd_load_offset(array,  i));
+        simd_vector v_result = simd_load_offset(result, i);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+    }
+
+    PASS();
+}
+
 SUITE(trigonometry)
 {
     RUN_TEST(sinus);
     RUN_TEST(approx_sin);
     RUN_TEST(arcos);
+    RUN_TEST(arctan);
 }
-
-#define NUM_VECTORS (100)
-#define NUM_ELEMENTS (simd_vector_width * NUM_VECTORS)
 
 TEST approx_length(void)
 {
