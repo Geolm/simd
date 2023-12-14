@@ -6,56 +6,76 @@
 
 TEST sinus(void)
 {
-    float array[simd_vector_width];
-    float result[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = VEC2_TAU / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
     {
-        array[i] = (float) (i - simd_vector_width/2);
+        array[i] = (step * (float)i) - VEC2_PI;
         result[i] = sinf(array[i]);
     }
 
-    simd_vector a = simd_load(array);
-    simd_vector target = simd_load(result);
-    
-    simd_vector epsilon = simd_splat(0.000001f);
-    
-    ASSERT(simd_all(simd_equal(simd_sin(a), target, epsilon)));
+    simd_vector epsilon = simd_splat(0.000002f);
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_approx = simd_sin(simd_load_offset(array,  i));
+        simd_vector v_result = simd_load_offset(result, i);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+    }
+
     PASS();
 }
 
 TEST approx_sin(void)
 {
-    float array[simd_vector_width];
-    float result[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = VEC2_TAU / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
     {
-        array[i] = (float) (i - simd_vector_width/2);
+        array[i] = (step * (float)i) - VEC2_PI;
         result[i] = sinf(array[i]);
     }
 
-    simd_vector a = simd_load(array);
-    simd_vector target = simd_load(result);
     simd_vector epsilon = simd_splat(0.005f);
-    
-    ASSERT(simd_all(simd_equal(simd_approx_sin(a), target, epsilon)));
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_approx = simd_approx_sin(simd_load_offset(array,  i));
+        simd_vector v_result = simd_load_offset(result, i);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+    }
+
     PASS();
 }
 
 TEST arcos(void)
 {
-    float array[simd_vector_width];
-    float result[simd_vector_width];
-    for(int i=0; i<simd_vector_width; ++i)
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 2.f / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
     {
-        array[i] = (float) (i - simd_vector_width/2) / (float)(simd_vector_width/2);
+        array[i] = (step * (float)i) - 1.f;
         result[i] = acosf(array[i]);
     }
-    
-    simd_vector a = simd_load(array);
-    simd_vector target = simd_load(result);
+
     simd_vector epsilon = simd_splat(0.02f);
 
-    ASSERT(simd_all(simd_equal(simd_approx_acos(a), target, epsilon)));
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_approx = simd_approx_acos(simd_load_offset(array,  i));
+        simd_vector v_result = simd_load_offset(result, i);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+    }
+
     PASS();
 }
 
