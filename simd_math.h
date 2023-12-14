@@ -9,7 +9,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------
 // from hlslpp
-// Uses a minimax polynomial fitted to the [-pi/2, pi/2] range
+// measured precision with input [-PI; PI] : 0.000002
 static inline simd_vector simd_sin(simd_vector x)
 {
     simd_vector invtau = simd_splat(1.f/SIMD_MATH_TAU);
@@ -53,6 +53,7 @@ static inline simd_vector simd_cos(simd_vector a)
 
 //----------------------------------------------------------------------------------------------------------------------
 // based on https://stackoverflow.com/a/66868438
+// measured precision with input [-PI; PI] : 0.005
 static inline simd_vector simd_approx_cos(simd_vector a)
 {
     a = simd_mul(a, simd_splat(1.f / SIMD_MATH_TAU));
@@ -69,6 +70,7 @@ static inline simd_vector simd_approx_sin(simd_vector a)
 
 //----------------------------------------------------------------------------------------------------------------------
 // based on https://stackoverflow.com/questions/3380628/fast-arc-cos-algorithm
+// measured precision with input [-1; 1] : 0.02
 static inline simd_vector simd_approx_acos(simd_vector x)
 {
     simd_vector x_2 = simd_mul(x, x);
@@ -82,6 +84,41 @@ static inline simd_vector simd_approx_acos(simd_vector x)
     result = simd_div(result, divisor);
 
     return simd_add(result, simd_splat(SIMD_MATH_PI2));
+}
+
+//-----------------------------------------------------------------------------
+// https://mazzo.li/posts/vectorized-atan2.html
+// measured precision with input [-1; 1] : 0.00001
+static inline simd_vector simd_approx_atan(simd_vector x)
+{
+    simd_vector a1  = simd_splat(0.99997726f);
+    simd_vector a3  = simd_splat(-0.33262347f);
+    simd_vector a5  = simd_splat(0.19354346f);
+    simd_vector a7  = simd_splat(-0.11643287f);
+    simd_vector a9  = simd_splat(0.05265332f);
+    simd_vector a11 = simd_splat(-0.01172120f);
+    simd_vector x_sq = simd_mul(x, x);
+
+    return simd_mul(x, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, a11, a9), a7), a5), a3), a1));
+}
+
+//-----------------------------------------------------------------------------
+// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm
+// measured precision with unit vector input : 0.0005
+// measured precision with any vector input : 0.03
+static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
+{
+    simd_vector abs_value_x = simd_abs(x);
+    simd_vector abs_value_y = simd_abs(y);
+    simd_vector min_value = simd_min(abs_value_x, abs_value_y);
+    simd_vector max_value = simd_max(abs_value_x, abs_value_y);
+    
+    simd_vector approximation = simd_fmad(simd_splat(0.485968200201465f), min_value, simd_mul(simd_splat(0.898204193266868f), max_value));
+    approximation = simd_max(max_value, approximation);
+    
+    // do one newton raphson iteration
+    simd_vector sq_length = simd_fmad(x, x, simd_mul(y, y));
+    return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -100,66 +137,6 @@ static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, 
     simd_vector c = simd_mul(t, t);
     
     return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
-}
-
-//-----------------------------------------------------------------------------
-static inline simd_vector simd_cubic(simd_vector a, simd_vector b, simd_vector c, simd_vector d, simd_vector x)
-{
-    simd_vector x_squared = simd_mul(x, x);
-    simd_vector x_cubed = simd_mul(x, x_squared);
-    return simd_fmad(a, x_cubed, simd_fmad(b, x_squared, simd_fmad(c, x, d)));
-}
-
-//-----------------------------------------------------------------------------
-static inline simd_vector simd_quadratic(simd_vector a, simd_vector b, simd_vector c, simd_vector x)
-{
-    simd_vector x_squared = simd_mul(x, x);
-    return simd_fmad(a, x_squared, simd_fmad(b, x, c));
-}
-
-//-----------------------------------------------------------------------------
-static inline simd_vector simd_solve_quadratic(simd_vector a, simd_vector b, simd_vector c, simd_vector roots[2])
-{
-    simd_vector delta = simd_fmad(b, b, simd_mul(simd_splat(-4.f), simd_mul(a, c))); 
-    simd_vector real_roots = simd_cmp_gt(delta, simd_splat_zero());
-
-    simd_vector common_value = simd_fmad(simd_sign(b), simd_sqrt(delta), b);
-    roots[0] = simd_neg(simd_div(simd_mul(simd_splat(2.f), c), common_value));
-    roots[1] = simd_neg(simd_div(common_value, simd_mul(simd_splat(2.f), a)));
-
-    return real_roots;
-}
-
-//-----------------------------------------------------------------------------
-// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm
-static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
-{
-    simd_vector abs_value_x = simd_abs(x);
-    simd_vector abs_value_y = simd_abs(y);
-    simd_vector min_value = simd_min(abs_value_x, abs_value_y);
-    simd_vector max_value = simd_max(abs_value_x, abs_value_y);
-    
-    simd_vector approximation = simd_fmad(simd_splat(0.485968200201465f), min_value, simd_mul(simd_splat(0.898204193266868f), max_value));
-    approximation = simd_max(max_value, approximation);
-    
-    // do one newton raphson iteration
-    simd_vector sq_length = simd_fmad(x, x, simd_mul(y, y));
-    return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
-}
-
-//-----------------------------------------------------------------------------
-// https://mazzo.li/posts/vectorized-atan2.html
-static inline simd_vector simd_approx_atan(simd_vector x)
-{
-    simd_vector a1  = simd_splat(0.99997726f);
-    simd_vector a3  = simd_splat(-0.33262347f);
-    simd_vector a5  = simd_splat(0.19354346f);
-    simd_vector a7  = simd_splat(-0.11643287f);
-    simd_vector a9  = simd_splat(0.05265332f);
-    simd_vector a11 = simd_splat(-0.01172120f);
-    simd_vector x_sq = simd_mul(x, x);
-
-    return simd_mul(x, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, a11, a9), a7), a5), a3), a1));
 }
 
 #endif
