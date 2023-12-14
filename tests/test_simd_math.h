@@ -66,6 +66,31 @@ TEST arcos(void)
         result[i] = acosf(array[i]);
     }
 
+    simd_vector epsilon = simd_splat(0.0001f);
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_approx = simd_acos(simd_load_offset(array,  i));
+        simd_vector v_result = simd_load_offset(result, i);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+    }
+
+    PASS();
+}
+
+TEST approx_arcos(void)
+{
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 2.f / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)i) - 1.f;
+        result[i] = acosf(array[i]);
+    }
+
     simd_vector epsilon = simd_splat(0.02f);
 
     for(int i=0; i<NUM_VECTORS; ++i)
@@ -109,6 +134,7 @@ SUITE(trigonometry)
     RUN_TEST(sinus);
     RUN_TEST(approx_sin);
     RUN_TEST(arcos);
+    RUN_TEST(approx_arcos);
     RUN_TEST(arctan);
 }
 
@@ -121,7 +147,6 @@ TEST approx_length(void)
         array[i] = vec2_angle(step * (float)i);
 
     simd_vector unit_epsilon = simd_splat(0.0005f);
-    simd_vector any_epsilon = simd_splat(0.03f);
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -136,7 +161,7 @@ TEST approx_length(void)
         vec_y = simd_mul(vec_y, length);
 
         approx = simd_vec2_approx_length(vec_x, vec_y);
-        ASSERT(simd_all(simd_equal(approx, length, any_epsilon)));
+        ASSERT(simd_all(simd_equal(approx, length, simd_mul(unit_epsilon, length))));
     }
 
     PASS();

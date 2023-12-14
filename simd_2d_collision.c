@@ -593,19 +593,19 @@ void process_aabb_arc(struct simdcol_context* context)
         simd_vector orientation = simd_load(data->orientation + offset);
         simd_vec2 pie_direction = {.x = simd_cos(orientation), .y = simd_sin(orientation)};
         simd_vec2 to_vertex = simd_vec2_normalize(simd_vec2_sub(aabb_min, center));
-        simd_vector angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        simd_vector angle = simd_acos(simd_vec2_dot(pie_direction, to_vertex));
         simd_vector pie_result = simd_cmp_le(angle, aperture);
 
         to_vertex = simd_vec2_normalize(simd_vec2_sub(aabb_max, center));
-        angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        angle = simd_acos(simd_vec2_dot(pie_direction, to_vertex));
         pie_result = simd_or(pie_result, simd_cmp_le(angle, aperture));
 
         to_vertex = simd_vec2_normalize(simd_vec2_sub((simd_vec2) {aabb_min.x, aabb_max.y}, center));
-        angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        angle = simd_acos(simd_vec2_dot(pie_direction, to_vertex));
         pie_result = simd_or(pie_result, simd_cmp_le(angle, aperture));
 
         to_vertex = simd_vec2_normalize(simd_vec2_sub((simd_vec2) {aabb_max.x, aabb_min.y}, center));
-        angle = simd_approx_acos(simd_vec2_dot(pie_direction, to_vertex));
+        angle = simd_acos(simd_vec2_dot(pie_direction, to_vertex));
         pie_result = simd_or(pie_result, simd_cmp_le(angle, aperture));
 
         // 2. test is the edges of the pie intersect with the aabb

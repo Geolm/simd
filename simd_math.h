@@ -46,6 +46,22 @@ static inline simd_vector simd_sin(simd_vector x)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+// based on https://developer.download.nvidia.com/cg/acos.html
+// measured precision with input [-1; 1] : 0.0001
+static inline simd_vector simd_acos(simd_vector x)
+{
+    simd_vector negate = simd_select(simd_splat_zero(), simd_splat(1.f), simd_cmp_lt(x, simd_splat_zero()));
+    x = simd_abs(x);
+    simd_vector result = simd_splat(-0.0187293f);
+    result = simd_fmad(result, x, simd_splat(0.0742610f));
+    result = simd_fmad(result, x, simd_splat(-0.2121144f));
+    result = simd_fmad(result, x, simd_splat(1.5707288f));
+    result = simd_mul(result, simd_sqrt(simd_sub(simd_splat(1.f), x)));
+    result = simd_sub(result, simd_mul(simd_mul(simd_splat(2.f), negate), result));
+    return simd_fmad(negate, simd_splat(SIMD_MATH_PI), result);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_cos(simd_vector a)
 {
     return simd_sin(simd_sub(simd_splat(SIMD_MATH_PI2), a));
@@ -104,8 +120,7 @@ static inline simd_vector simd_approx_atan(simd_vector x)
 
 //-----------------------------------------------------------------------------
 // based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm
-// measured precision with unit vector input : 0.0005
-// measured precision with any vector input : 0.03
+// measured relative precision : 0.0005
 static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
 {
     simd_vector abs_value_x = simd_abs(x);
