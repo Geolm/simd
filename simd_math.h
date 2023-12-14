@@ -9,7 +9,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------
 // from hlslpp
-// measured precision with input [-PI; PI] : 0.000002
+// max error with input [-PI; PI] : 0.000001
 static inline simd_vector simd_sin(simd_vector x)
 {
     simd_vector invtau = simd_splat(1.f/SIMD_MATH_TAU);
@@ -47,7 +47,7 @@ static inline simd_vector simd_sin(simd_vector x)
 
 //----------------------------------------------------------------------------------------------------------------------
 // based on https://developer.download.nvidia.com/cg/acos.html
-// measured precision with input [-1; 1] : 0.0001
+// max error with input [-1; 1] : 0.000068
 static inline simd_vector simd_acos(simd_vector x)
 {
     simd_vector negate = simd_select(simd_splat_zero(), simd_splat(1.f), simd_cmp_lt(x, simd_splat_zero()));
@@ -69,7 +69,7 @@ static inline simd_vector simd_cos(simd_vector a)
 
 //----------------------------------------------------------------------------------------------------------------------
 // based on https://stackoverflow.com/a/66868438
-// measured precision with input [-PI; PI] : 0.005
+// max error with input [-PI; PI] : 0.001090
 static inline simd_vector simd_approx_cos(simd_vector a)
 {
     a = simd_mul(a, simd_splat(1.f / SIMD_MATH_TAU));
@@ -86,7 +86,7 @@ static inline simd_vector simd_approx_sin(simd_vector a)
 
 //----------------------------------------------------------------------------------------------------------------------
 // based on https://stackoverflow.com/questions/3380628/fast-arc-cos-algorithm
-// measured precision with input [-1; 1] : 0.02
+// max error with input [-1; 1] : 0.016723
 static inline simd_vector simd_approx_acos(simd_vector x)
 {
     simd_vector x_2 = simd_mul(x, x);
@@ -104,7 +104,7 @@ static inline simd_vector simd_approx_acos(simd_vector x)
 
 //-----------------------------------------------------------------------------
 // https://mazzo.li/posts/vectorized-atan2.html
-// measured precision with input [-1; 1] : 0.00001
+// max error with input [-1; 1] : 0.000002
 static inline simd_vector simd_approx_atan(simd_vector x)
 {
     simd_vector a1  = simd_splat(0.99997726f);
@@ -119,19 +119,22 @@ static inline simd_vector simd_approx_atan(simd_vector x)
 }
 
 //-----------------------------------------------------------------------------
-// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm
-// measured relative precision : 0.0005
+// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm 
+// and https://infocom.spbstu.ru/userfiles/files/articles/2021/4/7-14.pdf
+// max relative error : 0.000051
 static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
 {
     simd_vector abs_value_x = simd_abs(x);
     simd_vector abs_value_y = simd_abs(y);
     simd_vector min_value = simd_min(abs_value_x, abs_value_y);
     simd_vector max_value = simd_max(abs_value_x, abs_value_y);
-    
-    simd_vector approximation = simd_fmad(simd_splat(0.485968200201465f), min_value, simd_mul(simd_splat(0.898204193266868f), max_value));
-    approximation = simd_max(max_value, approximation);
-    
-    // do one newton raphson iteration
+
+    simd_vector small_min = simd_cmp_lt(min_value, simd_mul(max_value, simd_splat(0.4142135f)));
+    simd_vector alpha = simd_select(simd_splat(0.84f), simd_splat(0.99f), small_min);
+    simd_vector beta = simd_select(simd_splat(0.561f), simd_splat(0.197f), small_min);
+    simd_vector approximation = simd_fmad(alpha, max_value, simd_mul(beta, min_value)); // precision 0.01 
+
+    // do one newton raphson iteration to increase precision
     simd_vector sq_length = simd_fmad(x, x, simd_mul(y, y));
     return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
 }

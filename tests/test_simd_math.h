@@ -17,6 +17,7 @@ TEST sinus(void)
     }
 
     simd_vector epsilon = simd_splat(0.000002f);
+    simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -24,7 +25,11 @@ TEST sinus(void)
         simd_vector v_result = simd_load_offset(result, i);
 
         ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
     }
+
+    printf(".simd_sin max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
@@ -41,7 +46,8 @@ TEST approx_sin(void)
         result[i] = sinf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.005f);
+    simd_vector epsilon = simd_splat(0.0011f);
+    simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -49,7 +55,11 @@ TEST approx_sin(void)
         simd_vector v_result = simd_load_offset(result, i);
 
         ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
     }
+
+    printf("simd_approx_sin max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
@@ -66,7 +76,8 @@ TEST arcos(void)
         result[i] = acosf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.0001f);
+    simd_vector epsilon = simd_splat(0.00007f);
+    simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -74,7 +85,11 @@ TEST arcos(void)
         simd_vector v_result = simd_load_offset(result, i);
 
         ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
     }
+
+    printf("simd_acos max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
@@ -92,6 +107,7 @@ TEST approx_arcos(void)
     }
 
     simd_vector epsilon = simd_splat(0.02f);
+    simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -99,7 +115,11 @@ TEST approx_arcos(void)
         simd_vector v_result = simd_load_offset(result, i);
 
         ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
     }
+
+    printf("simd_approx_acos max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
@@ -116,7 +136,8 @@ TEST arctan(void)
         result[i] = atanf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.00001f);
+    simd_vector epsilon = simd_splat(0.000003f);
+    simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -124,7 +145,11 @@ TEST arctan(void)
         simd_vector v_result = simd_load_offset(result, i);
 
         ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
     }
+
+    printf("simd_approx_tan max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
@@ -146,7 +171,8 @@ TEST approx_length(void)
     for(int i=0; i<NUM_ELEMENTS; ++i)
         array[i] = vec2_angle(step * (float)i);
 
-    simd_vector unit_epsilon = simd_splat(0.0005f);
+    simd_vector unit_epsilon = simd_splat(0.00006f);
+    simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
@@ -156,6 +182,8 @@ TEST approx_length(void)
         simd_vector approx = simd_vec2_approx_length(vec_x, vec_y);
         ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), unit_epsilon)));
 
+        max_error = simd_max(max_error, simd_abs_diff(approx, simd_splat(1.f)));
+
         simd_vector length = simd_splat((float) i + 1);
         vec_x = simd_mul(vec_x, length);
         vec_y = simd_mul(vec_y, length);
@@ -163,6 +191,8 @@ TEST approx_length(void)
         approx = simd_vec2_approx_length(vec_x, vec_y);
         ASSERT(simd_all(simd_equal(approx, length, simd_mul(unit_epsilon, length))));
     }
+
+    printf("simd_vec2_approx_length max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
