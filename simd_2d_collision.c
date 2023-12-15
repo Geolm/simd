@@ -587,7 +587,6 @@ void process_aabb_arc(struct simdcol_context* context)
         result = simd_and(result, simd_cmp_gt(simd_vec2_sq_length(furthest), sq_inner_radius));
 
         // check if the aabb intersects with the pie part of the disc
-
         // 1. test if any vertices of the aabb is in the pie
         simd_vector aperture = simd_load(data->aperture + offset);
         simd_vector orientation = simd_load(data->orientation + offset);
@@ -625,9 +624,7 @@ void process_aabb_arc(struct simdcol_context* context)
         for(uint32_t i=0; i<simd_vector_width; ++i)
             if (bitfield&(1<<i) && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
-
     }
-
     data->num_items = 0;
 }
 
