@@ -65,6 +65,7 @@ static inline simd_vector simd_reverse(simd_vector a) {return __builtin_shufflev
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
 static inline simd_vector simd_sign_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x80000000));}
+static inline simd_vector simd_abs_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x7FFFFFFF));}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, vrndq_f32(a));}
 static inline simd_vector simd_floor(simd_vector a) {return vrndmq_f32(a);}
 static inline simd_vector simd_ceil(simd_vector a) {return vrndpq_f32(a);}
@@ -301,7 +302,8 @@ static inline simd_vector simd_rcp(simd_vector a) {return _mm256_rcp_ps(a);}
 static inline simd_vector simd_rsqrt(simd_vector a) {return _mm256_rsqrt_ps(a);}
 static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
 static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
-static inline simd_vector simd_abs(simd_vector a) {return _mm256_max_ps(a, simd_neg(a));}
+static inline simd_vector simd_abs_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));}
+static inline simd_vector simd_abs(simd_vector a) {return _mm256_and_ps(a, simd_abs_mask());}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
 static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c)
 {
