@@ -554,7 +554,6 @@ int main(int argc, char * argv[])
     RUN_SUITE(arithmetic);
     RUN_SUITE(sqrt_and_rcp);
     RUN_SUITE(abs_neg_min_max);
-    RUN_TEST(approx_length);
     RUN_SUITE(export);
     RUN_SUITE(collision_2d);
     RUN_SUITE(interlace_deinterlace);

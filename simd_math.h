@@ -69,13 +69,13 @@ static inline simd_vector simd_cos(simd_vector a)
 
 //----------------------------------------------------------------------------------------------------------------------
 // based on https://stackoverflow.com/a/66868438
-// max error with input [-PI; PI] : 0.001090
+// max error with input [-PI; PI] : 0.057
 static inline simd_vector simd_approx_cos(simd_vector a)
 {
     a = simd_mul(a, simd_splat(1.f / SIMD_MATH_TAU));
     a = simd_sub(a, simd_add(simd_splat(.25f), simd_floor(simd_add(a, simd_splat(.25f)))));
-    a = simd_mul(a, simd_mul(simd_splat(16.f), simd_sub(simd_abs(a), simd_splat(.5f))));
-    return simd_add(a, simd_mul(simd_splat(.225f), simd_mul(a, simd_sub(simd_abs(a), simd_splat(1.f)))));
+    return simd_mul(a, simd_mul(simd_splat(16.f), simd_sub(simd_abs(a), simd_splat(.5f))));
+    // note : we don't use extra precision because it slow down too much the function to be worth it compared to simd_sin
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -135,27 +135,6 @@ static inline simd_vector simd_atan2(simd_vector x, simd_vector y)
 
     simd_vector x_sign_mask = simd_cmp_lt(x, simd_splat_zero());
     return simd_add( simd_and(simd_xor(simd_splat(SIMD_MATH_PI), simd_and(simd_sign_mask(), y)), x_sign_mask), result);
-}
-
-//-----------------------------------------------------------------------------
-// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm 
-// and https://infocom.spbstu.ru/userfiles/files/articles/2021/4/7-14.pdf
-// max relative error : 0.000051
-static inline simd_vector simd_vec2_approx_length(simd_vector x, simd_vector y)
-{
-    simd_vector abs_value_x = simd_abs(x);
-    simd_vector abs_value_y = simd_abs(y);
-    simd_vector min_value = simd_min(abs_value_x, abs_value_y);
-    simd_vector max_value = simd_max(abs_value_x, abs_value_y);
-
-    simd_vector small_min = simd_cmp_lt(min_value, simd_mul(max_value, simd_splat(0.4142135f)));
-    simd_vector alpha = simd_select(simd_splat(0.84f), simd_splat(0.99f), small_min);
-    simd_vector beta = simd_select(simd_splat(0.561f), simd_splat(0.197f), small_min);
-    simd_vector approximation = simd_fmad(alpha, max_value, simd_mul(beta, min_value)); // precision 0.01 
-
-    // do one newton raphson iteration to increase precision
-    simd_vector sq_length = simd_fmad(x, x, simd_mul(y, y));
-    return simd_mul(simd_add(approximation, simd_div(sq_length, approximation)), simd_splat(0.5f));
 }
 
 //----------------------------------------------------------------------------------------------------------------------

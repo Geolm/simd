@@ -46,7 +46,7 @@ TEST approx_sin(void)
         result[i] = sinf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.0011f);
+    simd_vector epsilon = simd_splat(0.057f);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
@@ -195,36 +195,3 @@ SUITE(trigonometry)
     RUN_TEST(arctan2);
 }
 
-TEST approx_length(void)
-{
-    vec2 array[NUM_ELEMENTS];
-    float step = VEC2_TAU / (float) NUM_ELEMENTS;
-
-    for(int i=0; i<NUM_ELEMENTS; ++i)
-        array[i] = vec2_angle(step * (float)i);
-
-    simd_vector unit_epsilon = simd_splat(0.00006f);
-    simd_vector max_error = simd_splat_zero();
-
-    for(int i=0; i<NUM_VECTORS; ++i)
-    {
-        simd_vector vec_x, vec_y;
-        simd_load_xy((float*)array + i * simd_vector_width * 2, &vec_x, &vec_y);
-
-        simd_vector approx = simd_vec2_approx_length(vec_x, vec_y);
-        ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), unit_epsilon)));
-
-        max_error = simd_max(max_error, simd_abs_diff(approx, simd_splat(1.f)));
-
-        simd_vector length = simd_splat((float) i + 1);
-        vec_x = simd_mul(vec_x, length);
-        vec_y = simd_mul(vec_y, length);
-
-        approx = simd_vec2_approx_length(vec_x, vec_y);
-        ASSERT(simd_all(simd_equal(approx, length, simd_mul(unit_epsilon, length))));
-    }
-
-    printf("simd_vec2_approx_length max error : %f\n", simd_hmax(max_error));
-
-    PASS();
-}
