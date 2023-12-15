@@ -78,23 +78,12 @@ static inline float vec2_normalize(vec2* v)
 static inline float vec2_approx_length(vec2 a)
 {
     vec2 v_abs = vec2_abs(a);
-    float min_value, max_value;
-
-    if (v_abs.x > v_abs.y)
-    {
-        min_value = v_abs.y;
-        max_value = v_abs.x;
-    }
-    else
-    {
-        min_value = v_abs.x;
-        max_value = v_abs.y;
-    }
-
-    float approximation = 0.898204193266868f * max_value + 0.485968200201465f * min_value;
-    if (max_value > approximation)
-        approximation = max_value;
-
+    float min_value = float_min(v_abs.x, v_abs.y);
+    float max_value = float_max(v_abs.x, v_abs.y);
+    bool small_min = (min_value < 0.4142135f * max_value);
+    float alpha = small_min ? 0.99f : 0.84f;
+    float beta = small_min ? 0.197f : 0.561f;
+    float approximation = alpha * max_value + beta * min_value;
     return (approximation + vec2_sq_length(a)/approximation) / 2.f;
 }
 
