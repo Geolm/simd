@@ -48,9 +48,10 @@ static inline simd_vector simd_abs(simd_vector a) {return vabsq_f32(a);}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return vabdq_f32(a, b);}
 static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c) {return vfmaq_f32(c, a, b);}
 static inline simd_vector simd_neg(simd_vector a) {return vnegq_f32(a);}
-static inline simd_vector simd_or(simd_vector a, simd_vector b) {return vreinterpretq_f32_s32(vorrq_s32(vreinterpretq_s32_f32(a), vreinterpretq_s32_f32(b)));}
-static inline simd_vector simd_and(simd_vector a, simd_vector b) {return vreinterpretq_f32_s32(vandq_s32(vreinterpretq_s32_f32(a), vreinterpretq_s32_f32(b)));}
-static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return vreinterpretq_f32_s32(vbicq_s32(vreinterpretq_s32_f32(a), vreinterpretq_s32_f32(b)));}
+static inline simd_vector simd_or(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vorrq_u32(vreinterpretq_u32_f32(a), vreinterpretq_u32_f32(b)));}
+static inline simd_vector simd_xor(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(a), vreinterpretq_u32_f32(b)));}
+static inline simd_vector simd_and(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(a), vreinterpretq_u32_f32(b)));}
+static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vbicq_u32(vreinterpretq_u32_f32(a), vreinterpretq_u32_f32(b)));}
 static inline simd_vector simd_min(simd_vector a, simd_vector b) {return vminq_f32(a, b);}
 static inline simd_vector simd_max(simd_vector a, simd_vector b) {return vmaxq_f32(a, b);}
 static inline simd_vector simd_cmp_gt(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vcgtq_f32(a, b));}
@@ -63,6 +64,7 @@ static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector 
 static inline simd_vector simd_reverse(simd_vector a) {return __builtin_shufflevector(a, a, 3, 2, 1, 0);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
+static inline simd_vector simd_sign_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x80000000));}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, vrndq_f32(a));}
 static inline simd_vector simd_floor(simd_vector a) {return vrndmq_f32(a);}
 static inline simd_vector simd_ceil(simd_vector a) {return vrndpq_f32(a);}
@@ -312,6 +314,7 @@ static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c)
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
 static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
+static inline simd_vector simd_xor(simd_vector a, simd_vector b) {return _mm256_xor_ps(a, b);}
 static inline simd_vector simd_min(simd_vector a, simd_vector b) {return _mm256_min_ps(a, b);}
 static inline simd_vector simd_max(simd_vector a, simd_vector b) {return _mm256_max_ps(a, b);}
 static inline simd_vector simd_cmp_gt(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_GT_OQ);}
@@ -324,6 +327,7 @@ static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector 
 static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));}
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
+static inline simd_vector simd_sign_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x80000000));}
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_round_ps(a, _MM_FROUND_TRUNC));}
 static inline simd_vector simd_round(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_NINT);}
 static inline simd_vector simd_floor(simd_vector a) {return _mm256_floor_ps(a);}
