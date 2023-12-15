@@ -105,7 +105,8 @@ static inline simd_vector simd_approx_acos(simd_vector x)
 //-----------------------------------------------------------------------------
 // https://mazzo.li/posts/vectorized-atan2.html
 // max error with input [-1; 1] : 0.000002
-static inline simd_vector simd_approx_atan(simd_vector x)
+// input SHOULD be in [-1; 1]
+static inline simd_vector simd_atan(simd_vector x)
 {
     simd_vector a1  = simd_splat(0.99997726f);
     simd_vector a3  = simd_splat(-0.33262347f);
@@ -116,6 +117,24 @@ static inline simd_vector simd_approx_atan(simd_vector x)
     simd_vector x_sq = simd_mul(x, x);
 
     return simd_mul(x, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, a11, a9), a7), a5), a3), a1));
+}
+
+//-----------------------------------------------------------------------------
+// https://mazzo.li/posts/vectorized-atan2.html
+// max error : 0.000002
+static inline simd_vector simd_atan2(simd_vector x, simd_vector y)
+{
+    simd_vector swap = simd_cmp_lt(simd_abs(x), simd_abs(y));
+    simd_vector x_over_y = simd_div(x, y);
+    simd_vector y_over_x = simd_div(y, x);
+    simd_vector atan_input = simd_select(y_over_x, x_over_y, swap);
+    simd_vector result = simd_atan(atan_input);
+
+    simd_vector adjust = simd_select(simd_splat(-SIMD_MATH_PI2), simd_splat(SIMD_MATH_PI2), simd_cmp_ge(atan_input, simd_splat_zero()));
+    result = simd_select(result, simd_sub(adjust, result), swap);
+
+    simd_vector x_sign_mask = simd_cmp_lt(x, simd_splat_zero());
+    return simd_add( simd_and(simd_xor(simd_splat(SIMD_MATH_PI), simd_and(simd_sign_mask(), y)), x_sign_mask), result);
 }
 
 //-----------------------------------------------------------------------------
@@ -153,7 +172,6 @@ static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, 
     simd_vector a = simd_mul(one_minus_t, one_minus_t);
     simd_vector b = simd_mul(simd_splat(2.f), simd_mul(one_minus_t, t));
     simd_vector c = simd_mul(t, t);
-    
     return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
 }
 

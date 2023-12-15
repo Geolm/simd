@@ -141,15 +141,46 @@ TEST arctan(void)
 
     for(int i=0; i<NUM_VECTORS; ++i)
     {
-        simd_vector v_approx = simd_approx_atan(simd_load_offset(array,  i));
+        simd_vector v_approx = simd_atan(simd_load_offset(array,  i));
         simd_vector v_result = simd_load_offset(result, i);
 
         ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
-
         max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
     }
 
-    printf("simd_approx_tan max error : %f\n", simd_hmax(max_error));
+    printf("simd_tan max error : %f\n", simd_hmax(max_error));
+
+    PASS();
+}
+
+TEST arctan2(void)
+{
+    vec2 array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = VEC2_TAU / (float) (NUM_ELEMENTS+1);
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        result[i] = (step * (float)(i+1)) - VEC2_PI;
+        array[i] = vec2_scale(vec2_angle(result[i]), (float)(i+1));
+    }
+
+    simd_vector epsilon = simd_splat(0.000003f);
+    simd_vector max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector vec_x, vec_y;
+        simd_load_xy((float*)array + i * simd_vector_width * 2, &vec_x, &vec_y);
+
+        simd_vector v_result = simd_load_offset(result, i);
+        simd_vector v_approx = simd_atan2(vec_x, vec_y);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
+    }
+
+    printf("simd_atan2 max error : %f\n", simd_hmax(max_error));
 
     PASS();
 }
@@ -161,6 +192,7 @@ SUITE(trigonometry)
     RUN_TEST(arcos);
     RUN_TEST(approx_arcos);
     RUN_TEST(arctan);
+    RUN_TEST(arctan2);
 }
 
 TEST approx_length(void)
@@ -177,7 +209,7 @@ TEST approx_length(void)
     for(int i=0; i<NUM_VECTORS; ++i)
     {
         simd_vector vec_x, vec_y;
-        simd_load_xy((float*)array + i * simd_vector_width, &vec_x, &vec_y);
+        simd_load_xy((float*)array + i * simd_vector_width * 2, &vec_x, &vec_y);
 
         simd_vector approx = simd_vec2_approx_length(vec_x, vec_y);
         ASSERT(simd_all(simd_equal(approx, simd_splat(1.f), unit_epsilon)));
