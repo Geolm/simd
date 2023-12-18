@@ -73,18 +73,4 @@ static inline float vec2_normalize(vec2* v)
     return norm;
 }
 
-// based on https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm
-// + one newton iteration
-static inline float vec2_approx_length(vec2 a)
-{
-    vec2 v_abs = vec2_abs(a);
-    float min_value = float_min(v_abs.x, v_abs.y);
-    float max_value = float_max(v_abs.x, v_abs.y);
-    bool small_min = (min_value < 0.4142135f * max_value);
-    float alpha = small_min ? 0.99f : 0.84f;
-    float beta = small_min ? 0.197f : 0.561f;
-    float approximation = alpha * max_value + beta * min_value;
-    return (approximation + vec2_sq_length(a)/approximation) / 2.f;
-}
-
 #endif 
