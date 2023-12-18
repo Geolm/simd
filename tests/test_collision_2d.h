@@ -285,6 +285,46 @@ TEST intersection_aabb_arc(void)
     PASS();
 }
 
+TEST no_intersection_triangle_disc(void)
+{
+    bool failure = false;
+    struct simdcol_context* context = simdcol_init(&failure, collision_failure);
+
+    vec2 v0 = {0.f, 4.f}; vec2 v1 = {1.f, 1.f}; vec2 v2 = {5.f, 0.f};
+
+    simdcol_triangle_disc(context, 0, v0, v1, v2, (vec2) {3.f, 3.f}, 1.f);
+    simdcol_triangle_disc(context, 1, v0, v1, v2, (vec2) {0.f, 0.f}, 0.9f);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
+TEST intersection_triangle_disc(void)
+{
+    bool success[4] = {false, false, false, false};
+    struct simdcol_context* context = simdcol_init(&success, collision_success);
+
+    vec2 v0 = {0.f, 4.f}; vec2 v1 = {1.f, 1.f}; vec2 v2 = {5.f, 0.f};
+
+    simdcol_triangle_disc(context, 0, v0, v1, v2, (vec2) {2.f, 2.f}, 10.f);
+    simdcol_triangle_disc(context, 1, v0, v1, v2, (vec2) {0.f, 0.f}, 2.0f);
+    simdcol_triangle_disc(context, 2, v0, v1, v2, (vec2) {7.f, 0.f}, 3.0f);
+    simdcol_triangle_disc(context, 3, v0, v1, v2, (vec2) {2.f, 1.f}, 0.1f);
+
+    simdcol_flush(context, flush_all);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
 
 SUITE(collision_2d)
 {
@@ -302,4 +342,6 @@ SUITE(collision_2d)
     RUN_TEST(intersection_segment_disc);
     RUN_TEST(no_intersection_aabb_arc);
     RUN_TEST(intersection_aabb_arc);
+    RUN_TEST(no_intersection_triangle_disc);
+    RUN_TEST(intersection_triangle_disc);
 }

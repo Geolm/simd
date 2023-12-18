@@ -15,6 +15,7 @@ static inline simd_vec2 simd_vec2_load(const float* x, const float* y, ptrdiff_t
 static inline simd_vec2 simd_vec2_add(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_add(a.x, b.x), .y = simd_add(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_sub(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_sub(a.x, b.x), .y = simd_sub(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_mul(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_mul(a.x, b.x), .y = simd_mul(a.y, b.y)};}
+static inline simd_vec2 simd_vec2_scale(simd_vec2 a, simd_vector scale) {return (simd_vec2) {.x = simd_mul(a.x, scale), .y = simd_mul(a.y, scale)};}
 static inline simd_vec2 simd_vec2_abs(simd_vec2 a) {return (simd_vec2) {.x = simd_abs(a.x), .y = simd_abs(a.y)};}
 static inline simd_vec2 simd_vec2_max(simd_vec2 a, simd_vec2 b) {return (simd_vec2) {.x = simd_max(a.x, b.x), .y = simd_max(a.y, b.y)};}
 static inline simd_vec2 simd_vec2_clamp(simd_vec2 a, simd_vec2 range_min, simd_vec2 range_max) 
@@ -28,7 +29,6 @@ static inline simd_vec2 simd_vec2_normalize(simd_vec2 a)
     simd_vector rcp_length = simd_rsqrt(simd_vec2_sq_length(a));
     return (simd_vec2) {.x = simd_mul(a.x, rcp_length), .y = simd_mul(a.y, rcp_length)};
 }
-static inline simd_vec2 simd_vec2_scale(simd_vec2 a, simd_vector scale) {return (simd_vec2) {.x = simd_mul(a.x, scale), .y = simd_mul(a.y, scale)};}
 
 
 //-----------------------------------------------------------------------------
@@ -450,7 +450,7 @@ void simdcol_segment_disc(struct simdcol_context* context, uint32_t user_data, v
 }
 
 //-----------------------------------------------------------------------------
-void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, circle disc)
+void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, vec2 disc_center, float disc_radius)
 {
     assert(context->state == state_idle);
     assert(context->triangle_disc->num_items < BATCH_SIZE);
@@ -464,9 +464,9 @@ void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, 
     data->v_y[0][index] = v0.y;
     data->v_y[1][index] = v1.y;
     data->v_y[2][index] = v2.y;
-    data->center_x[index] = disc.center.x;
-    data->center_y[index] = disc.center.y;
-    data->sq_radius[index] = disc.radius * disc.radius;
+    data->center_x[index] = disc_center.x;
+    data->center_y[index] = disc_center.y;
+    data->sq_radius[index] = disc_radius * disc_radius;
     data->user_data[index] = user_data;
 
     if (data->num_items == BATCH_SIZE)
@@ -902,7 +902,7 @@ void process_segment_disc(struct simdcol_context* context)
     }
     data->num_items = 0;
 }
-
+/*
 //-----------------------------------------------------------------------------
 static inline simd_vector edge_sign(simd_vec2 p, simd_vec2 e0, simd_vec2 e1)
 {
@@ -926,12 +926,9 @@ static simd_vector point_in_triangle(simd_vec2 p, simd_vec2 v0, simd_vec2 v1, si
 
     return simd_or(all_positive, all_negative);
 }
-
+*/
 //-----------------------------------------------------------------------------
-// 3 steps : 
-//   - center of circle in the triangle
-//   - any triangle's vertex in the circle
-//   - triangle's edges intersection with circle
+// based on signed distance field https://iquilezles.org/articles/distfunctions2d/
 void process_triangle_disc(struct simdcol_context* context)
 {
     struct triangle_disc_data* data = context->triangle_disc;
@@ -941,20 +938,28 @@ void process_triangle_disc(struct simdcol_context* context)
     {
         uint32_t offset = vec_index * simd_vector_width;
 
-        simd_vec2 v0 = simd_vec2_load(data->v_x[0], data->v_y[0], offset);
-        simd_vec2 v1 = simd_vec2_load(data->v_x[1], data->v_y[1], offset);
-        simd_vec2 v2 = simd_vec2_load(data->v_x[2], data->v_y[2], offset);
+        simd_vec2 p0 = simd_vec2_load(data->v_x[0], data->v_y[0], offset);
+        simd_vec2 p1 = simd_vec2_load(data->v_x[1], data->v_y[1], offset);
+        simd_vec2 p2 = simd_vec2_load(data->v_x[2], data->v_y[2], offset);
         simd_vec2 center = simd_vec2_load(data->center_x, data->center_y, offset);
         simd_vector sq_radius = simd_load(data->sq_radius + offset);
 
-        simd_vector result = point_in_triangle(center, v0, v1, v2);
+        simd_vec2 e0 = simd_vec2_sub(p1, p0); simd_vec2 e1 = simd_vec2_sub(p2, p1); simd_vec2 e2 = simd_vec2_sub(p0, p2);
+        simd_vec2 v0 = simd_vec2_sub(center, p0); simd_vec2 v1 = simd_vec2_sub(center, p1); simd_vec2 v2 = simd_vec2_sub(center, p2);
 
-        // TODO : missing test, any triangle's vertex in the circle
+        simd_vec2 pq0 = simd_vec2_sub(v0,  simd_vec2_scale(e0, simd_saturate(simd_div(simd_vec2_dot(v0, e0), simd_vec2_sq_length(e0)))));
+        simd_vec2 pq1 = simd_vec2_sub(v1,  simd_vec2_scale(e1, simd_saturate(simd_div(simd_vec2_dot(v1, e1), simd_vec2_sq_length(e1)))));
+        simd_vec2 pq2 = simd_vec2_sub(v2,  simd_vec2_scale(e2, simd_saturate(simd_div(simd_vec2_dot(v2, e2), simd_vec2_sq_length(e2)))));
 
-        result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v0, v1), sq_radius));
-        result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v1, v2), sq_radius));
-        result = simd_or(result, simd_cmp_le(sq_distance_to_segment(center, v2, v0), sq_radius));
+        simd_vector s = simd_sign(simd_fmad(e0.x, e2.y, simd_mul(simd_neg(e0.y), e2.x)));
+        simd_vector squared_distance = simd_min(simd_vec2_sq_length(pq0), simd_min(simd_vec2_sq_length(pq1), simd_vec2_sq_length(pq2)));
+        simd_vector sign =    simd_mul(s, simd_fmad(v0.x, e0.y, simd_mul(simd_neg(v0.y), e0.x)));
+        sign = simd_min(sign, simd_mul(s, simd_fmad(v1.x, e1.y, simd_mul(simd_neg(v1.y), e1.x))));
+        sign = simd_min(sign, simd_mul(s, simd_fmad(v2.x, e2.y, simd_mul(simd_neg(v2.y), e2.x))));
 
+        squared_distance = simd_mul(simd_neg(squared_distance), simd_sign(sign));
+        simd_vector result = simd_cmp_lt(squared_distance, sq_radius);
+        
         int bitfield = simd_get_mask(result);
         for(uint32_t i=0; i<simd_vector_width; ++i)
             if ((bitfield&(1<<i)) && (offset + i) < data->num_items)

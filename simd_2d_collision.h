@@ -36,7 +36,7 @@ void simdcol_aabb_arc(struct simdcol_context* context, uint32_t user_data, aabb 
 void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_data, const vec2 a[3], const vec2 b[3]);
 void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, vec2 p0, vec2 p1, aabb box);
 void simdcol_segment_disc(struct simdcol_context* context, uint32_t user_data, vec2 p0, vec2 p1, vec2 center, float radius);
-void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, circle disc);
+void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, vec2 disc_center, float disc_radius);
 
 // force to compute intersection right now, run callback on intersection
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
