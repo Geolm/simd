@@ -183,6 +183,19 @@ struct triangle_disc_data
 };
 
 //-----------------------------------------------------------------------------
+struct point_triangle_data
+{
+    float p_x[BATCH_SIZE];
+    float p_y[BATCH_SIZE];
+
+    float v_x[3][BATCH_SIZE];
+    float v_y[3][BATCH_SIZE];
+
+    uint32_t user_data[BATCH_SIZE];
+    uint32_t num_items;
+};
+
+//-----------------------------------------------------------------------------
 enum simdcol_state
 {
     state_idle,
@@ -201,6 +214,7 @@ struct simdcol_context
     struct segment_aabb_data* segment_aabb;
     struct segment_disc_data* segment_disc;
     struct triangle_disc_data* triangle_disc;
+    struct point_triangle_data* point_triangle;
 
     void* user_context;
     simdcol_intersection_callback on_intersection;
@@ -222,6 +236,7 @@ struct simdcol_context* simdcol_init(void* user_context, simdcol_intersection_ca
     context->segment_aabb = (struct segment_aabb_data*) simd_aligned_alloc(sizeof(struct segment_aabb_data));
     context->segment_disc = (struct segment_disc_data*) simd_aligned_alloc(sizeof(struct segment_disc_data));
     context->triangle_disc = (struct triangle_disc_data*) simd_aligned_alloc(sizeof(struct triangle_disc_data));
+    context->point_triangle = (struct point_triangle_data*) simd_aligned_alloc(sizeof(struct point_triangle_data));
 
     context->aabb_triangle->num_items = 0;
     context->aabb_obb->num_items = 0;
@@ -232,6 +247,7 @@ struct simdcol_context* simdcol_init(void* user_context, simdcol_intersection_ca
     context->segment_aabb->num_items = 0;
     context->segment_disc->num_items = 0;
     context->triangle_disc->num_items = 0;
+    context->point_triangle->num_items = 0;
 
     context->state = state_idle;
     context->on_intersection = callback;
@@ -471,6 +487,30 @@ void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, 
 
     if (data->num_items == BATCH_SIZE)
         simdcol_flush(context, flush_triangle_disc);
+}
+
+//-----------------------------------------------------------------------------
+void simdcol_point_triangle(struct simdcol_context* context, uint32_t user_data, vec2 point, vec2 v0, vec2 v1, vec2 v2)
+{
+    assert(context->state == state_idle);
+    assert(context->point_triangle->num_items < BATCH_SIZE);
+
+    struct point_triangle_data* data = context->point_triangle;
+    uint32_t index = data->num_items++;
+
+    data->v_x[0][index] = v0.x;
+    data->v_x[1][index] = v1.x;
+    data->v_x[2][index] = v2.x;
+    data->v_y[0][index] = v0.y;
+    data->v_y[1][index] = v1.y;
+    data->v_y[2][index] = v2.y;
+    data->p_x[index] = point.x;
+    data->p_y[index] = point.y;
+
+    data->user_data[index] = user_data;
+
+    if (data->num_items == BATCH_SIZE)
+        simdcol_flush(context, flush_point_triangle);
 }
 
 //-----------------------------------------------------------------------------
@@ -902,11 +942,12 @@ void process_segment_disc(struct simdcol_context* context)
     }
     data->num_items = 0;
 }
-/*
+
 //-----------------------------------------------------------------------------
 static inline simd_vector edge_sign(simd_vec2 p, simd_vec2 e0, simd_vec2 e1)
 {
-    return simd_sub(simd_mul(simd_sub(p.x, e1.x), simd_sub(e0.y, e1.y)), simd_mul(simd_sub(e0.x, e1.x), simd_mul(p.y, e1.y)));
+    return simd_sub(simd_mul(simd_sub(p.x, e1.x), simd_sub(e0.y, e1.y)),
+                    simd_mul(simd_sub(e0.x, e1.x), simd_sub(p.y, e1.y)));
 }
 
 //-----------------------------------------------------------------------------
@@ -916,9 +957,9 @@ static simd_vector point_in_triangle(simd_vec2 p, simd_vec2 v0, simd_vec2 v1, si
     simd_vector d1 = edge_sign(p, v1, v2);
     simd_vector d2 = edge_sign(p, v2, v0);
 
-    simd_vector all_positive = simd_cmp_gt(d0, simd_splat_zero());
-    all_positive = simd_and(all_positive, simd_cmp_gt(d1, simd_splat_zero()));
-    all_positive = simd_and(all_positive, simd_cmp_gt(d2, simd_splat_zero()));
+    simd_vector all_positive = simd_cmp_ge(d0, simd_splat_zero());
+    all_positive = simd_and(all_positive, simd_cmp_ge(d1, simd_splat_zero()));
+    all_positive = simd_and(all_positive, simd_cmp_ge(d2, simd_splat_zero()));
 
     simd_vector all_negative = simd_cmp_lt(d0, simd_splat_zero());
     all_negative = simd_and(all_negative, simd_cmp_lt(d1, simd_splat_zero()));
@@ -926,7 +967,31 @@ static simd_vector point_in_triangle(simd_vec2 p, simd_vec2 v0, simd_vec2 v1, si
 
     return simd_or(all_positive, all_negative);
 }
-*/
+
+//-----------------------------------------------------------------------------
+void process_point_triangle(struct simdcol_context* context)
+{
+    struct point_triangle_data* data = context->point_triangle;
+
+    uint32_t num_vec = simd_num_vec(data->num_items);
+    for(uint32_t vec_index=0; vec_index<num_vec; ++vec_index)
+    {
+        uint32_t offset = vec_index * simd_vector_width;
+
+        simd_vec2 v0 = simd_vec2_load(data->v_x[0], data->v_y[0], offset);
+        simd_vec2 v1 = simd_vec2_load(data->v_x[1], data->v_y[1], offset);
+        simd_vec2 v2 = simd_vec2_load(data->v_x[2], data->v_y[2], offset);
+        simd_vec2 p = simd_vec2_load(data->p_x, data->p_y, offset);
+
+        simd_vector result = point_in_triangle(p, v0, v1, v2);
+        int bitfield = simd_get_mask(result);
+        for(uint32_t i=0; i<simd_vector_width; ++i)
+            if ((bitfield&(1<<i)) && (offset + i) < data->num_items)
+                context->on_intersection(context->user_context, data->user_data[offset + i]);
+    }
+    data->num_items = 0;
+}
+
 //-----------------------------------------------------------------------------
 // based on signed distance field https://iquilezles.org/articles/distfunctions2d/
 void process_triangle_disc(struct simdcol_context* context)
@@ -1001,6 +1066,9 @@ void simdcol_flush(struct simdcol_context* context, enum flush_hint hint)
     if (hint == flush_triangle_disc || hint == flush_all)
         process_triangle_disc(context);
 
+    if (hint == flush_point_triangle || hint == flush_all)
+        process_point_triangle(context);
+
     context->state = state_idle;
 }
 
@@ -1016,5 +1084,6 @@ void simdcol_terminate(struct simdcol_context* context)
     simd_aligned_free(context->segment_aabb);
     simd_aligned_free(context->segment_disc);
     simd_aligned_free(context->triangle_disc);
+    simd_aligned_free(context->point_triangle);
     free(context);
 }

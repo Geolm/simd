@@ -154,4 +154,10 @@ static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, 
     return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
 }
 
+
+// TODO:
+// simd_approx_exp based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
+// hsv to rgb based on https://github.com/stolk/hsvbench/blob/main/hsv.h
+// simd_log and simd_exp based on http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
+
 #endif

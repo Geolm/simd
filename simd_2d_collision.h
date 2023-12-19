@@ -19,6 +19,7 @@ enum flush_hint
     flush_triangle_disc,
     flush_segment_aabb,
     flush_segment_disc,
+    flush_point_triangle,
     flush_all
 };
 
@@ -37,6 +38,7 @@ void simdcol_triangle_triangle(struct simdcol_context* context, uint32_t user_da
 void simdcol_segment_aabb(struct simdcol_context* context, uint32_t user_data, vec2 p0, vec2 p1, aabb box);
 void simdcol_segment_disc(struct simdcol_context* context, uint32_t user_data, vec2 p0, vec2 p1, vec2 center, float radius);
 void simdcol_triangle_disc(struct simdcol_context* context, uint32_t user_data, vec2 v0, vec2 v1, vec2 v2, vec2 disc_center, float disc_radius);
+void simdcol_point_triangle(struct simdcol_context* context, uint32_t user_data, vec2 point, vec2 v0, vec2 v1, vec2 v2);
 
 // force to compute intersection right now, run callback on intersection
 void simdcol_flush(struct simdcol_context* context, enum flush_hint hint);
