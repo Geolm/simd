@@ -154,9 +154,34 @@ static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, 
     return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
 }
 
+//-----------------------------------------------------------------------------
+// based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
+static inline simd_vector simd_approx_exp(simd_vector x)
+{
+    simd_vector c0 = simd_splat(0.3371894346f);
+    simd_vector c1 = simd_splat(0.657636276f);
+    simd_vector c2 = simd_splat(1.00172476f);
+
+    // exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1
+    simd_vector t = simd_mul(x, simd_splat(1.442695041f)); // t = log2(e) * x
+    simd_vector e = simd_floor(t);
+
+    simd_vector f = simd_sub(t, e); // f = t - floor(t)
+    simd_vector p = simd_fmad(c0, f, c1); // p = c0 * f + c1
+    p = simd_fmad(p, f, c2); // p = (c0 * f + c1) * f + c2
+
+#if defined(SIMD_NEON_IMPLEMENTATION)
+    int32x4_t i = vcvtnq_s32_f32(e);
+    i = vshlq_s32(i, vdupq_n_s32(23));
+    return vreinterpretq_s32_f32(vaddq_s32(i, vreinterpretq_f32_s32(p)));
+#elif defined(SIMD_AVX_IMPLEMENTATION)
+    __m256i i = _mm256_cvtps_epi32(e);
+    i = _mm256_slli_epi32(i, 23);
+    return _mm256_castsi256_ps(_mm256_add_epi32(i, _mm256_castps_si256(p)));
+#endif
+}
 
 // TODO:
-// simd_approx_exp based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
 // hsv to rgb based on https://github.com/stolk/hsvbench/blob/main/hsv.h
 // simd_log and simd_exp based on http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 
