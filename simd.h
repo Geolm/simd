@@ -29,6 +29,7 @@
 
 #include <arm_neon.h>
 
+#define SIMD_NEON_IMPLEMENTATION
 #define simd_vector_width (4)
 #define simd_vector_alignment (16)
 typedef float32x4_t simd_vector;
@@ -271,6 +272,7 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
 
 #include <immintrin.h>
 
+#define SIMD_AVX_IMPLEMENTATION
 #define simd_vector_width (8)
 #define simd_vector_alignment (32)
 typedef __m256 simd_vector;
