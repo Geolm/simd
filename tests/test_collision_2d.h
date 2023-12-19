@@ -294,6 +294,8 @@ TEST no_intersection_triangle_disc(void)
 
     simdcol_triangle_disc(context, 0, v0, v1, v2, (vec2) {3.f, 3.f}, 1.f);
     simdcol_triangle_disc(context, 1, v0, v1, v2, (vec2) {0.f, 0.f}, 0.9f);
+    simdcol_triangle_disc(context, 2, v0, v1, v2, (vec2) {-10.f, -10.f}, 5.f);
+    simdcol_triangle_disc(context, 3, v0, v1, v2, (vec2) {4.f, 4.f}, 2.f);
 
     simdcol_flush(context, flush_all);
     ASSERT_NEQ(failure, true);
@@ -325,6 +327,48 @@ TEST intersection_triangle_disc(void)
     PASS();
 }
 
+TEST no_intersection_point_triangle(void)
+{
+    bool failure = false;
+    struct simdcol_context* context = simdcol_init(&failure, collision_failure);
+
+    vec2 v0 = {-1.f, 0.f}; vec2 v1 = {0.f, 3.f}; vec2 v2 = {5.f, 0.f};
+
+    simdcol_point_triangle(context, 0, (vec2) {5.f, 2.f}, v0, v1, v2);
+    simdcol_point_triangle(context, 1, (vec2) {6.f, 0.f}, v0, v1, v2);
+    simdcol_point_triangle(context, 2, (vec2) {-1.f, 3.f}, v0, v1, v2);
+    simdcol_point_triangle(context, 3, (vec2) {0.f, -1.f}, v0, v1, v2);
+
+    simdcol_flush(context, flush_all);
+    ASSERT_NEQ(failure, true);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
+TEST intersection_point_triangle(void)
+{
+    bool success[4] = {false, false, false, false};
+    struct simdcol_context* context = simdcol_init(&success, collision_success);
+
+    vec2 v0 = {-1.f, 0.f}; vec2 v1 = {0.f, 3.f}; vec2 v2 = {5.f, 0.f};
+
+    simdcol_point_triangle(context, 0, (vec2) {0.f, 0.1f}, v0, v1, v2);
+    simdcol_point_triangle(context, 1, (vec2) {-0.1f, 2.6f}, v0, v1, v2);
+    simdcol_point_triangle(context, 2, (vec2) {1.f, 1.f}, v0, v1, v2);
+    simdcol_point_triangle(context, 3, (vec2) {-0.5f, 1.f}, v0, v1, v2);
+
+    simdcol_flush(context, flush_all);
+
+    ASSERT(success[0]);
+    ASSERT(success[1]);
+    ASSERT(success[2]);
+    ASSERT(success[3]);
+
+    simdcol_terminate(context);
+    PASS();
+}
+
 
 SUITE(collision_2d)
 {
@@ -344,4 +388,6 @@ SUITE(collision_2d)
     RUN_TEST(intersection_aabb_arc);
     RUN_TEST(no_intersection_triangle_disc);
     RUN_TEST(intersection_triangle_disc);
+    RUN_TEST(no_intersection_point_triangle);
+    RUN_TEST(intersection_point_triangle);
 }
