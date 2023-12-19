@@ -506,7 +506,6 @@ void simdcol_point_triangle(struct simdcol_context* context, uint32_t user_data,
     data->v_y[2][index] = v2.y;
     data->p_x[index] = point.x;
     data->p_y[index] = point.y;
-
     data->user_data[index] = user_data;
 
     if (data->num_items == BATCH_SIZE)
@@ -761,7 +760,6 @@ void process_aabb_obb(struct simdcol_context* context)
             if ((bitfield&(1<<i)) == 0 && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
-
     data->num_items = 0;
 }
 
@@ -819,7 +817,6 @@ void process_triangle_triangle(struct simdcol_context* context)
             if ((bitfield&(1<<i)) == 0 && (offset + i) < data->num_items)
                 context->on_intersection(context->user_context, data->user_data[offset + i]);
     }
-
     data->num_items = 0;
 }
 
