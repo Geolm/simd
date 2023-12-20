@@ -211,19 +211,19 @@ static inline simd_vector simd_log(simd_vector x)
     x = simd_add(x, tmp);
 
     simd_vector z = simd_mul(x,x);
-    simd_vector y = simd_splat(7.0376836292E-2);
-    y = simd_fmad(y, x, simd_splat(-1.1514610310E-1));
-    y = simd_fmad(y, x, simd_splat(1.1676998740E-1));
-    y = simd_fmad(y, x, simd_splat(-1.2420140846E-1));
-    y = simd_fmad(y, x, simd_splat(+1.4249322787E-1));
-    y = simd_fmad(y, x, simd_splat(-1.6668057665E-1));
-    y = simd_fmad(y, x, simd_splat(+2.0000714765E-1));
-    y = simd_fmad(y, x, simd_splat(-2.4999993993E-1));
-    y = simd_fmad(y, x, simd_splat(+3.3333331174E-1));
+    simd_vector y = simd_splat(7.0376836292E-2f);
+    y = simd_fmad(y, x, simd_splat(-1.1514610310E-1f));
+    y = simd_fmad(y, x, simd_splat(1.1676998740E-1f));
+    y = simd_fmad(y, x, simd_splat(-1.2420140846E-1f));
+    y = simd_fmad(y, x, simd_splat(+1.4249322787E-1f));
+    y = simd_fmad(y, x, simd_splat(-1.6668057665E-1f));
+    y = simd_fmad(y, x, simd_splat(+2.0000714765E-1f));
+    y = simd_fmad(y, x, simd_splat(-2.4999993993E-1f));
+    y = simd_fmad(y, x, simd_splat(+3.3333331174E-1f));
     y = simd_mul(y, x);
     y = simd_mul(y, z);
 
-    tmp = simd_mul(e, simd_splat(-2.12194440e-4));
+    tmp = simd_mul(e, simd_splat(-2.12194440e-4f));
     y = simd_add(y, tmp);
 
     tmp = simd_mul(z, simd_splat(0.5f));
