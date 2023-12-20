@@ -156,6 +156,7 @@ static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, 
 
 //-----------------------------------------------------------------------------
 // based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
+// max relative error with input [-87.33654; 88.72283] : 0.001726
 static inline simd_vector simd_approx_exp(simd_vector x)
 {
     simd_vector c0 = simd_splat(0.3371894346f);

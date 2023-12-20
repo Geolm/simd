@@ -185,6 +185,37 @@ TEST arctan2(void)
     PASS();
 }
 
+TEST approx_exp(void)
+{
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 174.f / (float) (NUM_ELEMENTS);
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)i) - 87.f;
+        result[i] = expf(array[i]);
+    }
+
+    simd_vector epsilon = simd_splat(0.002f);
+    simd_vector max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_array = simd_load_offset(array, i);
+        simd_vector v_result = simd_load_offset(result, i);
+        simd_vector v_approx = simd_approx_exp(v_array);
+
+        simd_vector relative_error = simd_div(simd_abs_diff(v_approx, v_result), v_result);
+        ASSERT(simd_all(simd_cmp_lt(relative_error, epsilon)));
+        max_error = simd_max(max_error, relative_error);
+    }
+
+    printf("simd_approx_exp max error : %f\n", simd_hmax(max_error));
+
+    PASS();
+}
+
 SUITE(trigonometry)
 {
     RUN_TEST(sinus);
@@ -193,5 +224,6 @@ SUITE(trigonometry)
     RUN_TEST(approx_arcos);
     RUN_TEST(arctan);
     RUN_TEST(arctan2);
+    RUN_TEST(approx_exp);
 }
 
