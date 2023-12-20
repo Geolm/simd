@@ -1,5 +1,6 @@
 
 #include "../vec2.h"
+#include <float.h>
 
 #define NUM_VECTORS (100)
 #define NUM_ELEMENTS (simd_vector_width * NUM_VECTORS)
@@ -228,7 +229,7 @@ TEST logarithm(void)
         result[i] = logf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.002f);
+    simd_vector epsilon = simd_splat(FLT_EPSILON);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
