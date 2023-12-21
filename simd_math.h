@@ -237,6 +237,56 @@ static inline simd_vector simd_log(simd_vector x)
     return x;
 }
 
+//-----------------------------------------------------------------------------
+// based on infinite binomial serie
+// works only for input in [0; 2]
+static inline simd_vector simd_approx_pow(simd_vector x, simd_vector exponent, uint32_t degree)
+{
+    simd_vector one = simd_splat(1.f);
+    simd_vector a = exponent;
+    simd_vector k = one;
+    simd_vector x_minus_one = simd_sub(x, one);
+    simd_vector divisor = k;
+    simd_vector factor = x_minus_one;
+    simd_vector result = simd_fmad(simd_div(a, divisor), factor, one);
+
+    for(uint32_t i=1; i<=degree; ++i)
+    {
+        k = simd_add(k, one);
+        divisor = simd_mul(divisor, k);
+        a = simd_mul(a, simd_add(simd_sub(exponent, k), one));
+        factor = simd_mul(factor, x_minus_one);
+        result = simd_fmad(simd_div(a, divisor), factor, result);
+    }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
+{
+    simd_vector big_value = simd_cmp_ge(value, simd_splat(0.0031308f));
+    simd_vector result0 = simd_mul(value, simd_splat(12.92f));
+    simd_vector result1 = simd_approx_pow(value, simd_splat(1.0f/2.4f), 30);
+    result1 = simd_fmad(result1, simd_splat(1.055f), simd_splat(-0.055f));
+    return simd_select(result0, result1, big_value);
+}
+
+//-----------------------------------------------------------------------------
+static inline simd_vector simd_approx_srgb_to_linear(simd_vector value)
+{
+    simd_vector big_value = simd_cmp_ge(value, simd_splat(0.04045f));
+    simd_vector result0 = simd_mul(value, simd_splat(1.f / 12.92f));
+    value = simd_mul(simd_add(value, simd_splat(0.055f)), simd_splat(1.f / 1.055f));
+
+    // pow(x, 2.4) approximation, valid with input [0;1]
+    simd_vector result1 = simd_splat(-0.132935f);
+    result1 = simd_fmad(result1, value, simd_splat(0.635580f));
+    result1 = simd_fmad(result1, value, simd_splat(0.521415f));
+    result1 = simd_fmad(result1, value, simd_splat(-0.024060f));
+    result1 = simd_mul(result1, value);
+    return simd_select(result0, result1, big_value);
+}
+
 // TODO:
 // hsv to rgb based on https://github.com/stolk/hsvbench/blob/main/hsv.h
 // simd_log and simd_exp based on http://gruntthepeon.free.fr/ssemath/sse_mathfun.h

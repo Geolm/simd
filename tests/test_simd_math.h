@@ -248,6 +248,85 @@ TEST logarithm(void)
     PASS();
 }
 
+static inline float linear_to_srgb(float val)
+{
+	if (val <= 0.0031308f)
+		return 12.92f * val;
+	else
+		return 1.055f * powf(val, 1.0f / 2.4f) - 0.055f;
+}
+
+TEST linear_to_srgb_test(void)
+{
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 1.f / (float) (NUM_ELEMENTS);
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)(i));
+        result[i] = linear_to_srgb(array[i]);
+    }
+
+    simd_vector epsilon = simd_splat(0.1f);
+    simd_vector max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_array = simd_load_offset(array, i);
+        simd_vector v_result = simd_load_offset(result, i);
+        simd_vector v_approx = simd_approx_linear_to_srgb(v_array);
+
+        simd_vector error = simd_abs_diff(v_approx, v_result);
+        ASSERT(simd_all(simd_cmp_lt(error, epsilon)));
+        max_error = simd_max(max_error, error);
+    }
+
+    printf(".simd_approx_linear_to_srgb max error : %f\n", simd_hmax(max_error));
+    
+    PASS();
+}
+
+static inline float srgb_to_linear(float val)
+{
+    if (val < 0.04045f)
+        return val * (1.0f / 12.92f);
+    else
+        return powf((val + 0.055f) * (1.0f / 1.055f), 2.4f);
+}
+
+TEST srgb_to_linear_test(void)
+{
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 1.f / (float) (NUM_ELEMENTS);
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)(i));
+        result[i] = srgb_to_linear(array[i]);
+    }
+
+    simd_vector epsilon = simd_splat(0.0006f);
+    simd_vector max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_array = simd_load_offset(array, i);
+        simd_vector v_result = simd_load_offset(result, i);
+        simd_vector v_approx = simd_approx_srgb_to_linear(v_array);
+
+        simd_vector error = simd_abs_diff(v_approx, v_result);
+        ASSERT(simd_all(simd_cmp_lt(error, epsilon)));
+        max_error = simd_max(max_error, error);
+    }
+
+    printf("simd_approx_srgb_to_linear max error : %f\n", simd_hmax(max_error));
+    
+    PASS();
+}
+
+
 SUITE(trigonometry)
 {
     RUN_TEST(sinus);
@@ -258,5 +337,11 @@ SUITE(trigonometry)
     RUN_TEST(arctan2);
     RUN_TEST(approx_exp);
     RUN_TEST(logarithm);
+}
+
+SUITE(color_space)
+{
+    RUN_TEST(linear_to_srgb_test);
+    RUN_TEST(srgb_to_linear_test);
 }
 

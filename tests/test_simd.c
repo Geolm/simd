@@ -551,6 +551,7 @@ int main(int argc, char * argv[])
     RUN_TEST(sort);
     RUN_SUITE(horizontal);
     RUN_SUITE(trigonometry);
+    RUN_SUITE(color_space);
     RUN_SUITE(arithmetic);
     RUN_SUITE(sqrt_and_rcp);
     RUN_SUITE(abs_neg_min_max);
