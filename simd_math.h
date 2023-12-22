@@ -266,7 +266,17 @@ static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
 {
     simd_vector big_value = simd_cmp_ge(value, simd_splat(0.0031308f));
     simd_vector result0 = simd_mul(value, simd_splat(12.92f));
-    simd_vector result1 = simd_approx_pow(value, simd_splat(1.0f/2.4f), 30);
+    
+    // pow(x, 1/2.4) approximation
+    // 0.150340 + 2.807996*pow(x,1) + -6.852421*pow(x,2) + 11.047923*pow(x,3) + -9.031995*pow(x,4) + 2.878156*pow(x,5)
+    // average_error: 0.003093 max_error:0.068591 in range [0.0031308; 1.000000]
+    simd_vector result1 = simd_splat(2.878156f);
+    result1 = simd_fmad(result1, value, simd_splat(-9.031995f));
+    result1 = simd_fmad(result1, value, simd_splat(11.047923f));
+    result1 = simd_fmad(result1, value, simd_splat(-6.852421));
+    result1 = simd_fmad(result1, value, simd_splat(2.807996f));
+    result1 = simd_fmad(result1, value, simd_splat(0.150340f));
+
     result1 = simd_fmad(result1, simd_splat(1.055f), simd_splat(-0.055f));
     return simd_select(result0, result1, big_value);
 }
@@ -278,12 +288,15 @@ static inline simd_vector simd_approx_srgb_to_linear(simd_vector value)
     simd_vector result0 = simd_mul(value, simd_splat(1.f / 12.92f));
     value = simd_mul(simd_add(value, simd_splat(0.055f)), simd_splat(1.f / 1.055f));
 
-    // pow(x, 2.4) approximation, valid with input [0;1]
-    simd_vector result1 = simd_splat(-0.132935f);
-    result1 = simd_fmad(result1, value, simd_splat(0.635580f));
-    result1 = simd_fmad(result1, value, simd_splat(0.521415f));
-    result1 = simd_fmad(result1, value, simd_splat(-0.024060f));
-    result1 = simd_mul(result1, value);
+    // pow(x, 2.4) approximation
+    // 0.000589 + -0.021682*pow(x,1) + 0.471282*pow(x,2) + 0.801800*pow(x,3) + -0.335099*pow(x,4) + 0.083109*pow(x,5)
+    // average_error: 0.000023 max_error:0.000082 in range [0.040450; 1.000000]
+    simd_vector result1 = simd_splat(0.083109f);
+    result1 = simd_fmad(result1, value, simd_splat(-0.335099f));
+    result1 = simd_fmad(result1, value, simd_splat(0.801800f));
+    result1 = simd_fmad(result1, value, simd_splat(0.471282f));
+    result1 = simd_fmad(result1, value, simd_splat(-0.021682f));
+    result1 = simd_fmad(result1, value, simd_splat(0.000589));
     return simd_select(result0, result1, big_value);
 }
 
