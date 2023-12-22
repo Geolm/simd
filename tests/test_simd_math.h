@@ -268,7 +268,7 @@ TEST linear_to_srgb_test(void)
         result[i] = linear_to_srgb(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.07f);
+    simd_vector epsilon = simd_splat(0.016f);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
@@ -307,7 +307,7 @@ TEST srgb_to_linear_test(void)
         result[i] = srgb_to_linear(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.0001f);
+    simd_vector epsilon = simd_splat(0.00008f);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
