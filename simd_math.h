@@ -262,29 +262,25 @@ static inline simd_vector simd_approx_pow(simd_vector x, simd_vector exponent, u
 }
 
 //-----------------------------------------------------------------------------
-// max error : 0.015
+// max error : 0.012
 static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
 {
-    simd_vector big_value = simd_cmp_ge(value, simd_splat(0.0031308f));
-    simd_vector result0 = simd_mul(value, simd_splat(12.92f));
-
-    // pow(x, 1/2.4) approximation : two polymoms combined
-
-    //0.066832 + 9.159853*x^1 + -161.614105*x^2 + 1343.757080*x^3 + 122.443939*x^4 + -1312.813599*x^5
-    //average_error: 0.001049 max_error:0.003493 in range [0.003131; 0.050000]
-    // 0.147392 + 2.841041*x^1 + -6.972846*x^2 + 11.236314*x^3 + -9.159635*x^4 + 2.907734*x^5
-    // average_error: 0.003165 max_error:0.065744 in range [0.003131; 1.000000]
+    // f(x) = 0.012959 + 10.164162*x^1 + -195.104828*x^2 + 1824.633301*x^3 + -1688.056519*x^4 + 49.350975*x^5
+    // average error: 0.001647
+    // max error: 0.012959
+    
+    // f(x) = 0.132029 + 2.579747*x^1 + -5.432800*x^2 + 7.893451*x^3 + -5.933547*x^4 + 1.761120*x^5
+    // average error: 0.001304
+    // max error: 0.006276
     
     simd_vector above_0_05 = simd_cmp_gt(value, simd_splat(0.05f));
-    simd_vector result1 = simd_select(simd_splat(-1312.813599f), simd_splat(2.907734f), above_0_05);
-    result1 = simd_fmad(result1, value, simd_select(simd_splat(122.443939f), simd_splat(-9.159635f), above_0_05));
-    result1 = simd_fmad(result1, value, simd_select(simd_splat(1343.757080f), simd_splat(11.236314f), above_0_05));
-    result1 = simd_fmad(result1, value, simd_select(simd_splat(-161.614105f), simd_splat(-6.972846f), above_0_05));
-    result1 = simd_fmad(result1, value, simd_select(simd_splat(9.159853f), simd_splat(2.841041f), above_0_05));
-    result1 = simd_fmad(result1, value, simd_select(simd_splat(0.066832f), simd_splat(0.147392f), above_0_05));
-
-    result1 = simd_fmad(result1, simd_splat(1.055f), simd_splat(-0.055f));
-    return simd_select(result0, result1, big_value);
+    simd_vector result = simd_select(simd_splat(49.350975f), simd_splat(1.761120f), above_0_05);
+    result = simd_fmad(result, value, simd_select(simd_splat(-1688.056519f), simd_splat(-5.933547f), above_0_05));
+    result = simd_fmad(result, value, simd_select(simd_splat(1824.633301f), simd_splat(7.893451f), above_0_05));
+    result = simd_fmad(result, value, simd_select(simd_splat(-195.104828f), simd_splat(-5.432800f), above_0_05));
+    result = simd_fmad(result, value, simd_select(simd_splat(10.164162f), simd_splat(2.579747f), above_0_05));
+    result = simd_fmad(result, value, simd_select(simd_splat(0.012959f), simd_splat(0.132029f), above_0_05));
+    return result;
 }
 
 //-----------------------------------------------------------------------------
