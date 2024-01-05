@@ -262,23 +262,21 @@ static inline simd_vector simd_approx_pow(simd_vector x, simd_vector exponent, u
 }
 
 //-----------------------------------------------------------------------------
-// max error : 0.007804
+// max error : 0.003851
 static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
 {
-    // ranges [0; 0.040000]
-    // f(x) = 0.007804 + 9.833295*x^1 + -121.029526*x^2 + 91.602036*x^3 + -31.213984*x^4 + 51.800369*x^5
-
-    // ranges [0.040000: 1]
-    //f(x) = 0.137375 + 2.420157*x^1 + -4.078781*x^2 + 3.829649*x^3 + -1.059069*x^4 + -0.249331*x^5
-    // max error: 0.007804
-    
-    simd_vector above_threshold = simd_cmp_gt(value, simd_splat(0.04f));
-    simd_vector result = simd_select(simd_splat(51.800369f), simd_splat(-0.249331f), above_threshold);
-    result = simd_fmad(result, value, simd_select(simd_splat(-31.213984f), simd_splat(-1.059069f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(91.602036f), simd_splat(3.829649f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(-121.029526f), simd_splat(-4.078781f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(9.833295f), simd_splat(2.420157f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(0.007804f), simd_splat(0.137375f), above_threshold));
+    // range [0.000000; 0.042500]
+    // f(x) = 0.003309 + 12.323890*x^1 + -307.151428*x^2 + 3512.375244*x^3 + -3457.260986*x^4 + 240.709824*x^5 
+    // range [0.042500: 1.000000]
+    // f(x) = 0.125607 + 2.752478*x^1 + -6.438252*x^2 + 10.166183*x^3 + -8.150837*x^4 + 2.544821*x^5 
+    // max error: 0.003827
+    simd_vector above_threshold = simd_cmp_gt(value, simd_splat(.0425f));
+    simd_vector result = simd_select(simd_splat(240.709824f), simd_splat(2.544821f), above_threshold);
+    result = simd_fmad(result, value, simd_select(simd_splat(-3457.260986f), simd_splat(-8.150837f), above_threshold));
+    result = simd_fmad(result, value, simd_select(simd_splat(3512.375244f), simd_splat(10.166183f), above_threshold));
+    result = simd_fmad(result, value, simd_select(simd_splat(-307.151428f), simd_splat(-6.438252f), above_threshold));
+    result = simd_fmad(result, value, simd_select(simd_splat(12.323890f), simd_splat(2.752478f), above_threshold));
+    result = simd_fmad(result, value, simd_select(simd_splat(0.003309f), simd_splat(0.125607f), above_threshold));
     return result;
 }
 
