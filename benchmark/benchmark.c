@@ -72,7 +72,39 @@ float compare_acos(void)
     printf("  simd_approx_acos %3.3f ms \n", stm_ms(stm_since(start)));
 
     return simd_hmax(result);
+}
 
+//-----------------------------------------------------------------------------
+float compare_exp(void)
+{
+    float init_array[simd_vector_width];
+
+    for(uint32_t i=0; i<simd_vector_width; ++i)
+        init_array[i] = (float) (i) / (float) (simd_vector_width);
+
+    simd_vector step = simd_splat(10.f/ (float)A_LOT);
+    simd_vector input = simd_splat_zero();
+    simd_vector result = simd_splat_zero();
+
+    printf("- comparing exponentiation functions :\n"); uint64_t start = stm_now();
+
+    for(uint32_t i=0; i<A_LOT; ++i)
+    {
+        result = simd_add(result, simd_acos(input));
+        input = simd_add(input, step);
+    }
+
+    printf("  simd_exp %3.3f ms \n", stm_ms(stm_since(start))); start = stm_now();
+
+    for(uint32_t i=0; i<A_LOT; ++i)
+    {
+        result = simd_add(result, simd_approx_exp(input));
+        input = simd_add(input, step);
+    }
+
+    printf("  simd_approx_exp %3.3f ms \n", stm_ms(stm_since(start)));
+
+    return simd_hmax(result);
 }
 
 int main(int argc, char * argv[])
@@ -83,6 +115,7 @@ int main(int argc, char * argv[])
     
     output += (int) compare_sinus();
     output += (int) compare_acos();
+    output += (int) compare_exp();
 
     return output;
 }
