@@ -14,6 +14,7 @@ static simd_vector simd_acos(simd_vector x);
 static simd_vector simd_cos(simd_vector a);
 static simd_vector simd_atan2(simd_vector x, simd_vector y);
        simd_vector simd_log(simd_vector x);
+       simd_vector simd_exp(simd_vector x);
 static simd_vector simd_approx_cos(simd_vector a);
 static simd_vector simd_approx_sin(simd_vector a);
 static simd_vector simd_approx_exp(simd_vector x);
