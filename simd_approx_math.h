@@ -16,36 +16,63 @@
 #endif
 
 //----------------------------------------------------------------------------------------------------------------------
-// Common math functions approximation : speed over precision
+// Common math functions approximation
 //
-// Use this function if you *really* don't need a lot of precision and you need to be fast
-// In most cases, you should use functions from simd_math.h (run the benchmark to see time difference)
+// Compromise between speed and precision
+// You can run the benchmark to see time difference
 //
 //----------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------
 // Prototypes
-static simd_vector simd_approx_cos(simd_vector a); // max error : 0.057
-static simd_vector simd_approx_sin(simd_vector a); // max error : 0.057
+static simd_vector simd_approx_cos(simd_vector a); // max error : 0.000001
+static simd_vector simd_approx_sin(simd_vector a); // max error : 0.000001
 static simd_vector simd_approx_acos(simd_vector x); // max error : 0.016723
 static simd_vector simd_approx_exp(simd_vector x); // max relative error : 0.001726
 static simd_vector simd_approx_srgb_to_linear(simd_vector value); // max error : 0.000079
 static simd_vector simd_approx_linear_to_srgb(simd_vector value); // max error : 0.003851
 
 //----------------------------------------------------------------------------------------------------------------------
-// based on https://stackoverflow.com/a/66868438
-// note : we don't use extra precision code because it slows down too much the function to be worth it compared to simd_sin
-static inline simd_vector simd_approx_cos(simd_vector a)
+// from hlslpp
+static inline simd_vector simd_approx_sin(simd_vector x)
 {
-    a = simd_mul(a, simd_splat(1.f / SIMD_MATH_TAU));
-    a = simd_sub(a, simd_add(simd_splat(.25f), simd_floor(simd_add(a, simd_splat(.25f)))));
-    return simd_mul(a, simd_mul(simd_splat(16.f), simd_sub(simd_abs(a), simd_splat(.5f))));
+    simd_vector invtau = simd_splat(1.f/SIMD_MATH_TAU);
+    simd_vector tau = simd_splat(SIMD_MATH_TAU);
+    simd_vector pi2 = simd_splat(SIMD_MATH_PI2);
+
+    // Range reduction (into [-pi, pi] range)
+    // Formula is x = x - round(x / 2pi) * 2pi
+    x = simd_sub(x, simd_mul(simd_round(simd_mul(x, invtau)), tau));
+
+    simd_vector gt_pi2 = simd_cmp_gt(x, pi2);
+    simd_vector lt_minus_pi2 = simd_cmp_lt(x, simd_neg(pi2));
+    simd_vector ox = x;
+
+    // Use identities/mirroring to remap into the range of the minimax polynomial
+    simd_vector pi = simd_splat(SIMD_MATH_PI);
+    x = simd_select(x, simd_sub(pi, ox), gt_pi2);
+    x = simd_select(x, simd_sub(simd_neg(pi), ox), lt_minus_pi2);
+
+    simd_vector x_squared = simd_mul(x, x);
+
+    simd_vector c1 = simd_splat(1.f);
+    simd_vector c3 = simd_splat(-1.6665578e-1f);
+    simd_vector c5 = simd_splat(8.3109378e-3f);
+    simd_vector c7 = simd_splat(-1.84477486e-4f);
+
+    simd_vector result;
+    result = simd_fmad(x_squared, c7, c5);
+    result = simd_fmad(x_squared, result, c3);
+    result = simd_fmad(x_squared, result, c1);
+    result = simd_mul(result, x);
+
+    return result;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_approx_sin(simd_vector a)
+static inline simd_vector simd_approx_cos(simd_vector x)
 {
-    return simd_approx_cos(simd_sub(a, simd_splat(SIMD_MATH_PI2)));
+    return simd_approx_sin(simd_sub(simd_splat(SIMD_MATH_PI2), x));
 }
 
 //----------------------------------------------------------------------------------------------------------------------

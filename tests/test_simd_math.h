@@ -17,7 +17,7 @@ TEST sinus(void)
         result[i] = sinf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.000002f);
+    simd_vector epsilon = simd_splat(FLT_EPSILON);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
@@ -35,6 +35,43 @@ TEST sinus(void)
     PASS();
 }
 
+TEST sinuscosinus(void)
+{
+    float array[NUM_ELEMENTS];
+    float result_cos[NUM_ELEMENTS];
+    float result_sin[NUM_ELEMENTS];
+    float step = 8192.f / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)i) - VEC2_PI;
+        result_cos[i] = cosf(array[i]);
+        result_sin[i] = sinf(array[i]);
+    }
+
+    simd_vector epsilon = simd_splat(FLT_EPSILON);
+    simd_vector max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_result_cos = simd_load_offset(result_cos, i);
+        simd_vector v_result_sin = simd_load_offset(result_sin, i);
+
+        simd_vector approx_sin, approx_cos;
+        simd_sincos(simd_load_offset(array,  i), &approx_sin, &approx_cos);
+
+        ASSERT(simd_all(simd_equal(approx_sin, v_result_sin, epsilon)));
+        ASSERT(simd_all(simd_equal(approx_cos, v_result_cos, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(approx_sin, v_result_sin));
+        max_error = simd_max(max_error, simd_abs_diff(approx_cos, v_result_cos));
+    }
+
+    printf("simd_sincos max error : %f\n", simd_hmax(max_error));
+
+    PASS();
+}
+
 TEST approx_sin(void)
 {
     float array[NUM_ELEMENTS];
@@ -47,7 +84,7 @@ TEST approx_sin(void)
         result[i] = sinf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.057f);
+    simd_vector epsilon = simd_splat(0.000002f);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
@@ -336,6 +373,7 @@ SUITE(trigonometry)
     RUN_TEST(arcos);
     RUN_TEST(approx_arcos);
     RUN_TEST(arctan2);
+    RUN_TEST(sinuscosinus);
 }
 
 SUITE(exponentiation)
