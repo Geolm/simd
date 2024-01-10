@@ -738,6 +738,23 @@ static inline simd_vector simd_load_offset(const float* array, uint32_t offset_i
     return simd_load(array + offset_in_simd_vector * simd_vector_width);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_smoothstep(simd_vector edge0, simd_vector edge1, simd_vector x)
+{
+    x = simd_saturate(simd_div(simd_sub(x, edge0), simd_sub(edge1, edge0)));
+    return simd_mul(simd_mul(x, x), simd_sub(simd_splat(3.f), simd_add(x, x)));
+}
+
+//-----------------------------------------------------------------------------
+static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, simd_vector p2, simd_vector t)
+{
+    simd_vector one_minus_t = simd_sub(simd_splat(1.f), t);
+    simd_vector a = simd_mul(one_minus_t, one_minus_t);
+    simd_vector b = simd_mul(simd_splat(2.f), simd_mul(one_minus_t, t));
+    simd_vector c = simd_mul(t, t);
+    return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
+}
+
 
 
 #endif // __SIMD__H__

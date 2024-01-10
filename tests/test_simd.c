@@ -7,6 +7,7 @@
 #include <math.h>
 #include "../vec2.h"
 #include "../simd_math.h"
+#include "../simd_approx_math.h"
 
 #include "test_simd_math.h"
 #include "test_collision_2d.h"

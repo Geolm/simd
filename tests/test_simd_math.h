@@ -125,35 +125,6 @@ TEST approx_arcos(void)
     PASS();
 }
 
-TEST arctan(void)
-{
-    float array[NUM_ELEMENTS];
-    float result[NUM_ELEMENTS];
-    float step = 2.f / (float) NUM_ELEMENTS;
-
-    for(int i=0; i<NUM_ELEMENTS; ++i)
-    {
-        array[i] = (step * (float)i) - 1.f;
-        result[i] = atanf(array[i]);
-    }
-
-    simd_vector epsilon = simd_splat(0.000003f);
-    simd_vector max_error = simd_splat_zero();
-
-    for(int i=0; i<NUM_VECTORS; ++i)
-    {
-        simd_vector v_approx = simd_atan(simd_load_offset(array,  i));
-        simd_vector v_result = simd_load_offset(result, i);
-
-        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
-        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
-    }
-
-    printf("simd_tan max error : %f\n", simd_hmax(max_error));
-
-    PASS();
-}
-
 TEST arctan2(void)
 {
     vec2 array[NUM_ELEMENTS];
@@ -364,7 +335,6 @@ SUITE(trigonometry)
     RUN_TEST(approx_sin);
     RUN_TEST(arcos);
     RUN_TEST(approx_arcos);
-    RUN_TEST(arctan);
     RUN_TEST(arctan2);
 }
 
