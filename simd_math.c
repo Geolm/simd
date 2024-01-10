@@ -141,12 +141,7 @@ simd_vector simd_exp(simd_vector x)
     return y;
 }
 
-//-----------------------------------------------------------------------------
-// based on http://gruntthepeon.free.fr/ssemath/
-void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
-{
 
-}
 
 
 

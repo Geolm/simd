@@ -20,7 +20,6 @@
 // prototypes
 static simd_vector simd_sin(simd_vector x); // max error : 0.000001
 static simd_vector simd_cos(simd_vector a); // max error : 0.000001
-void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c);
 static simd_vector simd_acos(simd_vector x); // // max error : 0.000068
 simd_vector simd_atan2(simd_vector x, simd_vector y); // max error : 0.000002
 simd_vector simd_log(simd_vector x); // no error, output equal to logf()
