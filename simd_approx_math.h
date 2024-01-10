@@ -134,3 +134,4 @@ static inline simd_vector simd_approx_srgb_to_linear(simd_vector value)
 
 
 #endif
+
