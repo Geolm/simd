@@ -1,6 +1,6 @@
 #include "simd_math.h"
 
-/*
+
 //-----------------------------------------------------------------------------
 // based on https://github.com/jeremybarnes/cephes/blob/master/single/atanf.c
 simd_vector simd_atan(simd_vector xx)
@@ -23,29 +23,12 @@ simd_vector simd_atan(simd_vector xx)
 	simd_vector tmp = simd_fmad(z, simd_splat(8.05374449538e-2f), simd_splat(-1.38776856032E-1f));
 	tmp = simd_fmad(tmp, z, simd_splat(1.99777106478E-1f));
 	tmp = simd_fmad(tmp, z, simd_splat(-3.33329491539E-1f));
+    tmp = simd_mul(tmp, z);
 	tmp = simd_fmad(tmp, x, x);
 	y = simd_add(tmp, y);
 	y = simd_mul(y, sign);
 	
 	return y;	
-}
-*/
-
-//-----------------------------------------------------------------------------
-// https://mazzo.li/posts/vectorized-atan2.html
-// max error with input [-1; 1] : 0.000002
-// input SHOULD be in [-1; 1]
-static inline simd_vector simd_atan(simd_vector x)
-{
-    simd_vector a1  = simd_splat(0.99997726f);
-    simd_vector a3  = simd_splat(-0.33262347f);
-    simd_vector a5  = simd_splat(0.19354346f);
-    simd_vector a7  = simd_splat(-0.11643287f);
-    simd_vector a9  = simd_splat(0.05265332f);
-    simd_vector a11 = simd_splat(-0.01172120f);
-    simd_vector x_sq = simd_mul(x, x);
-
-    return simd_mul(x, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, simd_fmad(x_sq, a11, a9), a7), a5), a3), a1));
 }
 
 //-----------------------------------------------------------------------------
