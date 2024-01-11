@@ -144,7 +144,7 @@ TEST arcos(void)
         result[i] = acosf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(2.4418579E-7);
+    simd_vector epsilon = simd_splat(2.4418579E-7f);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
