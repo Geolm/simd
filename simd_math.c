@@ -173,7 +173,7 @@ void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
 
     // get the polynom selection mask for the sine
     emm2 = vandq_s32(emm2, vdupq_n_u32(2));
-    emm2 = vcgeq_s32(emm2, vdupq_n_u32(0));
+    emm2 = vceqq_s32(emm2, vdupq_n_u32(0));
     simd_vector poly_mask = vreinterpretq_s32_f32(emm2);
 
 #elif defined(SIMD_AVX_IMPLEMENTATION)
