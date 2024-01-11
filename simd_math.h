@@ -22,6 +22,7 @@ static simd_vector simd_sin(simd_vector x); // output equal to sinf()
 static simd_vector simd_cos(simd_vector a); // output equal to cosf()
 void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c); // output equal to sinf()/cosf()
 static simd_vector simd_acos(simd_vector x); // // max error : 0.000068
+simd_vector simd_asin(simd_vector x);
 simd_vector simd_atan2(simd_vector x, simd_vector y); // max error : 0.000002
 simd_vector simd_log(simd_vector x); // output equal to logf()
 simd_vector simd_exp(simd_vector x); // output equal to expf()

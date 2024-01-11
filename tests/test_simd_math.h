@@ -102,6 +102,36 @@ TEST approx_sin(void)
     PASS();
 }
 
+TEST arcsin(void)
+{
+    float array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = 2.f / (float) NUM_ELEMENTS;
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = (step * (float)i) - 1.f;
+        result[i] = asinf(array[i]);
+    }
+
+    simd_vector epsilon = simd_splat(FLT_MAX);
+    simd_vector max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector v_approx = simd_asin(simd_load_offset(array,  i));
+        simd_vector v_result = simd_load_offset(result, i);
+
+        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
+
+        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
+    }
+
+    printf("simd_asin max error : %f\n", simd_hmax(max_error));
+
+    PASS();
+}
+
 TEST arcos(void)
 {
     float array[NUM_ELEMENTS];
@@ -371,6 +401,7 @@ SUITE(trigonometry)
     RUN_TEST(sinus);
     RUN_TEST(approx_sin);
     RUN_TEST(arcos);
+    RUN_TEST(arcsin);
     RUN_TEST(approx_arcos);
     RUN_TEST(arctan2);
     RUN_TEST(sinuscosinus);

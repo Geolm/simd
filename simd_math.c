@@ -252,5 +252,38 @@ void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
     *c = simd_xor(xmm2, sign_bit_cos);
 }
 
+//-----------------------------------------------------------------------------
+// based on https://github.com/jeremybarnes/cephes/blob/master/single/asinf.c
+simd_vector simd_asin(simd_vector xx)
+{
+    simd_vector x = xx;
+    simd_vector sign = simd_sign(xx);
+    simd_vector a  = simd_abs(x);
+    simd_vector greater_one = simd_cmp_gt(a, simd_splat(1.f));
+    simd_vector small_value = simd_cmp_lt(a, simd_splat(1.0e-4f));
+
+    simd_vector z1 = simd_mul(simd_splat(.5f), simd_sub(simd_splat(1.f), a));
+    simd_vector z2 = simd_mul(a, a);
+    simd_vector flag = simd_cmp_gt(a, simd_splat(.5f));
+    simd_vector z = simd_select(z2, z1, flag);
+
+    x = simd_select(a, simd_sqrt(z), flag);
+
+    simd_vector tmp = simd_fmad(simd_splat(4.2163199048E-2f), z, simd_splat(2.4181311049E-2f));
+    tmp = simd_fmad(tmp, z, simd_splat(4.5470025998E-2f));
+    tmp = simd_fmad(tmp, z, simd_splat(7.4953002686E-2f));
+    tmp = simd_fmad(tmp, z, simd_splat(1.6666752422E-1f));
+    tmp = simd_mul(tmp, z);
+    z = simd_fmad(tmp, x, x);
+
+    tmp = simd_add(z, z);
+    tmp = simd_sub(simd_splat(SIMD_MATH_PI2), tmp);
+    z = simd_select(z, tmp, flag);
+
+    z = simd_select(z, a, small_value);
+    z = simd_select(z, simd_splat_zero(), greater_one);
+    z = simd_mul(z, sign);
+    return z;
+}
 
 
