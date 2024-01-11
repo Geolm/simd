@@ -1,5 +1,36 @@
 #include "simd_math.h"
 
+/*
+//-----------------------------------------------------------------------------
+// based on https://github.com/jeremybarnes/cephes/blob/master/single/atanf.c
+simd_vector simd_atan(simd_vector xx)
+{	
+	simd_vector sign = simd_sign(xx);
+	simd_vector x = simd_abs(xx);
+	simd_vector one = simd_splat(1.f);
+
+	// range reduction
+	simd_vector above_3pi8 = simd_cmp_gt(x, simd_splat(2.414213562373095f));
+	simd_vector above_pi8 = simd_andnot(simd_cmp_gt(x, simd_splat(0.4142135623730950f)), above_3pi8);
+	simd_vector y = simd_splat_zero();
+	x = simd_select(x, simd_neg(simd_rcp(x)), above_3pi8);
+	x = simd_select(x, simd_div(simd_sub(x, one), simd_add(x, one)), above_pi8);
+	y = simd_select(y, simd_splat(SIMD_MATH_PI2), above_3pi8);
+	y = simd_select(y, simd_splat(SIMD_MATH_PI4), above_pi8);
+	
+	// minimax polynomial
+	simd_vector z = simd_mul(x, x);
+	simd_vector tmp = simd_fmad(z, simd_splat(8.05374449538e-2f), simd_splat(-1.38776856032E-1f));
+	tmp = simd_fmad(tmp, z, simd_splat(1.99777106478E-1f));
+	tmp = simd_fmad(tmp, z, simd_splat(-3.33329491539E-1f));
+	tmp = simd_fmad(tmp, x, x);
+	y = simd_add(tmp, y);
+	y = simd_mul(y, sign);
+	
+	return y;	
+}
+*/
+
 //-----------------------------------------------------------------------------
 // https://mazzo.li/posts/vectorized-atan2.html
 // max error with input [-1; 1] : 0.000002
