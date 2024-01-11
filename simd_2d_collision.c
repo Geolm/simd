@@ -629,7 +629,8 @@ void process_aabb_arc(struct simdcol_context* context)
         // 1. test if any vertices of the aabb is in the pie
         simd_vector aperture = simd_load(data->aperture + offset);
         simd_vector orientation = simd_load(data->orientation + offset);
-        simd_vec2 pie_direction = {.x = simd_cos(orientation), .y = simd_sin(orientation)};
+        simd_vec2 pie_direction;
+        simd_sincos(orientation, &pie_direction.y, &pie_direction.x);
         simd_vec2 to_vertex = simd_vec2_normalize(simd_vec2_sub(aabb_min, center));
         simd_vector angle = simd_acos(simd_vec2_dot(pie_direction, to_vertex));
         simd_vector pie_result = simd_cmp_le(angle, aperture);
@@ -648,12 +649,13 @@ void process_aabb_arc(struct simdcol_context* context)
 
         // 2. test is the edges of the pie intersect with the aabb
         simd_vector edge_orientation = simd_sub(orientation, aperture);
-        simd_vec2 edge = {.x = simd_cos(edge_orientation), .y = simd_sin(edge_orientation)};
+        simd_vec2 edge;
+        simd_sincos(edge_orientation, &edge.y, &edge.x);
         edge = simd_vec2_scale(edge, outter_radius);
         pie_result = simd_or(pie_result, aabb_segment_test(aabb_min, aabb_max, center, simd_vec2_add(center, edge)));
 
         edge_orientation = simd_add(orientation, aperture);
-        edge = (simd_vec2) {.x = simd_cos(edge_orientation), .y = simd_sin(edge_orientation)};
+        simd_sincos(edge_orientation, &edge.y, &edge.x);
         edge = simd_vec2_scale(edge, outter_radius);
         pie_result = simd_or(pie_result, aabb_segment_test(aabb_min, aabb_max, center, simd_vec2_add(center, edge)));
 
