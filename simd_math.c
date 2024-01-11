@@ -286,4 +286,15 @@ simd_vector simd_asin(simd_vector xx)
     return z;
 }
 
+//-----------------------------------------------------------------------------
+// acos(x) = pi/2 - asin(x)
+simd_vector simd_acos(simd_vector x)
+{
+    simd_vector out_of_bound = simd_cmp_gt(simd_abs(x), simd_splat(1.f));
+    simd_vector result = simd_sub(simd_splat(SIMD_MATH_PI2), simd_asin(x));
+    result = simd_select(result, simd_splat_zero(), out_of_bound);
+    return result;
+}
+
+
 

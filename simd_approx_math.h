@@ -25,12 +25,12 @@
 
 //----------------------------------------------------------------------------------------------------------------------
 // Prototypes
-static simd_vector simd_approx_cos(simd_vector a); // max error : 0.000001
-static simd_vector simd_approx_sin(simd_vector a); // max error : 0.000001
-static simd_vector simd_approx_acos(simd_vector x); // max error : 0.016723
-static simd_vector simd_approx_exp(simd_vector x); // max relative error : 0.001726
+static simd_vector simd_approx_cos(simd_vector a); // max error : 0.000001, ~2.5x faster than simd_cos
+static simd_vector simd_approx_sin(simd_vector a); // max error : 0.000001, ~2.5x faster than simd_cos
+static simd_vector simd_approx_acos(simd_vector x); // max error : 0.000068, ~2.8x faster than simd_acos
+static simd_vector simd_approx_exp(simd_vector x); // max relative error : 0.001726, ~3.7x faster than simd_cos
 static simd_vector simd_approx_srgb_to_linear(simd_vector value); // max error : 0.000079
-static simd_vector simd_approx_linear_to_srgb(simd_vector value); // max error : 0.003851
+static simd_vector simd_approx_linear_to_srgb(simd_vector value); // max error : 0.003851 (enough for 8bits value)
 
 //----------------------------------------------------------------------------------------------------------------------
 // from hlslpp
@@ -76,20 +76,18 @@ static inline simd_vector simd_approx_cos(simd_vector x)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-// based on https://stackoverflow.com/questions/3380628/fast-arc-cos-algorithm
+// based on https://developer.download.nvidia.com/cg/acos.html
 static inline simd_vector simd_approx_acos(simd_vector x)
 {
-    simd_vector x_2 = simd_mul(x, x);
-    simd_vector x_3 = simd_mul(x_2, x);
-    simd_vector x_4 = simd_mul(x_2, x_2);
-    simd_vector result = simd_mul(simd_splat(-0.939115566365855f), x);
-    result = simd_fmad(simd_splat(0.9217841528914573f), x_3, result);
-    
-    simd_vector divisor = simd_sub(simd_splat(1.f), simd_mul(simd_splat(1.2845906244690837f), x_2));
-    divisor = simd_fmad(simd_splat(0.295624144969963174f), x_4, divisor);
-    result = simd_div(result, divisor);
-
-    return simd_add(result, simd_splat(SIMD_MATH_PI2));
+    simd_vector negate = simd_select(simd_splat_zero(), simd_splat(1.f), simd_cmp_lt(x, simd_splat_zero()));
+    x = simd_abs(x);
+    simd_vector result = simd_splat(-0.0187293f);
+    result = simd_fmad(result, x, simd_splat(0.0742610f));
+    result = simd_fmad(result, x, simd_splat(-0.2121144f));
+    result = simd_fmad(result, x, simd_splat(1.5707288f));
+    result = simd_mul(result, simd_sqrt(simd_sub(simd_splat(1.f), x)));
+    result = simd_sub(result, simd_mul(simd_mul(simd_splat(2.f), negate), result));
+    return simd_fmad(negate, simd_splat(SIMD_MATH_PI), result);
 }
 
 //-----------------------------------------------------------------------------
