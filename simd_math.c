@@ -253,8 +253,8 @@ void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
 
     // select the correct result from the two polynoms
     xmm3 = poly_mask;
-    simd_vector ysin2 = simd_and(xmm3, y2);
-    simd_vector ysin1 = simd_andnot(xmm3, y);
+    simd_vector ysin2 = simd_and(y2, xmm3);
+    simd_vector ysin1 = simd_andnot(y, xmm3);
     y2 = simd_sub(y2,ysin2);
     y = simd_sub(y, ysin1);
 

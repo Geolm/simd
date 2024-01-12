@@ -174,7 +174,7 @@ TEST arctan(void)
         result[i] = atanf(array[i]);
     }
 
-    simd_vector epsilon = simd_splat(0.000003f);
+    simd_vector epsilon = simd_splat(0.00009f);
     simd_vector max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)

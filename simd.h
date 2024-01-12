@@ -321,7 +321,7 @@ static inline simd_vector simd_fmad(simd_vector a, simd_vector b, simd_vector c)
 }
 static inline simd_vector simd_or(simd_vector a, simd_vector b) {return _mm256_or_ps(a, b);}
 static inline simd_vector simd_and(simd_vector a, simd_vector b) {return _mm256_and_ps(a, b);}
-static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(a, b);}
+static inline simd_vector simd_andnot(simd_vector a, simd_vector b) {return _mm256_andnot_ps(b, a);}
 static inline simd_vector simd_xor(simd_vector a, simd_vector b) {return _mm256_xor_ps(a, b);}
 static inline simd_vector simd_min(simd_vector a, simd_vector b) {return _mm256_min_ps(a, b);}
 static inline simd_vector simd_max(simd_vector a, simd_vector b) {return _mm256_max_ps(a, b);}
