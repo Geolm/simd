@@ -4,7 +4,8 @@
 #include "simd.h"
 
 //----------------------------------------------------------------------------------------------------------------------
-#ifndef SIMD_MATH_TAU
+#ifndef SIMD_MATH_CONSTANTS
+    #define SIMD_MATH_CONSTANTS
     #define SIMD_MATH_TAU (6.28318530f)
     #define SIMD_MATH_PI  (3.14159265f)
     #define SIMD_MATH_PI2 (1.57079632f)
