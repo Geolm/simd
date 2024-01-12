@@ -3,7 +3,7 @@
 #include <float.h>
 
 
-#define NUM_ELEMENTS (256)
+#define NUM_ELEMENTS (1024)
 #define NUM_VECTORS (NUM_ELEMENTS/simd_vector_width)
 
 
