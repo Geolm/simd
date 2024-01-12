@@ -2,62 +2,60 @@
 
 Provides transcendental functions that are missing in Neon/AVX instructions.
 
-Heavily based on cephes implementation of C math functions, if not specified output is identical to C functions (see below)
+Heavily based on cephes implementation of C math functions, high precision.
 
 # functions
 
 ```C
 
-// same output as C math lib sinf()
+// max error : 5.960464478e-08
 simd_vector simd_sin(simd_vector x);
 
-// same output as C math lib cosf()
+// max error : 5.960464478e-08
 simd_vector simd_cos(simd_vector x);
 
-// same output as C math lib sinf()/cosf()
+// max error : 5.960464478e-08
 void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c);
 
-// same output as C math lib acosf()
+// max error : 2.384185791e-07
 simd_vector simd_acos(simd_vector x);
 
-// same output as C math lib asinf() 
+// max error : 1.192092896e-07
 simd_vector simd_asin(simd_vector x);
 
-// same output as C math lib logf()
-simd_vector simd_log(simd_vector x);
+// max error : 6.699562073e-05
+simd_vector simd_atan(simd_vector x);
 
-// same output as C math lib expf()
-simd_vector simd_exp(simd_vector x);
-```
-
-```C
-// max error : 2.38418579E-7
+// max error : 2.384185791e-07
 simd_vector simd_atan2(simd_vector x, simd_vector y);
 
-// max error with input [-10; 10]: 0.000002
-simd_vector simd_atan(simd_vector x); 
+// max error : 4.768371582e-07
+simd_vector simd_log(simd_vector x);
+
+// max error : 1.108270880e-07
+simd_vector simd_exp(simd_vector x);
 ```
 
 # simd_approx_math
 
-Sometime you're more interested in speed than precision. The simd_approx_math.h header provides faster math functions with less precision.
+The simd_approx_math.h header provides faster math functions with less precision.
 
 ```C
-// max error : 0.000001, ~2.5x faster than simd_cos
+// max error : 1.251697540e-06, ~2.5x faster than simd_cos
 simd_vector simd_approx_cos(simd_vector a);
 
-// max error : 0.000001, ~2.5x faster than simd_cos
+// max error : 1.192092896e-06, ~2.5x faster than simd_cos
 simd_vector simd_approx_sin(simd_vector a);
 
-// max error : 0.000068, ~2.8x faster than simd_acos
+// max error : 6.520748138e-05, ~2.8x faster than simd_acos
 simd_vector simd_approx_acos(simd_vector x);
 
-// max relative error : 0.001726, ~3.7x faster than simd_cos
+// max relative error : 1.727835275e-03, ~3.7x faster than simd_exp
 simd_vector simd_approx_exp(simd_vector x);
 
-// max error : 0.000043
+// max error : 4.267692566e-05
 simd_vector simd_approx_srgb_to_linear(simd_vector value);
 
-// max error : 0.003322 (enough for 8bits value)
+// max error : 3.309000051e-03 (enough for 8bits value)
 simd_vector simd_approx_linear_to_srgb(simd_vector value); 
 ```

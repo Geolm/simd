@@ -14,15 +14,15 @@
 
 //----------------------------------------------------------------------------------------------------------------------
 // prototypes
-static simd_vector simd_sin(simd_vector x); // outputs same value than sinf()
-static simd_vector simd_cos(simd_vector a); // outputs same value than cosf()
-void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c); // outputs same value than sinf()/cosf()
-simd_vector simd_acos(simd_vector x); // outputs same value than acosf()
-simd_vector simd_asin(simd_vector x); // outputs same value than asinf()
-simd_vector simd_atan(simd_vector x); // max error with input [-10; 10]: 0.000002
-simd_vector simd_atan2(simd_vector x, simd_vector y); // max error : 2.38418579E-7
-simd_vector simd_log(simd_vector x); // outputs same value than logf()
-simd_vector simd_exp(simd_vector x); // outputs same value than expf()
+static simd_vector simd_sin(simd_vector x); // max error : 5.960464478e-08
+static simd_vector simd_cos(simd_vector a); // max error : 5.960464478e-08
+void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c); // max error : 5.960464478e-08
+simd_vector simd_acos(simd_vector x); // max error : 2.384185791e-07
+simd_vector simd_asin(simd_vector x); // max error : 1.192092896e-07
+simd_vector simd_atan(simd_vector x); // max error : 6.699562073e-05
+simd_vector simd_atan2(simd_vector x, simd_vector y); // max error : 2.384185791e-07
+simd_vector simd_log(simd_vector x); // max error : 4.768371582e-07
+simd_vector simd_exp(simd_vector x); // max error : 1.108270880e-07
 
 
 //----------------------------------------------------------------------------------------------------------------------
