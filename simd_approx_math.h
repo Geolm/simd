@@ -3,16 +3,12 @@
 
 #include "simd.h"
 
-#ifndef SIMD_MATH_TAU
+#ifndef SIMD_MATH_CONSTANTS
+    #define SIMD_MATH_CONSTANTS
     #define SIMD_MATH_TAU (6.28318530f)
-#endif
-
-#ifndef SIMD_MATH_PI
     #define SIMD_MATH_PI  (3.14159265f)
-#endif
-
-#ifndef SIMD_MATH_PI2
     #define SIMD_MATH_PI2 (1.57079632f)
+    #define SIMD_MATH_PI4 (0.78539816f)
 #endif
 
 //----------------------------------------------------------------------------------------------------------------------
