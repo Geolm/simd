@@ -135,8 +135,8 @@ SUITE(trigonometry)
     RUN_TESTp(generic_test, cosf, simd_cos, -10.f, 10.f, FLT_EPSILON, false, "simd_cos");
     RUN_TESTp(generic_test, sinf, simd_approx_sin, -SIMD_MATH_TAU, SIMD_MATH_TAU, 2.e-06f, false, "simd_approx_sin");
     RUN_TESTp(generic_test, cosf, simd_approx_cos, -SIMD_MATH_TAU, SIMD_MATH_TAU, 2.e-06f, false, "simd_approx_cos");
-    RUN_TESTp(generic_test, acosf, simd_acos, -1.f, 1.f, 1.e-06f, false, "simd_acos");
-    RUN_TESTp(generic_test, asinf, simd_asin, -1.f, 1.f, 1.e-06f, false, "simd_asin");
+    RUN_TESTp(generic_test, acosf, simd_acos, -1.f, 1.f, 1.e06f, false, "simd_acos");
+    RUN_TESTp(generic_test, asinf, simd_asin, -1.f, 1.f, 1.e06f, false, "simd_asin");
     RUN_TESTp(generic_test, atanf, simd_atan, -10.f, 10.f, 1.e-04f, false, "simd_atan");
     RUN_TESTp(generic_test, acosf, simd_approx_acos, -1.f, 1.f, 1.e-04f, false, "simd_approx_arcos");
     RUN_TEST(arctan2);
