@@ -107,9 +107,8 @@ TEST generic_test(reference_function ref, approximation_function approx, float r
         input[i] = (step * (float)(i)) + range_min;
         result[i] = ref(input[i]);
     }
-    (void)epsilon;
 
-    //simd_vector v_epsilon = simd_splat(epsilon);
+    simd_vector v_epsilon = simd_splat(epsilon);
     simd_vector v_max_error = simd_splat_zero();
 
     for(int i=0; i<NUM_VECTORS; ++i)
@@ -119,7 +118,7 @@ TEST generic_test(reference_function ref, approximation_function approx, float r
         simd_vector v_approx = approx(v_input);
 
         simd_vector v_error = relative_error ? simd_div(simd_abs_diff(v_approx, v_result), v_result) : simd_abs_diff(v_approx, v_result);
-        //ASSERT(simd_all(simd_cmp_lt(v_error, v_epsilon)));
+        ASSERT(simd_all(simd_cmp_lt(v_error, v_epsilon)));
         v_max_error = simd_max(v_max_error, v_error);
     }
 
