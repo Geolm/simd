@@ -220,7 +220,7 @@ void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
 
 #if defined(SIMD_NEON_IMPLEMENTATION)
     emm4 = vsubq_s32(emm4, vdupq_n_u32(2));
-    emm4 = vbicq_s32(emm4, vdupq_n_u32(4));
+    emm4 = vbicq_s32(vdupq_n_u32(4), emm4);
     emm4 = vshlq_s32(emm4, vdupq_n_s32(29));
     simd_vector sign_bit_cos = vreinterpretq_s32_f32(emm4);
 #elif defined(SIMD_AVX_IMPLEMENTATION)
