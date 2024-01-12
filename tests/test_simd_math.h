@@ -98,7 +98,6 @@ typedef simd_vector (*approximation_function)(simd_vector);
 TEST generic_test(reference_function ref, approximation_function approx, float range_min, float range_max, float epsilon, bool relative_error, const char* name)
 {
     float input[NUM_ELEMENTS];
-
     float result[NUM_ELEMENTS];
     float step = ((range_max - range_min) / (float) (NUM_ELEMENTS-1));
 
@@ -118,7 +117,7 @@ TEST generic_test(reference_function ref, approximation_function approx, float r
         simd_vector v_approx = approx(v_input);
 
         simd_vector v_error = relative_error ? simd_div(simd_abs_diff(v_approx, v_result), v_result) : simd_abs_diff(v_approx, v_result);
-        ASSERT(simd_all(simd_cmp_lt(v_error, v_epsilon)));
+        ASSERT(simd_all(simd_cmp_le(v_error, v_epsilon)));
         v_max_error = simd_max(v_max_error, v_error);
     }
 
@@ -127,6 +126,47 @@ TEST generic_test(reference_function ref, approximation_function approx, float r
     PASS();
 }
 
+typedef float (*reference_function2)(float, float);
+typedef simd_vector (*approximation_function2)(simd_vector, simd_vector);
+
+TEST generic_test2(reference_function2 ref, approximation_function2 approx, float epsilon, bool relative_error, const char* name)
+{
+    vec2 array[NUM_ELEMENTS];
+    float result[NUM_ELEMENTS];
+    float step = VEC2_TAU / (float) (NUM_ELEMENTS-1);
+
+    for(int i=0; i<NUM_ELEMENTS; ++i)
+    {
+        array[i] = vec2_scale(vec2_angle(step * (float)i), (float)(i+1));
+        if (array[i].x == 0.f)
+            array[i].x = 1.f;
+        if (array[i].y == 0.f)
+            array[i].y = 1.f;
+        result[i] = ref(array[i].x, array[i].y);
+    }
+
+    simd_vector v_epsilon = simd_splat(epsilon);
+    simd_vector v_max_error = simd_splat_zero();
+
+    for(int i=0; i<NUM_VECTORS; ++i)
+    {
+        simd_vector vec_x, vec_y;
+        simd_load_xy((float*)array + i * simd_vector_width * 2, &vec_x, &vec_y);
+
+        simd_vector v_result = simd_load_offset(result, i);
+        simd_vector v_approx = approx(vec_x, vec_y);
+
+        simd_vector v_error = relative_error ? simd_div(simd_abs_diff(v_approx, v_result), v_result) : simd_abs_diff(v_approx, v_result);
+        ASSERT(simd_all(simd_cmp_le(v_error, v_epsilon)));
+        v_max_error = simd_max(v_max_error, v_error);
+    }
+
+    printf("%s max error : %.*e\n", name, FLT_DECIMAL_DIG, simd_hmax(v_max_error));
+
+    PASS();
+}
+
+float atan2_xy(float x, float y) {return atan2f(y, x);}
 
 SUITE(trigonometry)
 {
@@ -139,7 +179,7 @@ SUITE(trigonometry)
     RUN_TESTp(generic_test, asinf, simd_asin, -1.f, 1.f, 1.e-06f, false, "simd_asin");
     RUN_TESTp(generic_test, atanf, simd_atan, -10.f, 10.f, 1.e-04f, false, "simd_atan");
     RUN_TESTp(generic_test, acosf, simd_approx_acos, -1.f, 1.f, 1.e-04f, false, "simd_approx_arcos");
-    RUN_TEST(arctan2);
+    RUN_TESTp(generic_test2, atan2_xy, simd_atan2, 1.e-06f, false, "simd_atan2");
     RUN_TEST(sinuscosinus);
 }
 

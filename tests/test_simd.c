@@ -163,98 +163,6 @@ SUITE(horizontal)
     RUN_TEST(hmax);
 }
 
-TEST sign(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-    
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-    
-    float result[simd_vector_width*2];
-    
-    simd_store(result, simd_sign(a));
-    simd_store(result+simd_vector_width, simd_sign(b));
-    
-    for(int i=0; i<simd_vector_width*2; ++i)
-        ASSERT_EQ(result[i], float_sign(array[i]));
-
-    PASS();
-}
-
-TEST add(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-
-    float result[simd_vector_width];
-    simd_store(result, simd_add(a, b));
-
-    for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(result[i], array[i] + array[i + simd_vector_width]);
-
-    PASS();
-}
-
-TEST sub(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-
-    float result[simd_vector_width];
-    simd_store(result, simd_sub(a, b));
-
-    for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(result[i], array[i] - array[i + simd_vector_width]);
-
-    PASS();
-}
-
-TEST mul(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-
-    float result[simd_vector_width];
-    simd_store(result, simd_mul(a, b));
-
-    for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(result[i], array[i] * array[i + simd_vector_width]);
-
-    PASS();
-}
-
-TEST division(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-
-    float result[simd_vector_width];
-    simd_store(result, simd_div(a, b));
-
-    for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(result[i], array[i] / array[i + simd_vector_width]);
-
-    PASS();
-}
-
 TEST fmad(void)
 {
     float array[simd_vector_width*3];
@@ -274,13 +182,21 @@ TEST fmad(void)
     PASS();
 }
 
+float addf(float x, float y) {return x+y;}
+float subf(float x, float y) {return x-y;}
+float mulf(float x, float y) {return x*y;}
+float divf(float x, float y) {return x/y;}
+float signf(float x) {if (x>=0) return 1; else return -1;}
+
 SUITE(arithmetic)
 {
-    RUN_TEST(sign);
-    RUN_TEST(add);
-    RUN_TEST(sub);
-    RUN_TEST(mul);
-    RUN_TEST(division);
+    printf(".");
+    RUN_TESTp(generic_test2, addf, simd_add, 0.f, false, "simd_add");
+    RUN_TESTp(generic_test2, subf, simd_sub, 0.f, false, "simd_sub");
+    RUN_TESTp(generic_test2, mulf, simd_mul, 0.f, false, "simd_mul");
+    RUN_TESTp(generic_test2, divf, simd_div, 0.f, false, "simd_div");
+    RUN_TESTp(generic_test, signf, simd_sign, -10.f, 10.f, 0.f, false, "simd_sign");
+    
     RUN_TEST(fmad);
 }
 
@@ -292,43 +208,7 @@ SUITE(sqrt_and_rcp)
     printf(".");
     RUN_TESTp(generic_test, rcp, simd_rcp, 0.1f, 100.f, 1e-3f, true, "simd_rcp");
     RUN_TESTp(generic_test, rsqrt, simd_rsqrt, 0.1f, 100.f, 1e-3f, true, "simd_rsqrt");
-    RUN_TESTp(generic_test, sqrtf, simd_sqrt, 0.1f, 100.f, FLT_EPSILON, true, "simd_sqrt");
-}
-
-TEST minimum(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-
-    float result[simd_vector_width];
-    simd_store(result, simd_min(a, b));
-
-    for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(result[i], float_min(array[i], array[i+simd_vector_width]));
-
-    PASS();
-}
-
-TEST maximum(void)
-{
-    float array[simd_vector_width*2];
-    for(int i=0; i<simd_vector_width*2; ++i)
-        array[i] = (float) i - (float)simd_vector_width;
-
-    simd_vector a = simd_load(array);
-    simd_vector b = simd_load(array + simd_vector_width);
-
-    float result[simd_vector_width];
-    simd_store(result, simd_max(a, b));
-
-    for(int i=0; i<simd_vector_width; ++i)
-        ASSERT_EQ(result[i], float_max(array[i], array[i+simd_vector_width]));
-
-    PASS();
+    RUN_TESTp(generic_test, sqrtf, simd_sqrt, 0.1f, 100.f, 0.f, true, "simd_sqrt");
 }
 
 float negative(float x) {return -x;}
@@ -336,10 +216,10 @@ float negative(float x) {return -x;}
 SUITE(abs_neg_min_max)
 {
     printf(".");
-    RUN_TESTp(generic_test, fabsf, simd_abs, -10.f, 10.f, FLT_EPSILON, false, "simd_abs");
-    RUN_TESTp(generic_test, negative, simd_neg, -10.f, 10.f, FLT_EPSILON, false, "simd_neg");
-    RUN_TEST(minimum);
-    RUN_TEST(maximum);
+    RUN_TESTp(generic_test, fabsf, simd_abs, -10.f, 10.f, 0.f, false, "simd_abs");
+    RUN_TESTp(generic_test, negative, simd_neg, -10.f, 10.f, 0.f, false, "simd_neg");
+    RUN_TESTp(generic_test2, float_min, simd_min, 0.f, false, "simd_min");
+    RUN_TESTp(generic_test2, float_max, simd_max, 0.f, false, "simd_max");
 }
 
 TEST export_int16(void)
