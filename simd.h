@@ -74,7 +74,7 @@ static inline simd_vector simd_mant_mask(void){return vreinterpretq_u32_f32(vdup
 static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, vrndq_f32(a));}
 static inline simd_vector simd_floor(simd_vector a) {return vrndmq_f32(a);}
 static inline simd_vector simd_ceil(simd_vector a) {return vrndpq_f32(a);}
-static inline simd_vector simd_round(simd_vector a) {return vrndq_f32(a);}
+static inline simd_vector simd_round(simd_vector a) {return vrndnq_f32(a);}
 static inline simd_vector simd_load(const float* array) {return vld1q_f32(array);}
 static inline void simd_store(float* array, simd_vector a) {vst1q_f32(array, a);}
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
