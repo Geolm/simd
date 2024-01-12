@@ -5,6 +5,20 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  
+jobs:
+  build-ubuntu-clang:
+     name: ubuntu-clang
+     runs-on: ubuntu-latest
+
+     steps:
+     - uses: actions/checkout@v3
+
+     - name: Configure CMake
+       run: cmake ${{github.workspace}}/tests/ -DCMAKE_C_COMPILER=clang
+
+     - name: Build
+       run: cmake --build ${{github.workspace}}/
       
   build-macos:
     name: macos
