@@ -348,6 +348,15 @@ SUITE(interlace_deinterlace)
     RUN_TEST(interlace_xyzw);
 }
 
+float fractf(float x) {return x - (int) x;}
+
+SUITE(rounding)
+{
+    RUN_TESTp(generic_test, floorf, simd_floor, -100.0f, 100.f, 0.0f, false, "simd_floor");
+    RUN_TESTp(generic_test, ceilf, simd_ceil, -100.0f, 100.f, 0.0f, false, "simd_ceil");
+    RUN_TESTp(generic_test, fractf, simd_fract, -100.0f, 100.f, 0.0f, false, "simd_fract");
+}
+
 GREATEST_MAIN_DEFS();
 
 int main(int argc, char * argv[])
@@ -355,6 +364,7 @@ int main(int argc, char * argv[])
     GREATEST_MAIN_BEGIN();
 
     RUN_SUITE(load);
+    RUN_SUITE(rounding);
     RUN_TEST(sort);
     RUN_SUITE(horizontal);
     RUN_SUITE(trigonometry);
