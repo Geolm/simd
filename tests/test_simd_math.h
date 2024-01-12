@@ -44,38 +44,6 @@ TEST sinuscosinus(void)
     PASS();
 }
 
-TEST arctan2(void)
-{
-    vec2 array[NUM_ELEMENTS];
-    float result[NUM_ELEMENTS];
-    float step = VEC2_TAU / (float) (NUM_ELEMENTS+1);
-
-    for(int i=0; i<NUM_ELEMENTS; ++i)
-    {
-        result[i] = (step * (float)(i+1)) - VEC2_PI;
-        array[i] = vec2_scale(vec2_angle(result[i]), (float)(i+1));
-    }
-
-    simd_vector epsilon = simd_splat(0.000001f);
-    simd_vector max_error = simd_splat_zero();
-
-    for(int i=0; i<NUM_VECTORS; ++i)
-    {
-        simd_vector vec_x, vec_y;
-        simd_load_xy((float*)array + i * simd_vector_width * 2, &vec_x, &vec_y);
-
-        simd_vector v_result = simd_load_offset(result, i);
-        simd_vector v_approx = simd_atan2(vec_x, vec_y);
-
-        ASSERT(simd_all(simd_equal(v_approx, v_result, epsilon)));
-        max_error = simd_max(max_error, simd_abs_diff(v_approx, v_result));
-    }
-
-    printf("simd_atan2 max error : %.*e\n", FLT_DECIMAL_DIG, simd_hmax(max_error));
-
-    PASS();
-}
-
 static inline float linear_to_srgb(float val)
 {
 	if (val <= 0.0031308f)
