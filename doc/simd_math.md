@@ -7,12 +7,26 @@ Heavily based on cephes implementation of C math functions, if not specified out
 # functions
 
 ```C
+
+// same output as C math lib sinf()
 simd_vector simd_sin(simd_vector x);
+
+// same output as C math lib cosf()
 simd_vector simd_cos(simd_vector x);
+
+// same output as C math lib sinf()/cosf()
 void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c);
-simd_vector simd_acos(simd_vector x); 
+
+// same output as C math lib acosf()
+simd_vector simd_acos(simd_vector x);
+
+// same output as C math lib asinf() 
 simd_vector simd_asin(simd_vector x);
+
+// same output as C math lib logf()
 simd_vector simd_log(simd_vector x);
+
+// same output as C math lib expf()
 simd_vector simd_exp(simd_vector x);
 ```
 
