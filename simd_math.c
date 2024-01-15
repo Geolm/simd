@@ -32,8 +32,7 @@ simd_vector simd_atan(simd_vector xx)
 }
 
 //-----------------------------------------------------------------------------
-// https://mazzo.li/posts/vectorized-atan2.html
-// max error : 0.000002
+// based on https://mazzo.li/posts/vectorized-atan2.html
 simd_vector simd_atan2(simd_vector x, simd_vector y)
 {
     simd_vector swap = simd_cmp_lt(simd_abs(x), simd_abs(y));
@@ -308,6 +307,53 @@ simd_vector simd_acos(simd_vector x)
     simd_vector result = simd_sub(simd_splat(SIMD_MATH_PI2), simd_asin(x));
     result = simd_select(result, simd_splat_zero(), out_of_bound);
     return result;
+}
+
+//-----------------------------------------------------------------------------
+// based on https://github.com/jeremybarnes/cephes/blob/master/single/cbrtf.c
+simd_vector simd_cbrt(simd_vector xx)
+{
+    simd_vector one_over_three = simd_splat(0.333333333333f);
+    simd_vector sign = simd_sign(xx);
+    simd_vector x = simd_abs(xx);
+    simd_vector z = x;
+
+    // extract power of 2, leaving mantissa between 0.5 and 1
+    simd_vector exponent;
+    x = simd_frexp(x, &exponent);
+
+    // Approximate cube root of number between .5 and 1
+    simd_vector tmp = simd_fmad(simd_splat(-0.13466110473359520655053f), x, simd_splat(0.54664601366395524503440f));
+    tmp = simd_fmad(tmp, x, simd_splat(-0.95438224771509446525043f));
+    tmp = simd_fmad(tmp, x, simd_splat(1.1399983354717293273738f));
+    x = simd_fmad(tmp, x, simd_splat(0.40238979564544752126924f));
+
+    // exponent divided by 3
+    simd_vector exponent_is_negative = simd_cmp_lt(exponent, simd_splat_zero());
+    
+    exponent = simd_abs(exponent);
+    simd_vector rem = exponent;
+    exponent = simd_floor(simd_mul(exponent, one_over_three));
+    rem = simd_sub(rem, simd_mul(exponent, simd_splat(3.f)));
+
+    simd_vector cbrt2 = simd_splat(1.25992104989487316477f);
+    simd_vector cbrt4 = simd_splat(1.58740105196819947475f);
+
+    simd_vector rem_equals_1 = simd_cmp_eq(rem, simd_splat(1.f));
+    simd_vector rem_equals_2 = simd_cmp_eq(rem, simd_splat(2.f));
+    simd_vector x1 = simd_mul(x, simd_select(cbrt4, cbrt2, rem_equals_1));
+    simd_vector x2 = simd_div(x, simd_select(cbrt4, cbrt2, rem_equals_1));
+	x = simd_select(x, simd_select(x1, x2, exponent_is_negative), simd_or(rem_equals_1, rem_equals_2));
+    exponent = simd_mul(exponent, simd_select(simd_splat(1.f), simd_splat(-1.f), exponent_is_negative));
+
+    // multiply by power of 2
+    x = simd_ldexp(x, exponent);
+
+    // Newton iteration, x -= ( x - (z/(x*x)) ) * 0.333333333333;
+    x = simd_sub(x, simd_mul(simd_sub(x, simd_div(z, simd_mul(x, x))), one_over_three));
+    x = simd_mul(x, sign);  // if input is zero, sign is also zero
+
+    return x;
 }
 
 
