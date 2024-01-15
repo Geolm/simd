@@ -397,7 +397,7 @@ TEST test_ldexp(void)
 
     simd_vector v_array = simd_load(array);
 
-    for(int i=-128; i<127; i+= simd_vector_width)
+    for(int i=-127; i<(128-simd_vector_width); i+= simd_vector_width)
     {
         for(int j=0; j<simd_vector_width; ++j)
         {
