@@ -701,12 +701,12 @@ static inline simd_vector simd_frexp(simd_vector x, simd_vector* exponent)
 {
     __m256i cast_float = _mm256_castps_si256(x);
     __m256i e = _mm256_and_si256(_mm256_srli_epi32(cast_float, 23), _mm256_set1_epi32(0xff));;
-    __m256i equal_to_zero = _mm256_and_si256(_mm256_cmpeq_epi32(e, _mm256_setzero_si256()), simd_cmp_eq(x, simd_splat_zero()));
+    __m256i equal_to_zero = _mm256_and_si256(_mm256_cmpeq_epi32(e, _mm256_setzero_si256()), _mm256_castps_si256(simd_cmp_eq(x, simd_splat_zero())));
     e = _mm256_andnot_si256(equal_to_zero, _mm256_sub_epi32(e, _mm256_set1_epi32(0x7e)));
     cast_float = _mm256_and_si256(cast_float, _mm256_set1_epi32(0x807fffff));
     cast_float = _mm256_or_si256(cast_float, _mm256_set1_epi32(0x3f000000));
     *exponent = _mm256_cvtepi32_ps(e);
-    return simd_select(_mm256_castsi256_ps(cast_float), x, equal_to_zero);
+    return simd_select(_mm256_castsi256_ps(cast_float), x, _mm256_castsi256_ps(equal_to_zero));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
