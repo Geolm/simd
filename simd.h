@@ -188,22 +188,11 @@ static inline float simd_get_lane(simd_vector a, int lane_index)
 }
 
 static inline float simd_get_first_lane(simd_vector a) {return vgetq_lane_f32(a, 0);}
+static inline float simd_hmin(simd_vector a) {return vminvq_f32(a);}
+static inline float simd_hmax(simd_vector a) {return vmaxvq_f32(a);}
+static inline float simd_hsum(simd_vector a) {return vaddvq_f32(a);}
 
-static inline float simd_hmin(simd_vector a)
-{
-    return vminvq_f32(a);
-}
-
-static inline float simd_hmax(simd_vector a)
-{
-    return vmaxvq_f32(a);
-}
-
-static inline float simd_hsum(simd_vector a)
-{
-    return vaddvq_f32(a);
-}
-
+//----------------------------------------------------------------------------------------------------------------------
 static inline int simd_get_mask(simd_vector a)
 {
     static const int32x4_t shift = {0, 1, 2, 3};
@@ -211,21 +200,12 @@ static inline int simd_get_mask(simd_vector a)
     return vaddvq_u32(vshlq_u32(tmp, shift));
 }
 
-static inline int simd_any(simd_vector a)
-{
-    return simd_get_mask(a) != 0;
-}
+//----------------------------------------------------------------------------------------------------------------------
+static inline int simd_any(simd_vector a) {return simd_get_mask(a) != 0;}
+static inline int simd_all(simd_vector a) {return vminvq_u32(a) == UINT32_MAX;}
+static inline int simd_none(simd_vector a) {return vmaxvq_u32(a) == 0;}
 
-static inline int simd_all(simd_vector a)
-{
-    return vminvq_u32(a) == UINT32_MAX;
-}
-
-static inline int simd_none(simd_vector a)
-{
-    return vmaxvq_u32(a) == 0;
-}
-
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_set_mask(int mask)
 {
     uint32_t v_mask[4] = 
@@ -238,12 +218,14 @@ static inline simd_vector simd_set_mask(int mask)
     return vreinterpretq_f32_u32(vld1q_u32(v_mask));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_export_int16(simd_vector input, int16_t* output)
 {
     int32x4_t tmp = vcvtq_s32_f32(input);
     vst1_s16(output, vmovn_u32(tmp));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, int8_t* output)
 {
     int16x4x4_t value_int16;
@@ -256,6 +238,7 @@ static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c,
     vst1_s8(output+simd_vector_width*2, vqmovn_s16(vcombine_s16(value_int16.val[2], value_int16.val[3])));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, uint8_t* output)
 {
     uint16x4x4_t value_uint16;
@@ -266,6 +249,39 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
 
     vst1_u8(output, vqmovn_u16(vcombine_u16(value_uint16.val[0], value_uint16.val[1])));
     vst1_u8(output+simd_vector_width*2, vqmovn_u16(vcombine_u16(value_uint16.val[2], value_uint16.val[3])));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_frexp(simd_vector x, simd_vector* exponent)
+{
+    /*__m256i cast_float = _mm256_castps_si256(x);
+    __m256i e = _mm256_and_si256(_mm256_srli_epi32(cast_float, 23), _mm256_set1_epi32(0xff));;
+    __m256i equal_to_zero = _mm256_and_si256(_mm256_cmpeq_epi32(e, _mm256_setzero_si256()), simd_cmp_eq(x, simd_splat_zero()));
+    e = _mm256_andnot_si256(equal_to_zero, _mm256_sub_epi32(e, _mm256_set1_epi32(0x7e)));
+    cast_float = _mm256_and_si256(cast_float, _mm256_set1_epi32(0x807fffff));
+    cast_float = _mm256_or_si256(cast_float, _mm256_set1_epi32(0x3f000000));
+    *exponent = _mm256_cvtepi32_ps(e);
+    return simd_select(_mm256_castsi256_ps(cast_float), x, equal_to_zero);*/
+    (void)x;
+    (void)exponent;
+    return simd_splat_zero();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_ldexp(simd_vector x, simd_vector pw2)
+{
+    /*__m256i fl = _mm256_castps_si256(x);
+    __m256i e = _mm256_and_si256(_mm256_srli_epi32(fl, 23), _mm256_set1_epi32(0xff));
+    e = _mm256_and_si256(_mm256_add_epi32(e, _mm256_cvtps_epi32(pw2)), _mm256_set1_epi32(0xff));
+    __m256i is_infinity = _mm256_cmpeq_epi32(e, _mm256_set1_epi32(0xff));
+    fl = _mm256_or_si256(_mm256_andnot_si256(is_infinity, fl), _mm256_and_si256(fl, _mm256_set1_epi32(0xFF800000)));
+    fl = _mm256_or_si256(_mm256_slli_epi32(e, 23), _mm256_and_si256(fl, _mm256_set1_epi32(0x807fffff)));
+    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
+    return simd_andnot(_mm256_castsi256_ps(fl), equal_to_zero);*/
+
+    (void)x;
+    (void)pw2;
+    return simd_splat_zero();
 }
 
 #else
@@ -358,6 +374,8 @@ static inline void simd_store(float* array, simd_vector a)
     else
         _mm256_storeu_ps(array, a);
 }
+
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_load_partial(const float* array, int count, float unload_value)
 {
     assert(count>0);
@@ -371,6 +389,7 @@ static inline simd_vector simd_load_partial(const float* array, int count, float
     return _mm256_or_ps(a, inf_mask);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_store_partial(float* array, simd_vector a, int count)
 {
     assert(count>0);
@@ -380,6 +399,7 @@ static inline void simd_store_partial(float* array, simd_vector a, int count)
         _mm256_maskstore_ps(array, loadstore_mask(count), a);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_interlace_xy(simd_vector x, simd_vector y, simd_vector* output0, simd_vector* output1)
 {
     __m128 x_lo = _mm256_extractf128_ps(x, 0);
@@ -391,6 +411,7 @@ static inline void simd_interlace_xy(simd_vector x, simd_vector y, simd_vector* 
     *output1 = _mm256_set_m128(_mm_unpackhi_ps(x_hi, y_hi), _mm_unpacklo_ps(x_hi, y_hi));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_deinterlace_xy(simd_vector a, simd_vector b, simd_vector* x, simd_vector* y)
 {
     *x = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(2, 0, 2, 0));
@@ -407,6 +428,7 @@ static inline void simd_deinterlace_xy(simd_vector a, simd_vector b, simd_vector
     *y = _mm256_blend_ps(*y, tmp, 0x3C);   // 00111100b = 0x3C
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd_vector* y)
 {
     simd_vector a = simd_load(array);
@@ -416,11 +438,13 @@ static inline void simd_load_xy_unorder(const float* array, simd_vector* x, simd
     *y = _mm256_shuffle_ps(a, b, _MM_SHUFFLE(3, 1, 3, 1));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_load_xy(const float* array, simd_vector* x, simd_vector* y)
 {
     simd_deinterlace_xy(simd_load(array), simd_load(array + simd_vector_width), x, y);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
 {
     simd_vector a = simd_load(array);
@@ -437,6 +461,7 @@ static inline void simd_load_xyz_unorder(const float* array, simd_vector* x, sim
     *z = _mm256_blend_ps(tmp, c, 0x92);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector* y, simd_vector* z)
 {
     simd_load_xyz_unorder(array, x, y, z);
@@ -450,6 +475,7 @@ static inline void simd_load_xyz(const float* array, simd_vector* x, simd_vector
     *z = _mm256_blend_ps(*z, _mm256_swap(*z), 0x22);   // 01000100b = 0x22 (intel reverse order)
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_load_xyzw_unorder(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
     simd_vector a = simd_load(array);
@@ -478,6 +504,7 @@ static inline void simd_load_xyzw_unorder(const float* array, simd_vector* x, si
     *w = _mm256_blend_ps(*w, a, 0x88);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vector* y, simd_vector* z, simd_vector* w)
 {
     simd_load_xyzw_unorder(array, x, y, z, w);
@@ -506,6 +533,7 @@ static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vecto
     *w = _mm256_permute2f128_ps(lo, hi, 0x20);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_sort(simd_vector input)
 {
     {
@@ -547,6 +575,7 @@ static inline simd_vector simd_sort(simd_vector input)
     return input;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline float simd_get_lane(simd_vector a, int lane_index)
 {
     assert(lane_index>=0 && lane_index<simd_vector_width);
@@ -561,8 +590,10 @@ static inline float simd_get_lane(simd_vector a, int lane_index)
     return u.f[lane_index];
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline float simd_get_first_lane(simd_vector a) {return _mm256_cvtss_f32(a);}
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline float simd_hmin(simd_vector a)
 {
     a = simd_min(a, _mm256_permute_ps(a, _MM_SHUFFLE(2, 1, 0, 3)));
@@ -571,6 +602,7 @@ static inline float simd_hmin(simd_vector a)
     return simd_get_first_lane(a);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline float simd_hmax(simd_vector a)
 {
     a = simd_max(a, _mm256_permute_ps(a, _MM_SHUFFLE(2, 1, 0, 3)));
@@ -579,6 +611,7 @@ static inline float simd_hmax(simd_vector a)
     return simd_get_first_lane(a);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline float simd_hsum(simd_vector a)
 {
     a = simd_add(a, _mm256_permute_ps(a, _MM_SHUFFLE(2, 1, 0, 3)));
@@ -587,26 +620,31 @@ static inline float simd_hsum(simd_vector a)
     return simd_get_first_lane(a);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline int simd_get_mask(simd_vector a)
 {
     return _mm256_movemask_ps(a);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline int simd_any(simd_vector a)
 {
     return _mm256_movemask_ps(a) != 0;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline int simd_all(simd_vector a)
 {
     return _mm256_movemask_ps(a) == 0xff;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline int simd_none(simd_vector a)
 {
     return _mm256_movemask_ps(a) == 0;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_set_mask(int mask)
 {
     return _mm256_cvtepi32_ps(_mm256_set_epi32(
@@ -620,6 +658,7 @@ static inline simd_vector simd_set_mask(int mask)
         (mask&1)   ? 0xffffffff : 0));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 // convert float to int16_t : it's up to the caller to be sure the float are in the right range [-32768.f; 32767.f]
 static inline void simd_export_int16(simd_vector input, int16_t* output)
 {
@@ -629,6 +668,7 @@ static inline void simd_export_int16(simd_vector input, int16_t* output)
     _mm_storeu_si128((__m128i*)output, _mm256_castsi256_si128(tmp));
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, int8_t* output)
 {
     __m256i ab_int16 = _mm256_packs_epi32(_mm256_cvtps_epi32(a), _mm256_cvtps_epi32(c));
@@ -641,6 +681,7 @@ static inline void simd_export_int8(simd_vector a, simd_vector b, simd_vector c,
     _mm256_store_si256((__m256i*)output, pack);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c, simd_vector d, uint8_t* output)
 {
     // preping the float
@@ -653,6 +694,32 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
     d = simd_select(d, simd_add(c2, d), simd_cmp_gt(d, threshold));
 
     simd_export_int8(a, b, c, d, (int8_t*)output);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_frexp(simd_vector x, simd_vector* exponent)
+{
+    __m256i cast_float = _mm256_castps_si256(x);
+    __m256i e = _mm256_and_si256(_mm256_srli_epi32(cast_float, 23), _mm256_set1_epi32(0xff));;
+    __m256i equal_to_zero = _mm256_and_si256(_mm256_cmpeq_epi32(e, _mm256_setzero_si256()), simd_cmp_eq(x, simd_splat_zero()));
+    e = _mm256_andnot_si256(equal_to_zero, _mm256_sub_epi32(e, _mm256_set1_epi32(0x7e)));
+    cast_float = _mm256_and_si256(cast_float, _mm256_set1_epi32(0x807fffff));
+    cast_float = _mm256_or_si256(cast_float, _mm256_set1_epi32(0x3f000000));
+    *exponent = _mm256_cvtepi32_ps(e);
+    return simd_select(_mm256_castsi256_ps(cast_float), x, equal_to_zero);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_ldexp(simd_vector x, simd_vector pw2)
+{
+    __m256i fl = _mm256_castps_si256(x);
+    __m256i e = _mm256_and_si256(_mm256_srli_epi32(fl, 23), _mm256_set1_epi32(0xff));
+    e = _mm256_and_si256(_mm256_add_epi32(e, _mm256_cvtps_epi32(pw2)), _mm256_set1_epi32(0xff));
+    __m256i is_infinity = _mm256_cmpeq_epi32(e, _mm256_set1_epi32(0xff));
+    fl = _mm256_or_si256(_mm256_andnot_si256(is_infinity, fl), _mm256_and_si256(fl, _mm256_set1_epi32(0xFF800000)));
+    fl = _mm256_or_si256(_mm256_slli_epi32(e, 23), _mm256_and_si256(fl, _mm256_set1_epi32(0x807fffff)));
+    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
+    return simd_andnot(_mm256_castsi256_ps(fl), equal_to_zero);
 }
 
 #endif

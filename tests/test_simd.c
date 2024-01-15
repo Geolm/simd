@@ -352,9 +352,71 @@ float fractf(float x) {return x - (int) x;}
 
 SUITE(rounding)
 {
+    printf(".");
     RUN_TESTp(generic_test, floorf, simd_floor, -100.0f, 100.f, 0.0f, false, "simd_floor");
     RUN_TESTp(generic_test, ceilf, simd_ceil, -100.0f, 100.f, 0.0f, false, "simd_ceil");
     RUN_TESTp(generic_test, fractf, simd_fract, -100.0f, 100.f, 0.0f, false, "simd_fract");
+}
+
+TEST test_frexp(void)
+{
+    for(int j=0; j<1000; ++j)
+    {
+        float array[simd_vector_width];
+        float mantissa[simd_vector_width];
+        int exponent[simd_vector_width];
+        for(int i=0; i<simd_vector_width; ++i)
+        {
+            array[i] = (float) (i + j - 500);
+            mantissa[i] = frexpf(array[i], &exponent[i]);
+        }
+
+        simd_vector v_input = simd_load(array);
+        simd_vector v_exponent;
+        simd_vector v_mantissa = simd_frexp(v_input, &v_exponent);
+
+        float exponent_export[simd_vector_width];
+        simd_store(exponent_export, v_exponent);
+
+        for(int i=0; i<simd_vector_width; ++i)
+            ASSERT_EQ((int)exponent_export[i], exponent[i]);
+
+        ASSERT( simd_all(simd_cmp_eq(v_mantissa, simd_load(mantissa))));
+    }
+    PASS();
+}
+
+TEST test_ldexp(void)
+{
+    float array[simd_vector_width];
+    for(int i=0; i<simd_vector_width; ++i)
+        array[i] = (float) (simd_vector_width/2-i);
+
+    float result[simd_vector_width];
+    float param[simd_vector_width];
+
+    simd_vector v_array = simd_load(array);
+
+    for(int i=-128; i<127; i+= simd_vector_width)
+    {
+        for(int j=0; j<simd_vector_width; ++j)
+        {
+            result[j] = ldexpf(array[j], i + j);
+            param[j] = (float)(i + j); 
+        }
+
+        simd_vector v_result = simd_ldexp(v_array, simd_load(param));
+        
+        ASSERT(simd_all(simd_cmp_eq(simd_load(result), v_result)));
+    }
+
+    PASS();
+}
+
+SUITE(float_extraction)
+{
+    RUN_TEST(test_frexp);
+    RUN_TEST(test_ldexp);
 }
 
 GREATEST_MAIN_DEFS();
@@ -366,6 +428,7 @@ int main(int argc, char * argv[])
     RUN_SUITE(load);
     RUN_SUITE(rounding);
     RUN_TEST(sort);
+    RUN_SUITE(float_extraction);
     RUN_SUITE(horizontal);
     RUN_SUITE(trigonometry);
     RUN_SUITE(exponentiation);
