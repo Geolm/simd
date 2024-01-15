@@ -157,7 +157,7 @@ SUITE(exponentiation)
     RUN_TESTp(generic_test, logf, simd_log, FLT_EPSILON, 1000.f, 1.e-06f, false, "simd_log");
     RUN_TESTp(generic_test, expf, simd_exp, -87.f, 87.f, 1.e-06f, true, "simd_exp");
     RUN_TESTp(generic_test, expf, simd_approx_exp, -87.f, 87.f, 2.e-03f, true, "simd_approx_exp");
-    RUN_TESTp(generic_test, cbrtf, simd_cbrt, -100.f, 100.f, 5.e-07, false, "simd_cbrt");
+    RUN_TESTp(generic_test, cbrtf, simd_cbrt, -100.f, 100.f, 5.e-07f, false, "simd_cbrt");
 }
 
 SUITE(color_space)
