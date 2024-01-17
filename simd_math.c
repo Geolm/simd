@@ -56,15 +56,9 @@ simd_vector simd_log(simd_vector x)
     simd_vector invalid_mask = simd_cmp_le(x, simd_splat_zero());
     x = simd_max(x, simd_min_normalized());  // cut off denormalized stuff
 
-#if defined(SIMD_NEON_IMPLEMENTATION)
-    int32x4_t emm0 = vshlq_s32(vreinterpretq_f32_s32(x), vdupq_n_s32(-23));
-    emm0 = vsubq_s32(emm0, vdupq_n_s32(0x7f));
-    simd_vector e = vcvtq_f32_s32(emm0);
-#elif defined(SIMD_AVX_IMPLEMENTATION)
-    __m256i emm0 = _mm256_srli_epi32(_mm256_castps_si256(x), 23);
-    emm0 = _mm256_sub_epi32(emm0, _mm256_set1_epi32(0x7f));
-    simd_vector e = _mm256_cvtepi32_ps(emm0);
-#endif
+    simd_vectori emm0 = simd_shift_right_i(simd_cast_from_float(x), 23);
+    emm0 = simd_sub_i(emm0, simd_splat_i(0x7f));
+    simd_vector e = simd_convert_from_int(emm0);
     
     // keep only the fractional part
     x = simd_and(x, simd_inv_mant_mask());
@@ -138,17 +132,10 @@ simd_vector simd_exp(simd_vector x)
     y = simd_fmad(y, z, x);
     y = simd_add(y, one);
 
-#if defined(SIMD_NEON_IMPLEMENTATION)
-    int32x4_t emm0 = vcvtq_s32_f32(fx);
-    emm0 = vaddq_s32(emm0, vdupq_n_s32(0x7f));
-    emm0 = vshlq_s32(emm0, vdupq_n_s32(23));
-    simd_vector pow2n = vreinterpretq_s32_f32(emm0);
-#elif defined(SIMD_AVX_IMPLEMENTATION)
-    __m256i emm0 = _mm256_cvtps_epi32(fx);
-    emm0 = _mm256_add_epi32(emm0, _mm256_set1_epi32(0x7f));
-    emm0 = _mm256_slli_epi32(emm0, 23);
-    simd_vector pow2n = _mm256_castsi256_ps(emm0);
-#endif
+    simd_vectori emm0 = simd_convert_from_float(fx);
+    emm0 = simd_add_i(emm0, simd_splat_i(0x7f));
+    emm0 = simd_shift_left_i(emm0, 23);
+    simd_vector pow2n = simd_cast_from_int(emm0);
 
     y = simd_mul(y, pow2n);
     return y;
@@ -170,64 +157,36 @@ void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
     // scale by 4/Pi
     y = simd_mul(x, simd_splat(1.27323954473516f));
 
-#if defined(SIMD_NEON_IMPLEMENTATION)
-    int32x4_t emm2 = vcvtq_s32_f32(y);
-
-    emm2 = vaddq_s32(emm2, vdupq_n_u32(1));
-    emm2 = vandq_s32(emm2, vdupq_n_u32(~1));
-    y = vcvtq_f32_s32(emm2);
-
-    int32x4_t emm4 = emm2;
-
-    // get the swap sign flag for the sine
-    int32x4_t emm0 = vandq_s32(emm2, vdupq_n_u32(4));
-    emm0 = vshlq_s32(emm0, vdupq_n_s32(29));
-    simd_vector swap_sign_bit_sin = vreinterpretq_s32_f32(emm0);
-
-    // get the polynom selection mask for the sine
-    emm2 = vandq_s32(emm2, vdupq_n_u32(2));
-    emm2 = vceqq_s32(emm2, vdupq_n_u32(0));
-    simd_vector poly_mask = vreinterpretq_s32_f32(emm2);
-
-#elif defined(SIMD_AVX_IMPLEMENTATION)
     // store the integer part of y in emm2 
-    __m256i emm2 = _mm256_cvttps_epi32(y);
+    simd_vectori emm2 = simd_convert_from_float(y);
 
     // j=(j+1) & (~1) (see the cephes sources)
-    emm2 = _mm256_add_epi32(emm2, _mm256_set1_epi32(1));
-    emm2 = _mm256_and_si256(emm2, _mm256_set1_epi32(~1));
-    y = _mm256_cvtepi32_ps(emm2);
+    emm2 = simd_add_i(emm2, simd_splat_i(1));
+    emm2 = simd_and_i(emm2, simd_splat_i(~1));
+    y = simd_convert_from_int(emm2);
 
-    __m256i emm4 = emm2;
+    simd_vectori emm4 = emm2;
 
     // get the swap sign flag for the sine
-    __m256i emm0 = _mm256_and_si256(emm2, _mm256_set1_epi32(4));
-    emm0 = _mm256_slli_epi32(emm0, 29);
-    simd_vector swap_sign_bit_sin = _mm256_castsi256_ps(emm0);
+    simd_vectori emm0 = simd_and_i(emm2, simd_splat_i(4));
+    emm0 = simd_shift_left_i(emm0, 29);
+    simd_vector swap_sign_bit_sin = simd_cast_from_int(emm0);
 
     // get the polynom selection mask for the sine
-    emm2 = _mm256_and_si256(emm2, _mm256_set1_epi32(2));
-    emm2 = _mm256_cmpeq_epi32(emm2, _mm256_castps_si256(_mm256_setzero_ps()));
-    simd_vector poly_mask = _mm256_castsi256_ps(emm2);
-#endif
+    emm2 = simd_and_i(emm2, simd_splat_i(2));
+    emm2 = simd_cmp_eq_i(emm2, simd_splat_zero_i());
+    simd_vector poly_mask = simd_cast_from_int(emm2); 
 
     // The magic pass: "Extended precision modular arithmetic" 
-    //  x = ((x - y * DP1) - y * DP2) - y * DP3; */
+    //  x = ((x - y * DP1) - y * DP2) - y * DP3; 
     x = simd_fmad(y, simd_splat(-0.78515625f), x);
     x = simd_fmad(y, simd_splat(-2.4187564849853515625e-4f), x);
     x = simd_fmad(y, simd_splat(-3.77489497744594108e-8f), x);
 
-#if defined(SIMD_NEON_IMPLEMENTATION)
-    emm4 = vsubq_s32(emm4, vdupq_n_u32(2));
-    emm4 = vbicq_s32(vdupq_n_u32(4), emm4);
-    emm4 = vshlq_s32(emm4, vdupq_n_s32(29));
-    simd_vector sign_bit_cos = vreinterpretq_s32_f32(emm4);
-#elif defined(SIMD_AVX_IMPLEMENTATION)
-    emm4 = _mm256_sub_epi32(emm4, _mm256_set1_epi32(2));
-    emm4 = _mm256_andnot_si256(emm4, _mm256_set1_epi32(4));
-    emm4 = _mm256_slli_epi32(emm4, 29);
-    simd_vector sign_bit_cos = _mm256_castsi256_ps(emm4);
-#endif
+    emm4 = simd_sub_i(emm4, simd_splat_i(2));
+    emm4 = simd_andnot_i(simd_splat_i(4), emm4);
+    emm4 = simd_shift_left_i(emm4, 29);
+    simd_vector sign_bit_cos = simd_cast_from_int(emm4); 
 
     sign_bit_sin = simd_xor(sign_bit_sin, swap_sign_bit_sin);
     

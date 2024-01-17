@@ -252,31 +252,24 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_frexp(simd_vector x, simd_vector* exponent)
-{
-    int32x4_t cast_float = vreinterpretq_s32_f32(x);
-    int32x4_t e = vandq_s32(vshlq_s32(cast_float, vdupq_n_s32(-23)), vdupq_n_s32(0xff));
-    int32x4_t equal_to_zero = vandq_s32(vceqq_s32(e, vdupq_n_s32(0)), vreinterpretq_s32_f32(vceqq_f32(x, simd_splat_zero())));
-    e = vbicq_s32(vsubq_s32(e, vdupq_n_s32(0x7e)) ,equal_to_zero);
-    cast_float = vandq_s32(cast_float, vdupq_n_s32(0x807fffff));
-    cast_float = vorrq_s32(cast_float, vdupq_n_s32(0x3f000000));
-    *exponent = vcvtq_f32_s32(e);
-    return simd_select(vreinterpretq_f32_s32(cast_float), x, equal_to_zero);
-}
+// vector of int32 functions
 
-//----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_ldexp(simd_vector x, simd_vector pw2)
-{
-    int32x4_t twofivefive = vdupq_n_s32(0xff);
-    int32x4_t fl = vreinterpretq_s32_f32(x);
-    int32x4_t e = vandq_s32(vshlq_s32(fl, vdupq_n_s32(-23)), twofivefive);
-    e = vandq_s32(vaddq_s32(e, vcvtq_s32_f32(pw2)), twofivefive);
-    int32x4_t is_infinity = vceqq_s32(e, twofivefive);
-    fl = vorrq_s32(vbicq_s32(fl, is_infinity), vandq_s32(fl, vdupq_n_s32(0xFF800000)));
-    fl = vorrq_s32(vshlq_s32(e, vdupq_n_s32(23)), vandq_s32(fl, vdupq_n_s32(0x807fffff)));
-    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
-    return simd_andnot(vreinterpretq_f32_s32(fl), equal_to_zero);
-}
+typedef int32x4_t simd_vectori;
+static inline simd_vectori simd_convert_from_float(simd_vector a) {return vreinterpretq_s32_f32(a);}
+static inline simd_vectori simd_cast_from_float(simd_vector a) {return vcvtq_s32_f32(a);}
+static inline simd_vector simd_convert_from_int(simd_vectori a) {return vreinterpretq_f32_s32(a);}
+static inline simd_vector simd_cast_from_int(simd_vectori a) {return vcvtq_f32_s32(a);}
+static inline simd_vectori simd_add_i(simd_vectori a, simd_vectori b) {return vaddq_s32(a, b);}
+static inline simd_vectori simd_sub_i(simd_vectori a, simd_vectori b) {return vsubq_s32(a, b);}
+static inline simd_vectori simd_splat_i(int i) {return vdupq_n_s32(i);}
+static inline simd_vectori simd_splat_zero_i(void) {return vdupq_n_s32(0);}
+static inline simd_vectori simd_shift_left_i(simd_vectori a, int i) {return vshlq_s32(a, vdupq_n_s32(i));}
+static inline simd_vectori simd_shift_right_i(simd_vectori a, int i) {return vshlq_s32(a, vdupq_n_s32(-i));}
+static inline simd_vectori simd_and_i(simd_vectori a, simd_vectori b) {return vandq_s32(a, b);}
+static inline simd_vectori simd_or_i(simd_vectori a, simd_vectori b) {return vorrq_s32(a, b);}
+static inline simd_vectori simd_andnot_i(simd_vectori a, simd_vectori b) {return vbicq_s32(a, b);}
+static inline simd_vectori simd_cmp_eq_i(simd_vectori a, simd_vectori b) {return vceqq_s32(a, b);}
+static inline simd_vectori simd_cmp_gt_i(simd_vectori a, simd_vectori b) {return vcgtq_s32(a, b);}
 
 #else
 
@@ -690,31 +683,27 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
     simd_export_int8(a, b, c, d, (int8_t*)output);
 }
 
-//----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_frexp(simd_vector x, simd_vector* exponent)
-{
-    __m256i cast_float = _mm256_castps_si256(x);
-    __m256i e = _mm256_and_si256(_mm256_srli_epi32(cast_float, 23), _mm256_set1_epi32(0xff));;
-    __m256i equal_to_zero = _mm256_and_si256(_mm256_cmpeq_epi32(e, _mm256_setzero_si256()), _mm256_castps_si256(simd_cmp_eq(x, simd_splat_zero())));
-    e = _mm256_andnot_si256(equal_to_zero, _mm256_sub_epi32(e, _mm256_set1_epi32(0x7e)));
-    cast_float = _mm256_and_si256(cast_float, _mm256_set1_epi32(0x807fffff));
-    cast_float = _mm256_or_si256(cast_float, _mm256_set1_epi32(0x3f000000));
-    *exponent = _mm256_cvtepi32_ps(e);
-    return simd_select(_mm256_castsi256_ps(cast_float), x, _mm256_castsi256_ps(equal_to_zero));
-}
+
 
 //----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_ldexp(simd_vector x, simd_vector pw2)
-{
-    __m256i fl = _mm256_castps_si256(x);
-    __m256i e = _mm256_and_si256(_mm256_srli_epi32(fl, 23), _mm256_set1_epi32(0xff));
-    e = _mm256_and_si256(_mm256_add_epi32(e, _mm256_cvtps_epi32(pw2)), _mm256_set1_epi32(0xff));
-    __m256i is_infinity = _mm256_cmpeq_epi32(e, _mm256_set1_epi32(0xff));
-    fl = _mm256_or_si256(_mm256_andnot_si256(is_infinity, fl), _mm256_and_si256(fl, _mm256_set1_epi32(0xFF800000)));
-    fl = _mm256_or_si256(_mm256_slli_epi32(e, 23), _mm256_and_si256(fl, _mm256_set1_epi32(0x807fffff)));
-    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
-    return simd_andnot(_mm256_castsi256_ps(fl), equal_to_zero);
-}
+// vector of int32 functions
+
+typedef __m256i simd_vectori;
+static inline simd_vectori simd_convert_from_float(simd_vector a) {return _mm256_cvttps_epi32(a);}
+static inline simd_vectori simd_cast_from_float(simd_vector a) {return _mm256_castps_si256(a);}
+static inline simd_vector simd_convert_from_int(simd_vectori a) {return _mm256_cvtepi32_ps(a);}
+static inline simd_vector simd_cast_from_int(simd_vectori a) {return _mm256_castsi256_ps(a);}
+static inline simd_vectori simd_add_i(simd_vectori a, simd_vectori b) {return _mm256_add_epi32(a, b);}
+static inline simd_vectori simd_sub_i(simd_vectori a, simd_vectori b) {return _mm256_sub_epi32(a, b);}
+static inline simd_vectori simd_splat_i(int i) {return _mm256_set1_epi32(i);}
+static inline simd_vectori simd_splat_zero_i(void) {return _mm256_setzero_si256();}
+static inline simd_vectori simd_shift_left_i(simd_vectori a, int i) {return _mm256_slli_epi32(a, i);}
+static inline simd_vectori simd_shift_right_i(simd_vectori a, int i) {return _mm256_srli_epi32(a, i);}
+static inline simd_vectori simd_and_i(simd_vectori a, simd_vectori b) {return _mm256_and_si256(a, b);}
+static inline simd_vectori simd_or_i(simd_vectori a, simd_vectori b) {return _mm256_or_si256(a, b);}
+static inline simd_vectori simd_andnot_i(simd_vectori a, simd_vectori b) {return _mm256_andnot_si256(b, a);}
+static inline simd_vectori simd_cmp_eq_i(simd_vectori a, simd_vectori b) {return _mm256_cmpeq_epi32(a, b);}
+static inline simd_vectori simd_cmp_gt_i(simd_vectori a, simd_vectori b) {return _mm256_cmpgt_epi32(a, b);}
 
 #endif
 
@@ -816,6 +805,32 @@ static inline simd_vector simd_quadratic_bezier(simd_vector p0, simd_vector p1, 
     simd_vector b = simd_mul(simd_splat(2.f), simd_mul(one_minus_t, t));
     simd_vector c = simd_mul(t, t);
     return simd_fmad(p0, a, simd_fmad(p1, b, simd_mul(p2, c)));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_frexp(simd_vector x, simd_vector* exponent)
+{
+    simd_vectori cast_float = simd_cast_from_float(x);
+    simd_vectori e = simd_and_i(simd_shift_right_i(cast_float, 23), simd_splat_i(0xff));;
+    simd_vectori equal_to_zero = simd_and_i(simd_cmp_eq_i(e, simd_splat_zero_i()), simd_cast_from_float(simd_cmp_eq(x, simd_splat_zero())));
+    e = simd_andnot_i(simd_sub_i(e, simd_splat_i(0x7e)), equal_to_zero);
+    cast_float = simd_and_i(cast_float, simd_splat_i(0x807fffff));
+    cast_float = simd_or_i(cast_float, simd_splat_i(0x3f000000));
+    *exponent = simd_convert_from_int(e);
+    return simd_select(simd_cast_from_int(cast_float), x, simd_cast_from_int(equal_to_zero));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_ldexp(simd_vector x, simd_vector pw2)
+{
+    simd_vectori fl = simd_cast_from_float(x);
+    simd_vectori e = simd_and_i(simd_shift_right_i(fl, 23), simd_splat_i(0xff));
+    e = simd_and_i(simd_add_i(e, simd_convert_from_float(pw2)), simd_splat_i(0xff));
+    simd_vectori is_infinity = simd_cmp_eq_i(e, simd_splat_i(0xff));
+    fl = simd_or_i(simd_andnot_i(fl, is_infinity), simd_and_i(fl, simd_splat_i(0xFF800000)));
+    fl = simd_or_i(simd_shift_left_i(e, 23), simd_and_i(fl, simd_splat_i(0x807fffff)));
+    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
+    return simd_andnot(simd_cast_from_int(fl), equal_to_zero);
 }
 
 
