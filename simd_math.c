@@ -1,7 +1,7 @@
 #include "simd_math.h"
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on https://github.com/jeremybarnes/cephes/blob/master/single/atanf.c
 simd_vector simd_atan(simd_vector xx)
 {	
@@ -31,7 +31,7 @@ simd_vector simd_atan(simd_vector xx)
 	return y;	
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on https://mazzo.li/posts/vectorized-atan2.html
 simd_vector simd_atan2(simd_vector x, simd_vector y)
 {
@@ -48,7 +48,7 @@ simd_vector simd_atan2(simd_vector x, simd_vector y)
     return simd_add( simd_and(simd_xor(simd_splat(SIMD_MATH_PI), simd_and(simd_sign_mask(), y)), x_sign_mask), result);
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on http://gruntthepeon.free.fr/ssemath/
 simd_vector simd_log(simd_vector x)
 {
@@ -98,7 +98,7 @@ simd_vector simd_log(simd_vector x)
     return x;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on http://gruntthepeon.free.fr/ssemath/
 simd_vector simd_exp(simd_vector x)
 {
@@ -141,7 +141,7 @@ simd_vector simd_exp(simd_vector x)
     return y;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on http://gruntthepeon.free.fr/ssemath/
 void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
 {
@@ -224,7 +224,7 @@ void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
     *c = simd_xor(xmm2, sign_bit_cos);
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on https://github.com/jeremybarnes/cephes/blob/master/single/asinf.c
 simd_vector simd_asin(simd_vector xx)
 {
@@ -258,7 +258,7 @@ simd_vector simd_asin(simd_vector xx)
     return z;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // acos(x) = pi/2 - asin(x)
 simd_vector simd_acos(simd_vector x)
 {
@@ -268,7 +268,7 @@ simd_vector simd_acos(simd_vector x)
     return result;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on https://github.com/jeremybarnes/cephes/blob/master/single/cbrtf.c
 simd_vector simd_cbrt(simd_vector xx)
 {

@@ -86,7 +86,7 @@ static inline simd_vector simd_approx_acos(simd_vector x)
     return simd_fmad(negate, simd_splat(SIMD_MATH_PI), result);
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
 static inline simd_vector simd_approx_exp(simd_vector x)
 {
@@ -102,18 +102,12 @@ static inline simd_vector simd_approx_exp(simd_vector x)
     simd_vector p = simd_fmad(c0, f, c1); // p = c0 * f + c1
     p = simd_fmad(p, f, c2); // p = (c0 * f + c1) * f + c2
 
-#if defined(SIMD_NEON_IMPLEMENTATION)
-    int32x4_t i = vcvtnq_s32_f32(e);
-    i = vshlq_s32(i, vdupq_n_s32(23));
-    return vreinterpretq_s32_f32(vaddq_s32(i, vreinterpretq_f32_s32(p)));
-#elif defined(SIMD_AVX_IMPLEMENTATION)
-    __m256i i = _mm256_cvtps_epi32(e);
-    i = _mm256_slli_epi32(i, 23);
-    return _mm256_castsi256_ps(_mm256_add_epi32(i, _mm256_castps_si256(p)));
-#endif
+    simd_vectori i = simd_convert_from_float(e);
+    i = simd_shift_left_i(i, 23);
+    return simd_cast_from_int(simd_add_i(i, simd_cast_from_float(p)));
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
 {
     // range [0.000000; 0.042500]
@@ -133,7 +127,7 @@ static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
     return result;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_approx_srgb_to_linear(simd_vector value)
 {
     simd_vector big_value = simd_cmp_ge(value, simd_splat(0.04045f));
