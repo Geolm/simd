@@ -148,29 +148,25 @@ static inline void simd_load_xyzw(const float* array, simd_vector* x, simd_vecto
     *w = data.val[3];
 }
 
-#define vblendq_f32(a, b, mask) vbslq_f32(vld1q_u32(mask), b, a)
-static const uint32_t mask_0xA[4] = {0, UINT32_MAX, 0, UINT32_MAX};
-static const uint32_t mask_0xC[4] = {0, 0, UINT32_MAX, UINT32_MAX};
-
 static inline simd_vector simd_sort(simd_vector input)
 {
     {
         float32x4_t perm_neigh = vrev64q_f32(input);
         float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
         float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
-        input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xA);
+        input = vtrn2q_f32(perm_neigh_min, perm_neigh_max);
     }
     {
-        float32x4_t perm_neigh = simd_reverse(input);
+        float32x4_t perm_neigh = __builtin_shufflevector(input, input, 3, 2, 1, 0);
         float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
         float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
-        input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xC);
+        input = vextq_u64(perm_neigh_min, perm_neigh_max, 1);
     }
     {
         float32x4_t perm_neigh = vrev64q_f32(input);
         float32x4_t perm_neigh_min = vminq_f32(input, perm_neigh);
         float32x4_t perm_neigh_max = vmaxq_f32(input, perm_neigh);
-        input = vblendq_f32(perm_neigh_min, perm_neigh_max, mask_0xA);
+        input = vtrn2q_f32(perm_neigh_min, perm_neigh_max);
     }
     return input;
 }
