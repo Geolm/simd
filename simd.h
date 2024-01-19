@@ -65,9 +65,12 @@ static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector 
 static inline simd_vector simd_reverse(simd_vector a) {return __builtin_shufflevector(a, a, 3, 2, 1, 0);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
 static inline simd_vector simd_splat_zero(void) {return vdupq_n_f32(0);}
+static inline simd_vector simd_splat_nan(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0xffffffff));}
+static inline simd_vector simd_splat_positive_infinity(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x7f800000));}
+static inline simd_vector simd_splat_negative_infinity(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0xff800000));}
 static inline simd_vector simd_sign_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x80000000));}
 static inline simd_vector simd_inv_sign_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(~0x80000000));}
-static inline simd_vector simd_abs_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x7FFFFFFF));}
+static inline simd_vector simd_abs_mask(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x7fffffff));}
 static inline simd_vector simd_min_normalized(void) {return vreinterpretq_u32_f32(vdupq_n_u32(0x00800000));} // the smallest non denormalized float number
 static inline simd_vector simd_inv_mant_mask(void){return vreinterpretq_u32_f32(vdupq_n_u32(~0x7f800000));}
 static inline simd_vector simd_mant_mask(void){return vreinterpretq_u32_f32(vdupq_n_u32(0x7f800000));}
@@ -334,6 +337,9 @@ static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector 
 static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));}
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
 static inline simd_vector simd_splat_zero(void) {return _mm256_setzero_ps();}
+static inline simd_vector simd_splat_nan(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0xffffffff));}
+static inline simd_vector simd_splat_positive_infinity(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x7f800000));}
+static inline simd_vector simd_splat_negative_infinity(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0xff800000));}
 static inline simd_vector simd_sign_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x80000000));}
 static inline simd_vector simd_inv_sign_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(~0x80000000));}
 static inline simd_vector simd_min_normalized(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x00800000));} // the smallest non denormalized float number

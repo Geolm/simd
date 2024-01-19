@@ -99,6 +99,39 @@ simd_vector simd_log(simd_vector x)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+// based on https://github.com/redorav/hlslpp/blob/master/include/hlsl%2B%2B_vector_float8.h
+simd_vector simd_log2(simd_vector x)
+{
+    simd_vector one = simd_splat(1.f);
+    simd_vectori exp = simd_splat_i(0x7f800000);
+    simd_vectori mant = simd_splat_i(0x007fffff);
+    simd_vectori i = simd_cast_from_float(x);
+    simd_vector e = simd_convert_from_int(simd_sub_i(simd_shift_right_i(simd_and_i(i, exp), 23), simd_splat_i(127)));
+    simd_vector m = simd_or(simd_cast_from_int(simd_and_i(i, mant)), one);
+
+    // minimax polynomial fit of log2(x)/(x - 1), for x in range [1, 2[
+    simd_vector p = simd_fmad(m, simd_splat(-3.4436006e-2f), simd_splat(3.1821337e-1f));
+    p = simd_fmad(m, p, simd_splat(-1.2315303f));
+    p = simd_fmad(m, p, simd_splat(2.5988452f));
+    p = simd_fmad(m, p, simd_splat(-3.3241990f));
+    p = simd_fmad(m, p, simd_splat(3.1157899f));
+
+    // this effectively increases the polynomial degree by one, but ensures that log2(1) == 0
+    p = simd_mul(p, simd_sub(m, one));
+    simd_vector result = simd_add(p, e);
+
+    // we can't compute a logarithm beyond this value, so we'll mark it as -infinity to indicate close to 0
+    simd_vector ltminus127 = simd_cmp_le(result, simd_splat(-127.f));
+    result = simd_select(result, simd_splat_negative_infinity(), ltminus127);
+
+    // Check for negative values and return NaN
+    simd_vector lt0 = simd_cmp_lt(x, simd_splat_zero());
+    result = simd_select(result, simd_splat_nan(), lt0);
+
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 // based on http://gruntthepeon.free.fr/ssemath/
 simd_vector simd_exp(simd_vector x)
 {

@@ -39,6 +39,9 @@ simd_vector simd_atan2(simd_vector x, simd_vector y);
 // max error : 4.768371582e-07
 simd_vector simd_log(simd_vector x);
 
+// max error : 2.349250963e-07
+simd_vector simd_log2(simd_vector x);
+
 // max error : 1.108270880e-07
 simd_vector simd_exp(simd_vector x);
 
