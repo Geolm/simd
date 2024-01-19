@@ -175,6 +175,33 @@ simd_vector simd_exp(simd_vector x)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+// based on https://github.com/jeremybarnes/cephes/blob/master/single/exp2f.c
+simd_vector simd_exp2(simd_vector x)
+{
+    // clamp values
+    x = simd_clamp(x, simd_splat(-127.f), simd_splat(127.f));
+    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
+
+    simd_vector i0 = simd_floor(x);
+    x = simd_sub(x, i0);
+
+    simd_vector above_half = simd_cmp_gt(x, simd_splat(.5f));
+    simd_vector one = simd_splat(1.f);
+    i0 = simd_select(i0, simd_add(i0, one), above_half);
+    x = simd_select(x, simd_sub(x, one), above_half);
+
+    simd_vector px = simd_fmad(x, simd_splat(1.535336188319500E-004f), simd_splat(1.339887440266574E-003f));
+    px = simd_fmad(px, x, simd_splat(9.618437357674640E-003f));
+    px = simd_fmad(px, x, simd_splat(5.550332471162809E-002f));
+    px = simd_fmad(px, x, simd_splat(2.402264791363012E-001f));
+    px = simd_fmad(px, x, simd_splat(6.931472028550421E-001f));
+    px = simd_fmad(px, x,  one);
+    px = simd_ldexp(px, i0);
+
+    return simd_select(px, one, equal_to_zero);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 // based on http://gruntthepeon.free.fr/ssemath/
 void simd_sincos(simd_vector x, simd_vector* s, simd_vector* c)
 {
