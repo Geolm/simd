@@ -1,7 +1,7 @@
 #define SOKOL_TIME_IMPL
 #include "sokol_time.h"
-#include "../simd_math.h"
-#include "../simd_approx_math.h"
+#include "../extra/simd_math.h"
+#include "../extra/simd_approx_math.h"
 #include "float.h"
 #include "stdio.h"
 

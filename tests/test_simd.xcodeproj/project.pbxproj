@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FB726A292AFD79910079CFD0 /* simd_2d_collision.c in Sources */ = {isa = PBXBuildFile; fileRef = FB726A282AFD79910079CFD0 /* simd_2d_collision.c */; };
-		FBA0657B2B4C946F00EBE7D4 /* simd_math.c in Sources */ = {isa = PBXBuildFile; fileRef = FBA0657A2B4C946F00EBE7D4 /* simd_math.c */; };
+		FBDE36C22B5B036E00079DF6 /* simd_math.c in Sources */ = {isa = PBXBuildFile; fileRef = FBDE36BD2B5B036E00079DF6 /* simd_math.c */; };
+		FBDE36C32B5B036E00079DF6 /* simd_2d_collision.c in Sources */ = {isa = PBXBuildFile; fileRef = FBDE36BE2B5B036E00079DF6 /* simd_2d_collision.c */; };
 		FBE8607027B1B8B900A7294A /* test_simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBE8606F27B1B8B900A7294A /* test_simd.c */; };
 		FBFB32EE2AFD20E80048AD63 /* test_simd_math.h in Sources */ = {isa = PBXBuildFile; fileRef = FBFB32ED2AFD20E80048AD63 /* test_simd_math.h */; };
 /* End PBXBuildFile section */
@@ -26,18 +26,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		FB57B45F2B4EDBC4006880C7 /* simd_approx_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_approx_math.h; path = ../simd_approx_math.h; sourceTree = "<group>"; };
-		FB726A262AFD79910079CFD0 /* vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vec2.h; path = ../vec2.h; sourceTree = "<group>"; };
-		FB726A272AFD79910079CFD0 /* simd_2d_collision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_2d_collision.h; path = ../simd_2d_collision.h; sourceTree = "<group>"; };
-		FB726A282AFD79910079CFD0 /* simd_2d_collision.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = simd_2d_collision.c; path = ../simd_2d_collision.c; sourceTree = "<group>"; };
-		FBA0657A2B4C946F00EBE7D4 /* simd_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = simd_math.c; path = ../simd_math.c; sourceTree = "<group>"; };
 		FBA72AF42AFECCFF002C984E /* test_collision_2d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_collision_2d.h; sourceTree = "<group>"; };
 		FBB4AA2127B1B881005F0430 /* test_simd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_simd; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBC55FED27BC52E80003CC87 /* simd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../simd.h; sourceTree = "<group>"; };
+		FBDE36BC2B5B036E00079DF6 /* vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vec2.h; path = ../extra/vec2.h; sourceTree = "<group>"; };
+		FBDE36BD2B5B036E00079DF6 /* simd_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = simd_math.c; path = ../extra/simd_math.c; sourceTree = "<group>"; };
+		FBDE36BE2B5B036E00079DF6 /* simd_2d_collision.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = simd_2d_collision.c; path = ../extra/simd_2d_collision.c; sourceTree = "<group>"; };
+		FBDE36BF2B5B036E00079DF6 /* simd_2d_collision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_2d_collision.h; path = ../extra/simd_2d_collision.h; sourceTree = "<group>"; };
+		FBDE36C02B5B036E00079DF6 /* simd_approx_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_approx_math.h; path = ../extra/simd_approx_math.h; sourceTree = "<group>"; };
+		FBDE36C12B5B036E00079DF6 /* simd_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_math.h; path = ../extra/simd_math.h; sourceTree = "<group>"; };
 		FBE8606F27B1B8B900A7294A /* test_simd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test_simd.c; sourceTree = "<group>"; };
 		FBFB32EC2AFD20E80048AD63 /* greatest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = greatest.h; sourceTree = "<group>"; };
 		FBFB32ED2AFD20E80048AD63 /* test_simd_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_simd_math.h; sourceTree = "<group>"; };
-		FBFB727C2A97CDB100065923 /* simd_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = simd_math.h; path = ../simd_math.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,13 +54,13 @@
 		FBB4AA1827B1B881005F0430 = {
 			isa = PBXGroup;
 			children = (
-				FB57B45F2B4EDBC4006880C7 /* simd_approx_math.h */,
-				FB726A282AFD79910079CFD0 /* simd_2d_collision.c */,
-				FB726A272AFD79910079CFD0 /* simd_2d_collision.h */,
-				FB726A262AFD79910079CFD0 /* vec2.h */,
+				FBDE36BE2B5B036E00079DF6 /* simd_2d_collision.c */,
+				FBDE36BF2B5B036E00079DF6 /* simd_2d_collision.h */,
+				FBDE36C02B5B036E00079DF6 /* simd_approx_math.h */,
+				FBDE36BD2B5B036E00079DF6 /* simd_math.c */,
+				FBDE36C12B5B036E00079DF6 /* simd_math.h */,
+				FBDE36BC2B5B036E00079DF6 /* vec2.h */,
 				FBFB32EC2AFD20E80048AD63 /* greatest.h */,
-				FBFB727C2A97CDB100065923 /* simd_math.h */,
-				FBA0657A2B4C946F00EBE7D4 /* simd_math.c */,
 				FBC55FED27BC52E80003CC87 /* simd.h */,
 				FBA72AF42AFECCFF002C984E /* test_collision_2d.h */,
 				FBE8606F27B1B8B900A7294A /* test_simd.c */,
@@ -133,9 +133,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBDE36C22B5B036E00079DF6 /* simd_math.c in Sources */,
+				FBDE36C32B5B036E00079DF6 /* simd_2d_collision.c in Sources */,
 				FBFB32EE2AFD20E80048AD63 /* test_simd_math.h in Sources */,
-				FB726A292AFD79910079CFD0 /* simd_2d_collision.c in Sources */,
-				FBA0657B2B4C946F00EBE7D4 /* simd_math.c in Sources */,
 				FBE8607027B1B8B900A7294A /* test_simd.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

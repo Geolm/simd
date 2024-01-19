@@ -1,7 +1,7 @@
 #ifndef __SIMD_MATH__H__
 #define __SIMD_MATH__H__
 
-#include "simd.h"
+#include "../simd.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 #ifndef SIMD_MATH_CONSTANTS

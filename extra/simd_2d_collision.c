@@ -1,5 +1,4 @@
 #include "simd_2d_collision.h"
-#include "simd.h"
 #include "simd_math.h"
 #include <stddef.h>
 

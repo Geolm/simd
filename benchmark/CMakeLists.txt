@@ -4,7 +4,7 @@ set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 
 project(simd_benchmark)
 
-add_executable(benchmark benchmark.c ../simd_math.c)
+add_executable(benchmark benchmark.c ../extra/simd_math.c)
 
 if(LINUX)
     set(CMAKE_EXE_LINKER_FLAGS "-lm")
