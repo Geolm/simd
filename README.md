@@ -7,8 +7,8 @@ This is a multiplatform simd intrinsic "vector size agnostic" library. There are
 [![Build Status](https://github.com/geolm/simd/actions/workflows/build.yml/badge.svg)](https://github.com/geolm/simd/actions)
 
 # optional headers
-* [simd_math.h](doc/simd_math.md) : contains math (sin/cos for example) specific functions
-* [simd_2d_collision.h](doc/simd_2d_collision.md) : 2d collision functions, batch collision to fully use SIMD registers
+* [extra/simd_math.h](doc/simd_math.md) : contains math (sin/cos for example) specific functions
+* [extra/simd_2d_collision.h](doc/simd_2d_collision.md) : 2d collision functions, batch collision to fully use SIMD registers
 
 # example
 
