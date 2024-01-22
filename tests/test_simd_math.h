@@ -105,7 +105,7 @@ TEST generic_test2(reference_function2 ref, approximation_function2 approx, floa
 
     for(int i=0; i<NUM_ELEMENTS; ++i)
     {
-        array[i] = vec2_scale(vec2_angle(step * (float)i), (float)(i+1));
+        array[i] = vec2_scale(vec2_angle(step * (float)i), (float)(i));
         result[i] = ref(array[i].x, array[i].y);
     }
 
@@ -143,7 +143,7 @@ SUITE(trigonometry)
     RUN_TESTp(generic_test, asinf, simd_asin, -1.f, 1.f, 1.e-06f, false, "simd_asin");
     RUN_TESTp(generic_test, atanf, simd_atan, -10.f, 10.f, 1.e-04f, false, "simd_atan");
     RUN_TESTp(generic_test, acosf, simd_approx_acos, -1.f, 1.f, 1.e-04f, false, "simd_approx_arcos");
-    RUN_TESTp(generic_test2, atan2_xy, simd_atan2, 1.e-06f, false, "simd_atan2");
+    RUN_TESTp(generic_test2, atan2_xy, simd_atan2, 3.e-07f, false, "simd_atan2");
     RUN_TEST(sinuscosinus);
 }
 
