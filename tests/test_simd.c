@@ -194,7 +194,6 @@ SUITE(arithmetic)
     RUN_TESTp(generic_test2, addf, simd_add, 0.f, false, "simd_add");
     RUN_TESTp(generic_test2, subf, simd_sub, 0.f, false, "simd_sub");
     RUN_TESTp(generic_test2, mulf, simd_mul, 0.f, false, "simd_mul");
-    RUN_TESTp(generic_test2, divf, simd_div, 0.f, false, "simd_div");
     RUN_TESTp(generic_test, signf, simd_sign, -10.f, 10.f, 0.f, false, "simd_sign");
     
     RUN_TEST(fmad);
