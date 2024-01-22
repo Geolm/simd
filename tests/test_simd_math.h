@@ -106,10 +106,6 @@ TEST generic_test2(reference_function2 ref, approximation_function2 approx, floa
     for(int i=0; i<NUM_ELEMENTS; ++i)
     {
         array[i] = vec2_scale(vec2_angle(step * (float)i), (float)(i+1));
-        if (array[i].x == 0.f)
-            array[i].x = 1.f;
-        if (array[i].y == 0.f)
-            array[i].y = 1.f;
         result[i] = ref(array[i].x, array[i].y);
     }
 
