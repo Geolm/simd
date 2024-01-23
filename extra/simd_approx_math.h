@@ -56,6 +56,11 @@ static inline simd_vector simd_approx_sin(simd_vector x)
     simd_vector c5 = simd_splat(8.3109378e-3f);
     simd_vector c7 = simd_splat(-1.84477486e-4f);
 
+    // try to replace by 
+    // // p(x)=((2.6000548e-6*x-1.9806615e-4)*x+8.3330173e-3)*x-1.6666657e-1
+    // Estimated max error: 4.618689e-9
+    // result = x + x * p(x)
+    
     simd_vector result;
     result = simd_fmad(x_squared, c7, c5);
     result = simd_fmad(x_squared, result, c3);
