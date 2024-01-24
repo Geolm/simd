@@ -21,10 +21,18 @@
 
 //----------------------------------------------------------------------------------------------------------------------
 // Prototypes
-static simd_vector simd_approx_cos(simd_vector a); // max error : 5.811452866e-07, ~2.5x faster than simd_cos
-static simd_vector simd_approx_sin(simd_vector a); // max error : 2.682209015e-07, ~2.5x faster than simd_cos
-static simd_vector simd_approx_acos(simd_vector x); // max error : 0.000068, ~2.8x faster than simd_acos
-static simd_vector simd_approx_exp(simd_vector x); // max relative error : 0.001726, ~3.7x faster than simd_exp
+
+// max error : 5.811452866e-07, ~2.5x faster than simd_cos
+static simd_vector simd_approx_cos(simd_vector a); 
+
+// max error : 2.682209015e-07, ~2.5x faster than simd_sin
+static simd_vector simd_approx_sin(simd_vector a); 
+
+// max error : 0.000068, ~2.8x faster than simd_acos
+static simd_vector simd_approx_acos(simd_vector x);
+
+// max relative error : 0.001726, ~3.7x faster than simd_exp
+static simd_vector simd_approx_exp(simd_vector x); 
 
 
 //----------------------------------------------------------------------------------------------------------------------
