@@ -50,3 +50,4 @@ static inline simd_vector simd_approx_srgb_to_linear(simd_vector value)
 // hsv to rgb based on https://github.com/stolk/hsvbench/blob/main/hsv.h
 
 #endif
+
