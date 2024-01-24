@@ -36,7 +36,7 @@ static simd_vector simd_approx_exp(simd_vector x);
 
 
 //----------------------------------------------------------------------------------------------------------------------
-// from hlslpp
+// range reduction from hlslpp, polynomial computed with lolremez
 static inline simd_vector simd_approx_sin(simd_vector x)
 {
     simd_vector invtau = simd_splat(1.f/SIMD_MATH_TAU);
@@ -58,7 +58,6 @@ static inline simd_vector simd_approx_sin(simd_vector x)
 
     simd_vector x_squared = simd_mul(x, x);
     simd_vector result = simd_polynomial4(x_squared, (float[]){2.6000548e-6f, -1.9806615e-4f, 8.3330173e-3f, -1.6666657e-1f});
-
     result = simd_mul(result, x_squared);
     result = simd_fmad(result, x, x);
 
