@@ -309,7 +309,6 @@ static inline simd_vector simd_div(simd_vector a, simd_vector b) {return _mm256_
 static inline simd_vector simd_rcp(simd_vector a) {return _mm256_rcp_ps(a);}
 static inline simd_vector simd_rsqrt(simd_vector a) {return _mm256_rsqrt_ps(a);}
 static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
-static inline simd_vector simd_neg(simd_vector a) {return _mm256_sub_ps(_mm256_setzero_ps(), a);}
 static inline simd_vector simd_abs_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));}
 static inline simd_vector simd_abs(simd_vector a) {return _mm256_and_ps(a, simd_abs_mask());}
 static inline simd_vector simd_abs_diff(simd_vector a, simd_vector b) {return simd_abs(simd_sub(a, b));}
@@ -349,6 +348,7 @@ static inline simd_vector simd_fract(simd_vector a) {return simd_sub(a, _mm256_r
 static inline simd_vector simd_round(simd_vector a) {return _mm256_round_ps(a, _MM_FROUND_NINT);}
 static inline simd_vector simd_floor(simd_vector a) {return _mm256_floor_ps(a);}
 static inline simd_vector simd_ceil(simd_vector a) {return _mm256_ceil_ps(a);}
+static inline simd_vector simd_neg(simd_vector a) {return _mm256_xor_ps(a, simd_sign_mask());}
 static inline simd_vector simd_load(const float* array)
 {
     if ((((uintptr_t)(array)) & 31 ) == 0) // aligned on 32 bytes
