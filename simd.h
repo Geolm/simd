@@ -835,6 +835,31 @@ static inline simd_vector simd_ldexp(simd_vector x, simd_vector pw2)
     return simd_andnot(simd_cast_from_int(fl), equal_to_zero);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_polynomial4(simd_vector x, float* coefficients)
+{
+    simd_vector result = simd_fmad(x, simd_splat(coefficients[0]), simd_splat(coefficients[1]));
+    result = simd_fmad(x, result, simd_splat(coefficients[2]));
+    result = simd_fmad(x, result, simd_splat(coefficients[3]));
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_polynomial5(simd_vector x, float* coefficients)
+{
+    simd_vector result = simd_polynomial4(x, coefficients);
+    result = simd_fmad(x, result, simd_splat(coefficients[4]));
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_polynomial6(simd_vector x, float* coefficients)
+{
+    simd_vector result = simd_polynomial5(x, coefficients);
+    result = simd_fmad(x, result, simd_splat(coefficients[5]));
+    return result;
+}
+
 
 
 #endif // __SIMD__H__

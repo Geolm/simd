@@ -20,9 +20,7 @@ simd_vector simd_atan(simd_vector xx)
 	
 	// minimax polynomial
 	simd_vector z = simd_mul(x, x);
-	simd_vector tmp = simd_fmad(z, simd_splat(8.05374449538e-2f), simd_splat(-1.38776856032E-1f));
-	tmp = simd_fmad(tmp, z, simd_splat(1.99777106478E-1f));
-	tmp = simd_fmad(tmp, z, simd_splat(-3.33329491539E-1f));
+	simd_vector tmp = simd_polynomial4(z, (float[]) {8.05374449538e-2f, -1.38776856032E-1f, 1.99777106478E-1f, -3.33329491539E-1f});
     tmp = simd_mul(tmp, z);
 	tmp = simd_fmad(tmp, x, x);
 	y = simd_add(tmp, y);
@@ -115,11 +113,7 @@ simd_vector simd_log2(simd_vector x)
     simd_vector m = simd_or(simd_cast_from_int(simd_and_i(i, mant)), one);
 
     // minimax polynomial fit of log2(x)/(x - 1), for x in range [1, 2[
-    simd_vector p = simd_fmad(m, simd_splat(-3.4436006e-2f), simd_splat(3.1821337e-1f));
-    p = simd_fmad(m, p, simd_splat(-1.2315303f));
-    p = simd_fmad(m, p, simd_splat(2.5988452f));
-    p = simd_fmad(m, p, simd_splat(-3.3241990f));
-    p = simd_fmad(m, p, simd_splat(3.1157899f));
+    simd_vector p = simd_polynomial6(m, (float[]){-3.4436006e-2f, 3.1821337e-1f, -1.2315303f, 2.5988452f, -3.3241990f, 3.1157899f});
 
     // this effectively increases the polynomial degree by one, but ensures that log2(1) == 0
     p = simd_mul(p, simd_sub(m, one));
@@ -161,12 +155,8 @@ simd_vector simd_exp(simd_vector x)
     x = simd_sub(x, tmp);
     x = simd_sub(x, z);
     z = simd_mul(x, x);
-    simd_vector y = simd_splat(1.9875691500E-4f);
-    y = simd_fmad(y, x, simd_splat(1.3981999507E-3f));
-    y = simd_fmad(y, x, simd_splat(8.3334519073E-3f));
-    y = simd_fmad(y, x, simd_splat(4.1665795894E-2f));
-    y = simd_fmad(y, x, simd_splat(1.6666665459E-1f));
-    y = simd_fmad(y, x, simd_splat(5.0000001201E-1f));
+    simd_vector y = simd_polynomial6(x, (float[]) {1.9875691500E-4f, 1.3981999507E-3f, 8.3334519073E-3f,
+                                                   4.1665795894E-2f, 1.6666665459E-1f, 5.0000001201E-1f});
     y = simd_fmad(y, z, x);
     y = simd_add(y, one);
 
@@ -195,11 +185,8 @@ simd_vector simd_exp2(simd_vector x)
     i0 = simd_select(i0, simd_add(i0, one), above_half);
     x = simd_select(x, simd_sub(x, one), above_half);
 
-    simd_vector px = simd_fmad(x, simd_splat(1.535336188319500E-004f), simd_splat(1.339887440266574E-003f));
-    px = simd_fmad(px, x, simd_splat(9.618437357674640E-003f));
-    px = simd_fmad(px, x, simd_splat(5.550332471162809E-002f));
-    px = simd_fmad(px, x, simd_splat(2.402264791363012E-001f));
-    px = simd_fmad(px, x, simd_splat(6.931472028550421E-001f));
+    simd_vector px = simd_polynomial6(x, (float[]) {1.535336188319500E-004f, 1.339887440266574E-003f, 9.618437357674640E-003f,
+                                                    5.550332471162809E-002f, 2.402264791363012E-001f, 6.931472028550421E-001f});
     px = simd_fmad(px, x,  one);
     px = simd_ldexp(px, i0);
 
@@ -306,10 +293,8 @@ simd_vector simd_asin(simd_vector xx)
 
     x = simd_select(a, simd_sqrt(z), flag);
 
-    simd_vector tmp = simd_fmad(simd_splat(4.2163199048E-2f), z, simd_splat(2.4181311049E-2f));
-    tmp = simd_fmad(tmp, z, simd_splat(4.5470025998E-2f));
-    tmp = simd_fmad(tmp, z, simd_splat(7.4953002686E-2f));
-    tmp = simd_fmad(tmp, z, simd_splat(1.6666752422E-1f));
+    simd_vector tmp = simd_polynomial5(z, (float[]) {4.2163199048E-2f, 2.4181311049E-2f, 4.5470025998E-2f, 
+                                                    7.4953002686E-2f, 1.6666752422E-1f});
     tmp = simd_mul(tmp, z);
     z = simd_fmad(tmp, x, x);
 
@@ -347,10 +332,7 @@ simd_vector simd_cbrt(simd_vector xx)
     x = simd_frexp(x, &exponent);
 
     // Approximate cube root of number between .5 and 1
-    simd_vector tmp = simd_fmad(simd_splat(-0.13466110473359520655053f), x, simd_splat(0.54664601366395524503440f));
-    tmp = simd_fmad(tmp, x, simd_splat(-0.95438224771509446525043f));
-    tmp = simd_fmad(tmp, x, simd_splat(1.1399983354717293273738f));
-    x = simd_fmad(tmp, x, simd_splat(0.40238979564544752126924f));
+    x = simd_polynomial5(x, (float[]) {-0.1346611047335f, 0.5466460136639f, -0.954382247715f, 1.13999833547f, 0.40238979564f});
 
     // exponent divided by 3
     simd_vector exponent_is_negative = simd_cmp_lt(exponent, simd_splat_zero());

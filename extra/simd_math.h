@@ -48,7 +48,7 @@ simd_vector simd_exp(simd_vector x);
 // max error : 1.042427087e-07
 simd_vector simd_exp2(simd_vector x);
 
-// max error : 4.768371582e-07
+// max error : 1.174262252e-07
 simd_vector simd_cbrt(simd_vector x);
 
 
