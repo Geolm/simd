@@ -44,21 +44,15 @@ simd_vector simd_cbrt(simd_vector x);
 The simd_approx_math.h header provides faster math functions with less precision.
 
 ```C
-// max error : 1.251697540e-06, ~2.5x faster than simd_cos
-simd_vector simd_approx_cos(simd_vector a);
+// max error : 5.811452866e-07, ~2.5x faster than simd_cos
+simd_vector simd_approx_cos(simd_vector a); 
 
-// max error : 1.192092896e-06, ~2.5x faster than simd_cos
-simd_vector simd_approx_sin(simd_vector a);
+// max error : 2.682209015e-07, ~2.5x faster than simd_cos
+simd_vector simd_approx_sin(simd_vector a); 
 
-// max error : 6.520748138e-05, ~2.8x faster than simd_acos
+// max error : 0.000068, ~2.8x faster than simd_acos
 simd_vector simd_approx_acos(simd_vector x);
 
-// max relative error : 1.727835275e-03, ~3.7x faster than simd_exp
-simd_vector simd_approx_exp(simd_vector x);
-
-// max error : 4.267692566e-05
-simd_vector simd_approx_srgb_to_linear(simd_vector value);
-
-// max error : 3.309000051e-03 (enough for 8bits value)
-simd_vector simd_approx_linear_to_srgb(simd_vector value); 
+// max relative error : 0.001726, ~3.7x faster than simd_exp
+simd_vector simd_approx_exp(simd_vector x); 
 ```
