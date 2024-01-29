@@ -307,7 +307,6 @@ static inline simd_vector simd_add(simd_vector a, simd_vector b) {return _mm256_
 static inline simd_vector simd_sub(simd_vector a, simd_vector b) {return _mm256_sub_ps(a, b);}
 static inline simd_vector simd_mul(simd_vector a, simd_vector b) {return _mm256_mul_ps(a, b);}
 static inline simd_vector simd_div(simd_vector a, simd_vector b) {return _mm256_div_ps(a, b);}
-static inline simd_vector simd_rsqrt(simd_vector a) {return _mm256_rsqrt_ps(a);}
 static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
 static inline simd_vector simd_abs_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));}
 static inline simd_vector simd_abs(simd_vector a) {return _mm256_and_ps(a, simd_abs_mask());}
@@ -690,10 +689,21 @@ static inline void simd_export_uint8(simd_vector a, simd_vector b, simd_vector c
 static inline simd_vector simd_rcp(simd_vector a)
 {
     simd_vector eq_zero = simd_cmp_eq(a, simd_splat_zero());
-    simd_vector x = _mm256_rcp_ps(a); 
-    x = simd_sub(simd_add(x, x), simd_mul(a, simd_mul(x, x)));   // do a Newton-Raphson iteration to increase precision
+    simd_vector x = _mm256_rcp_ps(a);
+    
+    // do a Newton-Raphson iteration to increase precision
+    x = simd_sub(simd_add(x, x), simd_mul(a, simd_mul(x, x)));
     simd_vector inf = simd_or(simd_and(a, simd_sign_mask()), simd_splat_positive_infinity());
     return simd_select(x, inf, eq_zero);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_rsqrt(simd_vector a)
+{
+    simd_vector x = _mm256_rsqrt_ps(a);
+
+    // do a Newton-Raphson iteration to increase precision
+    return simd_mul(x, simd_sub(simd_splat(1.5f), simd_mul(simd_mul(a, simd_splat(.5f)), simd_mul(x, x))));
 }
 
 
