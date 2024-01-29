@@ -28,11 +28,19 @@ static simd_vector simd_approx_cos(simd_vector a);
 // max error : 2.682209015e-07, ~2.5x faster than simd_sin
 static simd_vector simd_approx_sin(simd_vector a); 
 
-// max error : 0.000068, ~2.8x faster than simd_acos
+// max error : 6.520748138e-05, ~2.8x faster than simd_acos
 static simd_vector simd_approx_acos(simd_vector x);
 
-// max relative error : 0.001726, ~3.7x faster than simd_exp
+// max error : 6.520736497e-05, ~2.8x faster than simd_acos
+static simd_vector simd_approx_asin(simd_vector x);
+
+// max relative error : 1.727835275e-03, ~3.7x faster than simd_exp
 static simd_vector simd_approx_exp(simd_vector x); 
+
+// max error : 2.321995254e-07
+static simd_vector simd_approx_exp2(simd_vector x);
+
+static simd_vector simd_approx_log2(simd_vector x);
 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -83,7 +91,70 @@ static inline simd_vector simd_approx_acos(simd_vector x)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-// based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
+// based on https://developer.download.nvidia.com/cg/asin.html
+static inline simd_vector simd_approx_asin(simd_vector x)
+{
+    simd_vector negate = simd_select(simd_splat_zero(), simd_splat(1.f), simd_cmp_lt(x, simd_splat_zero()));
+    x = simd_abs(x);
+    simd_vector result = simd_polynomial4(x, (float[]){-0.0187293f, 0.0742610f, -0.2121144f, 1.5707288f});
+    result = simd_sub(simd_splat(SIMD_MATH_PI2), simd_mul(simd_sqrt(simd_sub(simd_splat(1.f), x)), result));
+    return simd_sub(result, simd_mul(simd_mul(simd_splat(2.f), result), negate));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+// based on https://github.com/redorav/hlslpp/blob/master/include/hlsl%2B%2B_vector_float8.h
+static simd_vector simd_approx_exp2(simd_vector x)
+{
+    simd_vector invalid_mask = simd_isnan(x);
+    simd_vector input_is_infinity = simd_cmp_eq(x, simd_splat_positive_infinity());
+    simd_vector equal_to_zero = simd_cmp_eq(x, simd_splat_zero());
+    simd_vector one = simd_splat(1.f);
+    
+    // clamp values
+    x = simd_clamp(x, simd_splat(-127.f), simd_splat(127.f));
+
+    simd_vector ipart = simd_floor(x);
+    simd_vector fpart = simd_sub(x, ipart);
+
+    simd_vectori i = simd_shift_left_i(simd_add_i(simd_convert_from_float(ipart), simd_splat_i(127)), 23);
+    simd_vector expipart = simd_cast_from_int(i);
+
+    // minimax polynomial fit of 2^x, in range [-0.5, 0.5[
+    simd_vector expfpart = simd_polynomial6(fpart, (float[]) {1.8775767e-3f, 8.9893397e-3f, 5.5826318e-2f, 2.4015361e-1f, 6.9315308e-1f, 1.f});
+
+    simd_vector result = simd_mul(expipart, expfpart);
+    result = simd_select(result, one, equal_to_zero);
+    result = simd_or(result, invalid_mask);
+    result = simd_select(result, simd_splat_positive_infinity(), input_is_infinity); // +inf arg will be +inf
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+// based on https://github.com/redorav/hlslpp/blob/master/include/hlsl%2B%2B_vector_float8.h
+static simd_vector simd_approx_log2(simd_vector x)
+{
+    simd_vector one = simd_splat(1.f);
+    simd_vectori i = simd_cast_from_float(x);
+    simd_vector e = simd_convert_from_int(simd_sub_i(simd_shift_right_i( simd_and_i(i, simd_splat_i(0x7F800000)), 23), simd_splat_i(127)));
+    simd_vector m = simd_or(simd_cast_from_int(simd_and_i(i, simd_splat_i(0x007FFFFF))), one);
+
+    // minimax polynomial fit of log2(x)/(x - 1), for x in range [1, 2[
+    simd_vector p = simd_polynomial6(m, (float[]) {-3.4436006e-2f, 3.1821337e-1f, -1.2315303f, 2.5988452f, -3.3241990f, 3.1157899f});
+
+    // this effectively increases the polynomial degree by one, but ensures that log2(1) == 0
+    simd_vector result = simd_fmad(p, simd_sub(m, one), e);
+
+    // we can't compute a logarithm beyond this value, so we'll mark it as -infinity to indicate close to 0
+    result = simd_select(result, simd_splat_negative_infinity(), simd_cmp_le(result, simd_splat(-127.f)));
+
+    // check for negative values and return NaN
+    result = simd_select(result, simd_splat_nan(), simd_cmp_lt(x, simd_splat_zero()));
+
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+// based on based on https://stackoverflow.com/questions/47025373/fastest-implementation-of-the-natural-exponential-function-using-sse
 static inline simd_vector simd_approx_exp(simd_vector x)
 {
     simd_vector c0 = simd_splat(0.3371894346f);

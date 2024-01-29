@@ -1,38 +1,30 @@
 #ifndef __SIMD__COLOR__H__
 #define __SIMD__COLOR__H__
 
-#include "../simd.h"
+#include "simd_math.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 //
 // Color manipulation functions
 
-static simd_vector simd_approx_srgb_to_linear(simd_vector value); // max error : 0.000079
-static simd_vector simd_approx_linear_to_srgb(simd_vector value); // max error : 0.003851 (enough for 8bits value)
+static simd_vector simd_srgb_to_linear(simd_vector value); // max error : 4.267692566e-05
+static simd_vector simd_linear_to_srgb(simd_vector value); // max error : 1.192092896e-07
 
 
 //----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_approx_linear_to_srgb(simd_vector value)
+static inline simd_vector simd_linear_to_srgb(simd_vector value)
 {
-    // range [0.000000; 0.042500]
-    // f(x) = 0.003309 + 12.323890*x^1 + -307.151428*x^2 + 3512.375244*x^3 + -3457.260986*x^4 + 240.709824*x^5 
-    
-    // Degree 5 approximation of f(x) = 1.055 * pow(x, 1/2.4) - 0.055
-    // on interval [ 0.042500, 1 ]
-    // p(x)=((((3.7378898*x-1.1148316e+1)*x+1.2821273e+1)*x-7.416023)*x+2.887472)*x+1.2067896e-1
-    // Estimated max error: 2.9748487e-3
-    simd_vector above_threshold = simd_cmp_gt(value, simd_splat(.0425f));
-    simd_vector result = simd_select(simd_splat(240.709824f), simd_splat(3.7378898f), above_threshold);
-    result = simd_fmad(result, value, simd_select(simd_splat(-3457.260986f), simd_splat(-11.148315f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(3512.375244f), simd_splat(12.821273f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(-307.151428f), simd_splat(-7.4160228f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(12.323890f), simd_splat(2.8874719f), above_threshold));
-    result = simd_fmad(result, value, simd_select(simd_splat(0.003309f), simd_splat(0.12067895f), above_threshold));
+    simd_vector small_value = simd_cmp_lt(value, simd_splat(0.0031308f));
+    simd_vector result_small = simd_mul(value, simd_splat(12.92f));
+    simd_vector value_1_3 = simd_cbrt(value);
+    simd_vector result = simd_mul(value_1_3, simd_sqrt(simd_sqrt(value_1_3)));
+    result = simd_fmad(simd_splat(1.055f), result, simd_splat(-0.055f));
+    result = simd_select(result, result_small, small_value);
     return result;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-static inline simd_vector simd_approx_srgb_to_linear(simd_vector value)
+static inline simd_vector simd_srgb_to_linear(simd_vector value)
 {
     simd_vector big_value = simd_cmp_ge(value, simd_splat(0.04045f));
     simd_vector result0 = simd_mul(value, simd_splat(1.f / 12.92f));

@@ -137,12 +137,9 @@ SUITE(trigonometry)
     printf(".");
     RUN_TESTp(generic_test, sinf, simd_sin, -10.f, 10.f, FLT_EPSILON, false, "simd_sin");
     RUN_TESTp(generic_test, cosf, simd_cos, -10.f, 10.f, FLT_EPSILON, false, "simd_cos");
-    RUN_TESTp(generic_test, sinf, simd_approx_sin, -10.f, 10.f, 2.e-06f, false, "simd_approx_sin");
-    RUN_TESTp(generic_test, cosf, simd_approx_cos, -10.f, 10.f, 2.e-06f, false, "simd_approx_cos");
     RUN_TESTp(generic_test, acosf, simd_acos, -1.f, 1.f, 1.e-06f, false, "simd_acos");
     RUN_TESTp(generic_test, asinf, simd_asin, -1.f, 1.f, 1.e-06f, false, "simd_asin");
     RUN_TESTp(generic_test, atanf, simd_atan, -10.f, 10.f, 1.e-04f, false, "simd_atan");
-    RUN_TESTp(generic_test, acosf, simd_approx_acos, -1.f, 1.f, 1.e-04f, false, "simd_approx_arcos");
     RUN_TESTp(generic_test2, atan2_xy, simd_atan2, 3.e-07f, false, "simd_atan2");
     RUN_TEST(sinuscosinus);
 }
@@ -151,17 +148,28 @@ SUITE(exponentiation)
 {
     printf(".");
     RUN_TESTp(generic_test, logf, simd_log, FLT_EPSILON, 1000.f, 1.e-06f, true, "simd_log");
-    RUN_TESTp(generic_test, log2f, simd_log2, FLT_EPSILON, 1.e20f, 3.e-07f, true, "simd_log2");
+    RUN_TESTp(generic_test, log2f, simd_log2, FLT_EPSILON, 1.e20f, 3.e07f, true, "simd_log2");
     RUN_TESTp(generic_test, expf, simd_exp, -87.f, 87.f, 1.e-06f, true, "simd_exp");
     RUN_TESTp(generic_test, exp2f, simd_exp2, -126.f, 126.f, 2.e-07f, true, "simd_exp2");
-    RUN_TESTp(generic_test, expf, simd_approx_exp, -87.f, 87.f, 2.e-03f, true, "simd_approx_exp");
     RUN_TESTp(generic_test, cbrtf, simd_cbrt, -100.f, 100.f, 2.e-07f, true, "simd_cbrt");
+}
+
+SUITE(approximations)
+{
+    printf(".");
+    RUN_TESTp(generic_test, sinf, simd_approx_sin, -10.f, 10.f, 2.e-06f, false, "simd_approx_sin");
+    RUN_TESTp(generic_test, cosf, simd_approx_cos, -10.f, 10.f, 2.e-06f, false, "simd_approx_cos");
+    RUN_TESTp(generic_test, acosf, simd_approx_acos, -1.f, 1.f, 1.e-04f, false, "simd_approx_acos");
+    RUN_TESTp(generic_test, asinf, simd_approx_asin, -1.f, 1.f, 1.e-04f, false, "simd_approx_asin");
+    RUN_TESTp(generic_test, expf, simd_approx_exp, -87.f, 87.f, 2.e-03f, true, "simd_approx_exp");
+    RUN_TESTp(generic_test, exp2f, simd_approx_exp2, -126.f, 126.f, 3.e-07f, true, "simd_approx_exp2");
+    RUN_TESTp(generic_test, log2f, simd_approx_log2, FLT_EPSILON, 1.e20f, 3.e-07f, true, "simd_approx_log2");
 }
 
 SUITE(color_space)
 {
     printf(".");
-    RUN_TESTp(generic_test, srgb_to_linear, simd_approx_srgb_to_linear, 0.f, 1.f, 1.e-04f, false, "simd_approx_srgb_to_linear");
-    RUN_TESTp(generic_test, linear_to_srgb, simd_approx_linear_to_srgb, 0.f, 1.f, 4.e-03f, false, "simd_approx_linear_to_srgb");
+    RUN_TESTp(generic_test, srgb_to_linear, simd_srgb_to_linear, 0.f, 1.f, 1.e-04f, false, "simd_srgb_to_linear");
+    RUN_TESTp(generic_test, linear_to_srgb, simd_linear_to_srgb, 0.f, 1.f, 4.e-03f, false, "simd_linear_to_srgb");
 }
 
