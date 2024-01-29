@@ -307,7 +307,11 @@ static inline simd_vector simd_add(simd_vector a, simd_vector b) {return _mm256_
 static inline simd_vector simd_sub(simd_vector a, simd_vector b) {return _mm256_sub_ps(a, b);}
 static inline simd_vector simd_mul(simd_vector a, simd_vector b) {return _mm256_mul_ps(a, b);}
 static inline simd_vector simd_div(simd_vector a, simd_vector b) {return _mm256_div_ps(a, b);}
-static inline simd_vector simd_rcp(simd_vector a) {return _mm256_rcp_ps(a);}
+static inline simd_vector simd_rcp(simd_vector a)
+{
+    simd_vector x = _mm256_rcp_ps(a); 
+    return simd_sub(simd_add(x, x), simd_mul(a, simd_mul(x, x)));   // do a Newton-Raphson iteration to increase precision
+}
 static inline simd_vector simd_rsqrt(simd_vector a) {return _mm256_rsqrt_ps(a);}
 static inline simd_vector simd_sqrt(simd_vector a) {return _mm256_sqrt_ps(a);}
 static inline simd_vector simd_abs_mask(void) {return _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));}
