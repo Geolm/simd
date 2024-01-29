@@ -169,7 +169,7 @@ SUITE(approximations)
 SUITE(color_space)
 {
     printf(".");
-    RUN_TESTp(generic_test, srgb_to_linear, simd_srgb_to_linear, 0.f, 1.f, 1.e-04f, false, "simd_srgb_to_linear");
-    RUN_TESTp(generic_test, linear_to_srgb, simd_linear_to_srgb, 0.f, 1.f, 4.e-03f, false, "simd_linear_to_srgb");
+    RUN_TESTp(generic_test, srgb_to_linear, simd_srgb_to_linear, 0.f, 1.f, 5.e-05f, false, "simd_srgb_to_linear");
+    RUN_TESTp(generic_test, linear_to_srgb, simd_linear_to_srgb, 0.f, 1.f, 1.e-06f, false, "simd_linear_to_srgb");
 }
 
