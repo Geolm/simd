@@ -139,7 +139,7 @@ SUITE(trigonometry)
     RUN_TESTp(generic_test, cosf, simd_cos, -10.f, 10.f, FLT_EPSILON, false, "simd_cos");
     RUN_TESTp(generic_test, acosf, simd_acos, -1.f, 1.f, 1.e-06f, false, "simd_acos");
     RUN_TESTp(generic_test, asinf, simd_asin, -1.f, 1.f, 1.e-06f, false, "simd_asin");
-    RUN_TESTp(generic_test, atanf, simd_atan, -10.f, 10.f, 1.e-04f, false, "simd_atan");
+    RUN_TESTp(generic_test, atanf, simd_atan, -10.f, 10.f, 3.e-06f, false, "simd_atan");
     RUN_TESTp(generic_test2, atan2_xy, simd_atan2, 3.e-07f, false, "simd_atan2");
     RUN_TEST(sinuscosinus);
 }
