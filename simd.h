@@ -61,6 +61,7 @@ static inline simd_vector simd_cmp_lt(simd_vector a, simd_vector b) {return vrei
 static inline simd_vector simd_cmp_le(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vcleq_f32(a, b));}
 static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vceqq_f32(a, b));}
 static inline simd_vector simd_cmp_neq(simd_vector a, simd_vector b) {return vreinterpretq_f32_u32(vmvnq_u32(vceqq_f32(a, b)));}
+static inline simd_vector simd_isnan(simd_vector a) {return simd_cmp_neq(a, a);}
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return vbslq_f32(vreinterpretq_u32_f32(mask), b, a);}
 static inline simd_vector simd_reverse(simd_vector a) {return __builtin_shufflevector(a, a, 3, 2, 1, 0);}
 static inline simd_vector simd_splat(float value) {return vdupq_n_f32(value);}
@@ -332,6 +333,7 @@ static inline simd_vector simd_cmp_lt(simd_vector a, simd_vector b) {return _mm2
 static inline simd_vector simd_cmp_le(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_LE_OQ);}
 static inline simd_vector simd_cmp_eq(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_EQ_OQ);}
 static inline simd_vector simd_cmp_neq(simd_vector a, simd_vector b) {return _mm256_cmp_ps(a, b, _CMP_NEQ_OQ);}
+static inline simd_vector simd_isnan(simd_vector a) {return _mm256_cmp_ps(a, a, _CMP_NEQ_UQ);}
 static inline simd_vector simd_select(simd_vector a, simd_vector b, simd_vector mask) {return _mm256_blendv_ps(a, b, mask);}
 static inline simd_vector simd_reverse(simd_vector a) {return _mm256_permute_ps(_mm256_swap(a), _MM_SHUFFLE(0, 1, 2, 3));}
 static inline simd_vector simd_splat(float value) {return _mm256_set1_ps(value);}
@@ -722,12 +724,6 @@ static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, sim
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
 
 //-----------------------------------------------------------------------------
-static inline simd_vector simd_isnan(simd_vector a)
-{
-    return simd_cmp_neq(a, a);
-}
-
-//-----------------------------------------------------------------------------
 static inline simd_vector simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)
 {
     simd_vector diff = simd_abs_diff(a, b);
@@ -860,6 +856,29 @@ static inline simd_vector simd_polynomial6(simd_vector x, float* coefficients)
     return result;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_polynomial7(simd_vector x, float* coefficients)
+{
+    simd_vector result = simd_polynomial6(x, coefficients);
+    result = simd_fmad(x, result, simd_splat(coefficients[6]));
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_polynomial8(simd_vector x, float* coefficients)
+{
+    simd_vector result = simd_polynomial7(x, coefficients);
+    result = simd_fmad(x, result, simd_splat(coefficients[7]));
+    return result;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_polynomial9(simd_vector x, float* coefficients)
+{
+    simd_vector result = simd_polynomial8(x, coefficients);
+    result = simd_fmad(x, result, simd_splat(coefficients[8]));
+    return result;
+}
 
 
 #endif // __SIMD__H__
