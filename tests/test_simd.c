@@ -209,6 +209,7 @@ SUITE(sqrt_and_rcp)
     RUN_TESTp(generic_test, rcp, simd_rcp, FLT_EPSILON, 100.f, 1e-5f, true, "simd_rcp");
     RUN_TESTp(generic_test, rsqrt, simd_rsqrt, 0.1f, 100.f, 2e-5f, true, "simd_rsqrt");
     RUN_TESTp(generic_test, sqrtf, simd_sqrt, 0.1f, 100.f, 0.f, true, "simd_sqrt");
+    RUN_TESTp(generic_test, sqrtf, simd_approx_sqrt, FLT_EPSILON, 1000.f, 0.07f, true, "simd_approx_sqrt");
 }
 
 float negative(float x) {return -x;}

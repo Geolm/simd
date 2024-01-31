@@ -42,6 +42,9 @@ static simd_vector simd_approx_exp2(simd_vector x);
 
 static simd_vector simd_approx_log2(simd_vector x);
 
+// max error : 6.066019088e-02
+static simd_vector simd_approx_sqrt(simd_vector x);
+
 
 //----------------------------------------------------------------------------------------------------------------------
 // range reduction from hlslpp, polynomial computed with lolremez
@@ -172,6 +175,16 @@ static inline simd_vector simd_approx_exp(simd_vector x)
     simd_vectori i = simd_convert_from_float(e);
     i = simd_shift_left_i(i, 23);
     return simd_cast_from_int(simd_add_i(i, simd_cast_from_float(p)));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+static inline simd_vector simd_approx_sqrt(simd_vector x)
+{
+    simd_vectori i = simd_cast_from_float(x);
+    i = simd_sub_i(i, simd_splat_i(1<<23));
+    i = simd_shift_right_i(i, 1);
+    i = simd_add_i(i, simd_splat_i(1<<29));
+    return simd_cast_from_int(i);
 }
 
 
