@@ -270,6 +270,13 @@ static inline simd_vectori simd_or_i(simd_vectori a, simd_vectori b) {return vor
 static inline simd_vectori simd_andnot_i(simd_vectori a, simd_vectori b) {return vbicq_s32(a, b);}
 static inline simd_vectori simd_cmp_eq_i(simd_vectori a, simd_vectori b) {return vceqq_s32(a, b);}
 static inline simd_vectori simd_cmp_gt_i(simd_vectori a, simd_vectori b) {return vcgtq_s32(a, b);}
+static inline simd_vectori simd_min_i(simd_vectori a, simd_vectori b) {return vminq_s32(a, b);}
+static inline simd_vectori simd_max_i(simd_vectori a, simd_vectori b) {return vmaxq_s32(a, b);}
+static inline simd_vector simd_gather(const float* array, simd_vectori indices)
+{
+    float tmp[4] = {array[indices[0]], array[indices[1]], array[indices[2]], array[indices[3]]};
+    return simd_load(tmp);
+}
 
 #else
 
@@ -720,12 +727,15 @@ static inline simd_vectori simd_sub_i(simd_vectori a, simd_vectori b) {return _m
 static inline simd_vectori simd_splat_i(int i) {return _mm256_set1_epi32(i);}
 static inline simd_vectori simd_splat_zero_i(void) {return _mm256_setzero_si256();}
 static inline simd_vectori simd_shift_left_i(simd_vectori a, int i) {return _mm256_slli_epi32(a, i);}
-static inline simd_vectori simd_shift_right_i(simd_vectori a, int i) {return _mm256_srli_epi32(a, i);}
+static inline simd_vectori simd_shift_right_i(simd_vectori a, int i) {return _mm256_srai_epi32(a, i);}
 static inline simd_vectori simd_and_i(simd_vectori a, simd_vectori b) {return _mm256_and_si256(a, b);}
 static inline simd_vectori simd_or_i(simd_vectori a, simd_vectori b) {return _mm256_or_si256(a, b);}
 static inline simd_vectori simd_andnot_i(simd_vectori a, simd_vectori b) {return _mm256_andnot_si256(b, a);}
 static inline simd_vectori simd_cmp_eq_i(simd_vectori a, simd_vectori b) {return _mm256_cmpeq_epi32(a, b);}
 static inline simd_vectori simd_cmp_gt_i(simd_vectori a, simd_vectori b) {return _mm256_cmpgt_epi32(a, b);}
+static inline simd_vectori simd_min_i(simd_vectori a, simd_vectori b) {return _mm256_min_epi32(a, b);}
+static inline simd_vectori simd_max_i(simd_vectori a, simd_vectori b) {return _mm256_max_epi32(a, b);}
+static inline simd_vector simd_gather(const float* array, simd_vectori indices) {return _mm256_i32gather_ps(array, indices, 4);}
 
 #endif
 
@@ -740,6 +750,8 @@ static inline uint32_t simd_num_vec(uint32_t num_elements) {return (num_elements
 static inline simd_vector simd_clamp(simd_vector a, simd_vector range_min, simd_vector range_max) {return simd_max(simd_min(a, range_max), range_min);}
 static inline simd_vector simd_saturate(simd_vector a) {return simd_clamp(a, simd_splat_zero(), simd_splat(1.f));}
 static inline simd_vector simd_lerp(simd_vector a, simd_vector b, simd_vector t) {return simd_fmad(simd_sub(a, b), t, a);}
+static inline simd_vectori simd_select_i(simd_vectori a, simd_vectori b, simd_vectori mask) { return simd_or_i(simd_andnot_i(a, mask), simd_and_i(b, mask));}
+static inline simd_vectori simd_neg_i(simd_vectori a){return simd_sub_i(simd_splat_zero_i(), a);}
 
 //-----------------------------------------------------------------------------
 static inline simd_vector simd_equal(simd_vector a, simd_vector b, simd_vector epsilon)

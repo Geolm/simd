@@ -40,8 +40,6 @@ static simd_vector simd_approx_exp(simd_vector x);
 // max error : 2.321995254e-07
 static simd_vector simd_approx_exp2(simd_vector x);
 
-static simd_vector simd_approx_log2(simd_vector x);
-
 // max error : 6.066019088e-02
 static simd_vector simd_approx_sqrt(simd_vector x);
 
@@ -129,30 +127,6 @@ static simd_vector simd_approx_exp2(simd_vector x)
     result = simd_select(result, one, equal_to_zero);
     result = simd_or(result, invalid_mask);
     result = simd_select(result, simd_splat_positive_infinity(), input_is_infinity); // +inf arg will be +inf
-    return result;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-// based on https://github.com/redorav/hlslpp/blob/master/include/hlsl%2B%2B_vector_float8.h
-static simd_vector simd_approx_log2(simd_vector x)
-{
-    simd_vector one = simd_splat(1.f);
-    simd_vectori i = simd_cast_from_float(x);
-    simd_vector e = simd_convert_from_int(simd_sub_i(simd_shift_right_i( simd_and_i(i, simd_splat_i(0x7F800000)), 23), simd_splat_i(127)));
-    simd_vector m = simd_or(simd_cast_from_int(simd_and_i(i, simd_splat_i(0x007FFFFF))), one);
-
-    // minimax polynomial fit of log2(x)/(x - 1), for x in range [1, 2[
-    simd_vector p = simd_polynomial6(m, (float[]) {-3.4436006e-2f, 3.1821337e-1f, -1.2315303f, 2.5988452f, -3.3241990f, 3.1157899f});
-
-    // this effectively increases the polynomial degree by one, but ensures that log2(1) == 0
-    simd_vector result = simd_fmad(p, simd_sub(m, one), e);
-
-    // we can't compute a logarithm beyond this value, so we'll mark it as -infinity to indicate close to 0
-    result = simd_select(result, simd_splat_negative_infinity(), simd_cmp_le(result, simd_splat(-127.f)));
-
-    // check for negative values and return NaN
-    result = simd_select(result, simd_splat_nan(), simd_cmp_lt(x, simd_splat_zero()));
-
     return result;
 }
 

@@ -51,6 +51,9 @@ simd_vector simd_exp2(simd_vector x);
 // max error : 1.174262252e-07
 simd_vector simd_cbrt(simd_vector x);
 
+// max error : 1.484901873e-07
+simd_vector simd_pow(simd_vector x, simd_vector y);
+
 
 //----------------------------------------------------------------------------------------------------------------------
 static inline simd_vector simd_sin(simd_vector x)

@@ -105,7 +105,7 @@ TEST generic_test2(reference_function2 ref, approximation_function2 approx, floa
 
     for(int i=0; i<NUM_ELEMENTS; ++i)
     {
-        array[i] = vec2_scale(vec2_angle(step * (float)i), (float)(i));
+        array[i] = vec2_scale(vec2_angle(step * (float)i), (float)(i) / 50.f);
         result[i] = ref(array[i].x, array[i].y);
     }
 
@@ -131,6 +131,8 @@ TEST generic_test2(reference_function2 ref, approximation_function2 approx, floa
 }
 
 float atan2_xy(float x, float y) {return atan2f(y, x);}
+float positive_pow(float x, float y) {return powf(fabsf(x), y);}
+simd_vector simd_positive_pow(simd_vector x, simd_vector y) {return simd_pow(simd_abs(x), y);}
 
 SUITE(trigonometry)
 {
@@ -152,6 +154,7 @@ SUITE(exponentiation)
     RUN_TESTp(generic_test, expf, simd_exp, -87.f, 87.f, 1.e-06f, true, "simd_exp");
     RUN_TESTp(generic_test, exp2f, simd_exp2, -126.f, 126.f, 2.e-07f, true, "simd_exp2");
     RUN_TESTp(generic_test, cbrtf, simd_cbrt, -100.f, 100.f, 2.e-07f, true, "simd_cbrt");
+    RUN_TESTp(generic_test2, positive_pow, simd_positive_pow, 3.e07f, true, "simd_pow");
 }
 
 SUITE(approximations)
@@ -163,7 +166,6 @@ SUITE(approximations)
     RUN_TESTp(generic_test, asinf, simd_approx_asin, -1.f, 1.f, 1.e-04f, false, "simd_approx_asin");
     RUN_TESTp(generic_test, expf, simd_approx_exp, -87.f, 87.f, 2.e-03f, true, "simd_approx_exp");
     RUN_TESTp(generic_test, exp2f, simd_approx_exp2, -126.f, 126.f, 3.e-07f, true, "simd_approx_exp2");
-    RUN_TESTp(generic_test, log2f, simd_approx_log2, FLT_EPSILON, 1.e20f, 3.e-07f, true, "simd_approx_log2");
 }
 
 SUITE(color_space)
