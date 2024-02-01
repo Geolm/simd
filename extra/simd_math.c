@@ -446,15 +446,15 @@ simd_vector simd_pow(simd_vector x, simd_vector y)
     // find significand in antilog table A[]
     simd_vectori i = simd_splat_i(1);
 
-    i = simd_select_i(i, simd_splat_i(9), simd_cmp_le(x, simd_splat(A[9])));
+    i = simd_select_i(i, simd_splat_i(9), simd_cast_from_float(simd_cmp_le(x, simd_splat(A[9]))));
 
     simd_vectori i_plus_4 = simd_add_i(i, simd_splat_i(4));
-    i = simd_select_i(i, i_plus_4, simd_cmp_le(x, simd_gather(A, i_plus_4)));
+    i = simd_select_i(i, i_plus_4, simd_cast_from_float(simd_cmp_le(x, simd_gather(A, i_plus_4))));
 
     simd_vectori i_plus_2 = simd_add_i(i, simd_splat_i(2));
-    i = simd_select_i(i, i_plus_2, simd_cmp_le(x, simd_gather(A, i_plus_2)));
+    i = simd_select_i(i, i_plus_2, simd_cast_from_float(simd_cmp_le(x, simd_gather(A, i_plus_2))));
 
-    i = simd_select_i(i, simd_splat_i(-1), simd_cmp_ge(x, simd_splat(A[1])));
+    i = simd_select_i(i, simd_splat_i(-1), simd_cast_from_float(simd_cmp_ge(x, simd_splat(A[1]))));
     i = simd_add_i(i, simd_splat_i(1));
 
     // Find (x - A[i])/A[i]
