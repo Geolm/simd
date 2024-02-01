@@ -526,7 +526,7 @@ simd_vector simd_pow(simd_vector x, simd_vector y)
 
     simd_vectori i0 = simd_neg_i(simd_shift_right_i(simd_neg_i(int_e), 4));
     simd_vectori i1 = simd_add_i(simd_shift_right_i(int_e, 4), simd_splat_i(1));
-    i = simd_select_i(i1, i0, neg_e);
+    i = simd_select_i(i1, i0, simd_cast_from_float(neg_e));
 
     int_e = simd_sub_i(simd_shift_left_i(i, 4), int_e);
 
