@@ -341,7 +341,7 @@ simd_vector simd_cbrt(simd_vector xx)
     exponent = simd_abs_i(exponent);
     simd_vectori rem = exponent;
     exponent = simd_convert_from_float((simd_mul(simd_convert_from_int(exponent), one_over_three)));
-    rem = simd_sub(rem, simd_mul_i(exponent, simd_splat_i(3)));
+    rem = simd_sub_i(rem, simd_mul_i(exponent, simd_splat_i(3)));
 
     simd_vector cbrt2 = simd_splat(1.25992104989487316477f);
     simd_vector cbrt4 = simd_splat(1.58740105196819947475f);
@@ -350,7 +350,7 @@ simd_vector simd_cbrt(simd_vector xx)
     simd_vector rem_equals_2 = simd_cast_from_int(simd_cmp_eq_i(rem, simd_splat_i(2)));
     simd_vector x1 = simd_mul(x, simd_select(cbrt4, cbrt2, rem_equals_1));
     simd_vector x2 = simd_div(x, simd_select(cbrt4, cbrt2, rem_equals_1));
-    x = simd_select(x, simd_select(x1, x2, exponent_is_negative), simd_or(rem_equals_1, rem_equals_2));
+    x = simd_select(x, simd_select(x1, x2, simd_cast_from_int(exponent_is_negative)), simd_or(rem_equals_1, rem_equals_2));
     exponent = simd_mul_i(exponent, simd_select_i(simd_splat_i(1), simd_splat_i(-1), exponent_is_negative));
 
     // multiply by power of 2
