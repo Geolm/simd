@@ -206,10 +206,10 @@ float rsqrt(float x) {return 1.f/sqrtf(x);}
 SUITE(sqrt_and_rcp)
 {
     printf(".");
-    RUN_TESTp(generic_test, rcp, simd_rcp, FLT_EPSILON, 100.f, 1e-5f, true, "simd_rcp");
-    RUN_TESTp(generic_test, rsqrt, simd_rsqrt, 0.1f, 100.f, 2e-5f, true, "simd_rsqrt");
+    RUN_TESTp(generic_test, rcp, simd_rcp, FLT_EPSILON, 100.f, 3e-4f, true, "simd_rcp");
+    RUN_TESTp(generic_test, rsqrt, simd_rsqrt, 0.1f, 100.f, 3e-4f, true, "simd_rsqrt");
     RUN_TESTp(generic_test, sqrtf, simd_sqrt, 0.1f, 100.f, 0.f, true, "simd_sqrt");
-    RUN_TESTp(generic_test, sqrtf, simd_approx_sqrt, FLT_EPSILON, 1000.f, 0.07f, true, "simd_approx_sqrt");
+    RUN_TESTp(generic_test, sqrtf, simd_approx_sqrt, FLT_EPSILON, 10000000.f, 0.07f, true, "simd_approx_sqrt");
 }
 
 float negative(float x) {return -x;}
@@ -373,14 +373,14 @@ TEST test_frexp(void)
         }
 
         simd_vector v_input = simd_load(array);
-        simd_vector v_exponent;
+        simd_vectori v_exponent;
         simd_vector v_mantissa = simd_frexp(v_input, &v_exponent);
 
-        float exponent_export[simd_vector_width];
-        simd_store(exponent_export, v_exponent);
+        int32_t exponent_export[simd_vector_width];
+        simd_store_i(exponent_export, v_exponent);
 
         for(int i=0; i<simd_vector_width; ++i)
-            ASSERT_EQ((int)exponent_export[i], exponent[i]);
+            ASSERT_EQ(exponent_export[i], exponent[i]);
 
         ASSERT( simd_all(simd_cmp_eq(v_mantissa, simd_load(mantissa))));
     }
@@ -394,7 +394,7 @@ TEST test_ldexp(void)
         array[i] = (float) (simd_vector_width/2-i);
 
     float result[simd_vector_width];
-    float param[simd_vector_width];
+    int32_t param[simd_vector_width];
 
     simd_vector v_array = simd_load(array);
 
@@ -403,10 +403,10 @@ TEST test_ldexp(void)
         for(int j=0; j<simd_vector_width; ++j)
         {
             result[j] = ldexpf(array[j], i + j);
-            param[j] = (float)(i + j); 
+            param[j] = (i + j); 
         }
 
-        simd_vector v_result = simd_ldexp(v_array, simd_load(param));
+        simd_vector v_result = simd_ldexp(v_array, simd_load_i(param));
         
         ASSERT(simd_all(simd_cmp_eq(simd_load(result), v_result)));
     }
